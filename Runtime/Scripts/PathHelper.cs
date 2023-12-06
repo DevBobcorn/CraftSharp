@@ -9,32 +9,32 @@ namespace CraftSharp
 
         public static string GetRootDirectory()
         {
-            return Directory.GetParent(Application.persistentDataPath).FullName;
+            return Application.persistentDataPath;
         }
 
         public static string GetPacksDirectory()
         {
-            return Directory.GetParent(Application.persistentDataPath).FullName + $"{SP}Resource Packs";
+            return Application.persistentDataPath + $"{SP}Resource Packs";
         }
 
         public static string GetPackDirectoryNamed(string packName)
         {
-            return Directory.GetParent(Application.persistentDataPath).FullName + $"{SP}Resource Packs{SP}{packName}";
+            return Application.persistentDataPath + $"{SP}Resource Packs{SP}{packName}";
         }
 
         public static string GetPackFile(string packName, string fileName)
         {
-            return Directory.GetParent(Application.persistentDataPath).FullName + $"{SP}Resource Packs{SP}{packName}{SP}{fileName}";
+            return Application.persistentDataPath + $"{SP}Resource Packs{SP}{packName}{SP}{fileName}";
         }
 
         public static string GetExtraDataDirectory()
         {
-            return Directory.GetParent(Application.persistentDataPath).FullName + $"{SP}Extra Data";
+            return Application.persistentDataPath + $"{SP}Extra Data";
         }
 
         public static string GetExtraDataFile(string fileName)
         {
-            return Directory.GetParent(Application.persistentDataPath).FullName + $"{SP}Extra Data{SP}{fileName}";
+            return Application.persistentDataPath + $"{SP}Extra Data{SP}{fileName}";
         }
     }
 }
