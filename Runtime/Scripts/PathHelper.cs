@@ -6,35 +6,44 @@ namespace CraftSharp
     public class PathHelper
     {
         private static readonly char SP = Path.DirectorySeparatorChar;
+        private static string appPersistentData = string.Empty;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSplashScreen)]
+        private static void OnBeforeSplashScreen()
+        {
+            // Cache this into a variable because Application.persistentDataPath is not thread-safe
+            // Accessing it from resource loader thread etc will lead to exceptions
+            appPersistentData = Application.persistentDataPath;
+        }
 
         public static string GetRootDirectory()
         {
-            return Application.persistentDataPath;
+            return appPersistentData;
         }
 
         public static string GetPacksDirectory()
         {
-            return Application.persistentDataPath + $"{SP}Resource Packs";
+            return appPersistentData + $"{SP}Resource Packs";
         }
 
         public static string GetPackDirectoryNamed(string packName)
         {
-            return Application.persistentDataPath + $"{SP}Resource Packs{SP}{packName}";
+            return appPersistentData + $"{SP}Resource Packs{SP}{packName}";
         }
 
         public static string GetPackFile(string packName, string fileName)
         {
-            return Application.persistentDataPath + $"{SP}Resource Packs{SP}{packName}{SP}{fileName}";
+            return appPersistentData + $"{SP}Resource Packs{SP}{packName}{SP}{fileName}";
         }
 
         public static string GetExtraDataDirectory()
         {
-            return Application.persistentDataPath + $"{SP}Extra Data";
+            return appPersistentData + $"{SP}Extra Data";
         }
 
         public static string GetExtraDataFile(string fileName)
         {
-            return Application.persistentDataPath + $"{SP}Extra Data{SP}{fileName}";
+            return appPersistentData + $"{SP}Extra Data{SP}{fileName}";
         }
     }
 }
