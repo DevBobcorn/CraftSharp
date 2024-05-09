@@ -488,8 +488,8 @@ namespace CraftSharp
                             colorSum += b.FoliageColor;
                         }
                     }
-            cnt = (cnt == 0) ? 1 : cnt;
-            return colorSum / cnt;
+
+            return cnt == 0 ? DUMMY_BIOME.FoliageColor : colorSum / cnt;
         }
 
         public float3 GetGrassColor(BlockLoc blockLoc)
@@ -507,8 +507,8 @@ namespace CraftSharp
                             colorSum += b.GrassColor;
                         }
                     }
-            cnt = (cnt == 0) ? 1 : cnt;
-            return colorSum / cnt;
+            
+            return cnt == 0 ? DUMMY_BIOME.GrassColor : colorSum / cnt;
         }
 
         public float3 GetWaterColor(BlockLoc blockLoc)
@@ -526,8 +526,8 @@ namespace CraftSharp
                             colorSum += b.WaterColor;
                         }
                     }
-            cnt = (cnt == 0) ? 1 : cnt;
-            return colorSum / cnt;
+            
+            return cnt == 0 ? DUMMY_BIOME.WaterColor : colorSum / cnt;
         }
 
         #endregion
