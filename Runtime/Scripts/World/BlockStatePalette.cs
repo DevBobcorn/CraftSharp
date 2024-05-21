@@ -402,7 +402,7 @@ namespace CraftSharp
                         "grass"    => (world, loc, state) => world.GetGrassColor(loc),
                         "redstone" => (world, loc, state) => {
                             if (state.Properties.ContainsKey("power"))
-                                return new(float.Parse(state.Properties["power"]) / 16F, 0F, 0F);
+                                return new(int.Parse(state.Properties["power"]) / 16F, 0F, 0F);
                             return float3.zero;
                         },
 
