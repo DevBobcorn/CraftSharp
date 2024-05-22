@@ -19,7 +19,7 @@ namespace CraftSharp
         private readonly Dictionary<ResourceLocation, Func<ItemStack, float3[]>> itemColorRules = new();
 
         /// <summary>
-        /// Get item from numeral id
+        /// Get item from numeral id.
         /// </summary>
         public Item FromNumId(int id)
         {
@@ -31,7 +31,7 @@ namespace CraftSharp
         }
 
         /// <summary>
-        /// Get numeral id from item identifier
+        /// Get numeral id from item identifier.
         /// </summary>
         public int ToNumId(ResourceLocation identifier)
         {
@@ -42,7 +42,7 @@ namespace CraftSharp
         }
 
         /// <summary>
-        /// Get item from item identifier
+        /// Get item from item identifier.
         /// </summary>
         public Item FromId(ResourceLocation identifier)
         {
@@ -61,6 +61,11 @@ namespace CraftSharp
             return null;
         }
 
+        /// <summary>
+        /// Load item data from external files.
+        /// </summary>
+        /// <param name="dataVersion">Item data version</param>
+        /// <param name="flag">Data load flag</param>
         public void PrepareData(string dataVersion, DataLoadFlag flag)
         {
             // Clear loaded stuff...

@@ -18,7 +18,7 @@ namespace CraftSharp
         public const int UNKNOWN_ENTITY_NUM_ID = -1;
 
         /// <summary>
-        /// Get entity type from numeral id
+        /// Get entity type from numeral id.
         /// </summary>
         /// <param name="id">Entity type ID</param>
         /// <returns>EntityType corresponding to the specified ID</returns>
@@ -32,7 +32,7 @@ namespace CraftSharp
         }
 
         /// <summary>
-        /// Get numeral id from entity type identifier
+        /// Get numeral id from entity type identifier.
         /// </summary>
         public int ToNumId(ResourceLocation identifier)
         {
@@ -44,20 +44,65 @@ namespace CraftSharp
         }
 
         /// <summary>
-        /// Get entity type from entity type identifier
+        /// Get entity type from entity type identifier.
         /// </summary>
         public EntityType FromId(ResourceLocation identifier)
         {
             return FromNumId(ToNumId(identifier));
         }
 
-        public void PrepareData(string entityVersion, DataLoadFlag flag)
+        /// <summary>
+        /// Check if an entity type is present in the registry.
+        /// <br/>
+        /// This should be used for debugging purposes only.
+        /// </summary>
+        public bool CheckEntityType(ResourceLocation identifier)
+        {
+            return dictId.ContainsKey(identifier);
+        }
+
+        /// <summary>
+        /// Adds an entity type directly into the registry.
+        /// <br/>
+        /// This should be used for debugging purposes only, where actual entity data is not present.
+        /// </summary>
+        public void InjectEntityType(int numId, ResourceLocation identifier)
+        {
+            if (dictId.ContainsKey(identifier))
+            {
+                Debug.LogWarning($"Entity type {identifier} is already registered with num id {dictId[identifier]}");
+            }
+            else if (entityTypeTable.ContainsKey(numId)) // Num id already occupied, assign another
+            {
+                while (entityTypeTable.ContainsKey(numId))
+                {
+                    numId += 1;
+                }
+
+                entityTypeTable[numId] = new(numId, identifier);
+                dictId[identifier] = numId;
+                //Debug.Log($"Entity type {identifier} is registered with num id {numId}");
+            }
+            else // Add this entry
+            {
+                entityTypeTable[numId] = new(numId, identifier);
+                dictId[identifier] = numId;
+                //Debug.Log($"Entity type {identifier} is registered with num id {numId}");
+            }
+        }
+
+        /// <summary>
+        /// Load entity data from external files.
+        /// </summary>
+        /// <param name="dataVersion">Entity data version</param>
+        /// <param name="flag">Data load flag</param>
+        public void PrepareData(string dataVersion, DataLoadFlag flag)
         {
             // Clear loaded stuff...
             entityTypeTable.Clear();
             dictId.Clear();
 
-            var entityTypeListPath = PathHelper.GetExtraDataFile($"entities{SP}entity_types-{entityVersion}.json");
+            var entityTypeListPath = PathHelper.GetExtraDataFile($"entities{SP}entity_types-{dataVersion}.json");
             string listsPath  = PathHelper.GetExtraDataFile("entity_lists.json");
 
             if (!File.Exists(entityTypeListPath) || !File.Exists(listsPath))
@@ -69,8 +114,10 @@ namespace CraftSharp
             }
 
             // First read special entity lists...
-            var lists = new Dictionary<string, HashSet<ResourceLocation>>();
-            lists.Add("contains_item", new());
+            var lists = new Dictionary<string, HashSet<ResourceLocation>>
+            {
+                { "contains_item", new() }
+            };
 
             Json.JSONData spLists = Json.ParseJson(File.ReadAllText(listsPath, Encoding.UTF8));
             foreach (var pair in lists)
@@ -91,14 +138,13 @@ namespace CraftSharp
 
                 foreach (var entityType in entityTypeList.Properties)
                 {
-                    int numId;
-                    if (int.TryParse(entityType.Key, out numId))
+                    if (int.TryParse(entityType.Key, out int numId))
                     {
                         var entityTypeId = ResourceLocation.FromString(entityType.Value.StringValue);
 
                         entityTypeTable.TryAdd(numId, new EntityType(numId,
                                 entityTypeId, containsItem.Contains(entityTypeId)));
-                        
+
                         dictId.TryAdd(entityTypeId, numId);
                     }
                     else

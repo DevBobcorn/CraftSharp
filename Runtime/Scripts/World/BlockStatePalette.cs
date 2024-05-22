@@ -249,6 +249,11 @@ namespace CraftSharp
                             x.Path.StartsWith(incompleteBlockId.Path)).Take(3).ToArray();
         }
 
+        /// <summary>
+        /// Load block data from external files.
+        /// </summary>
+        /// <param name="dataVersion">Block data version</param>
+        /// <param name="flag">Data load flag</param>
         public void PrepareData(string dataVersion, DataLoadFlag flag)
         {
             // Clean up first...

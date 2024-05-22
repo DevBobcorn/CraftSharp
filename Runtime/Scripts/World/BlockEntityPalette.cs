@@ -20,7 +20,7 @@ namespace CraftSharp
         public const int UNKNOWN_BLOCK_ENTITY_NUM_ID = -1;
 
         /// <summary>
-        /// Get block entity type from numeral id
+        /// Get block entity type from numeral id.
         /// </summary>
         /// <param name="id">BlockEntity type ID</param>
         /// <returns>BlockEntityType corresponding to the specified ID</returns>
@@ -34,7 +34,7 @@ namespace CraftSharp
         }
 
         /// <summary>
-        /// Get numeral id from block entity type identifier
+        /// Get numeral id from block entity type identifier.
         /// </summary>
         public int ToNumId(ResourceLocation identifier)
         {
@@ -46,7 +46,7 @@ namespace CraftSharp
         }
 
         /// <summary>
-        /// Get block entity type from block entity type identifier
+        /// Get block entity type from block entity type identifier.
         /// </summary>
         public BlockEntityType FromId(ResourceLocation identifier)
         {
@@ -60,6 +60,11 @@ namespace CraftSharp
             return found;
         }
 
+        /// <summary>
+        /// Load block entity data from external files.
+        /// </summary>
+        /// <param name="dataVersion">Block data version</param>
+        /// <param name="flag">Data load flag</param>
         public void PrepareData(string dataVersion, DataLoadFlag flag)
         {
             // Clear loaded stuff...
