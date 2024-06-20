@@ -30,10 +30,9 @@ namespace CraftSharp
             {
                 bool shouldUpdatePresentRes = false;
 
-                if (File.Exists(PathHelper.GetExtraDataFile(RES_VERSION_FILE_NAME)))
+                if (File.Exists($"{targetFolder}{SP}{RES_VERSION_FILE_NAME}"))
                 {
-                    var presentResVersion = File.ReadAllText(PathHelper
-                            .GetExtraDataFile(RES_VERSION_FILE_NAME));
+                    var presentResVersion = File.ReadAllText($"{targetFolder}{SP}{RES_VERSION_FILE_NAME}");
                     int.TryParse(presentResVersion, out int presentResVersionNum);
 
                     if (presentResVersionNum < resVersion) // This version present in data folder is outdated, update it
