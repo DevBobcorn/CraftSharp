@@ -6,10 +6,16 @@ using System.Linq;
 
 namespace CraftSharp
 {
+    /// <summary>
+    /// Util script for executing code on Unity main thread.
+    /// Should be prioritized in script execution order for the timer to work.
+    /// </summary>
     public class Loom : MonoBehaviour
     {
         public static int maxThreads = 8;
         static int numThreads;
+        const float MAX_FRAMETIME = 1F;
+        private float _currentFrameStart = 0.01F;
 
         private static Loom _current;
         public static Loom Current
@@ -30,23 +36,23 @@ namespace CraftSharp
                 if (!Application.isPlaying)
                     return;
                 initialized = true;
-                GameObject g = new GameObject("Loom");
+                var g = new GameObject("Loom");
                 // Don't destroy this object
                 DontDestroyOnLoad(g);
                 _current = g.AddComponent<Loom>();
             }
-
         }
 
-        private List<Action> _actions = new List<Action>();
+        private readonly List<Action> _actions = new();
+        private readonly Queue<Action> _minorActions = new();
         public struct DelayedQueueItem
         {
             public float time;
             public Action action;
         }
-        private List<DelayedQueueItem> _delayed = new List<DelayedQueueItem>();
+        private readonly List<DelayedQueueItem> _delayed = new();
 
-        List<DelayedQueueItem> _currentDelayed = new List<DelayedQueueItem>();
+        private readonly List<DelayedQueueItem> _currentDelayed = new();
 
         public static void QueueOnMainThread(Action action)
         {
@@ -73,6 +79,17 @@ namespace CraftSharp
                     {
                         Current._actions.Add(action);
                     }
+                }
+            }
+        }
+
+        public static void QueueOnMainThreadMinor(Action action)
+        {
+            if (Current != null)
+            {
+                lock (Current._minorActions)
+                {
+                    Current._minorActions.Enqueue(action);
                 }
             }
         }
@@ -105,7 +122,6 @@ namespace CraftSharp
 
         }
 
-
         void OnDisable()
         {
             if (_current == this)
@@ -115,11 +131,14 @@ namespace CraftSharp
             }
         }
 
-        List<Action> _currentActions = new List<Action>();
+        private readonly List<Action> _currentActions = new();
 
-        // Update is called once per frame  
         void Update()
         {
+            // Update time since frame start, note that script execution order of this
+            // script should be set to a negative value to prioritize its execution
+            _currentFrameStart = Time.realtimeSinceStartup;
+            
             lock (_actions)
             {
                 _currentActions.Clear();
@@ -141,7 +160,21 @@ namespace CraftSharp
             {
                 delayed.action();
             }
+        }
 
+        void LateUpdate()
+        {
+            while (Time.realtimeSinceStartup - _currentFrameStart < MAX_FRAMETIME && _minorActions.Count > 0)
+            {
+                Action a;
+
+                lock (_minorActions)
+                {
+                    a = _minorActions.Dequeue();
+                }
+
+                a();
+            }
         }
     }
 }
