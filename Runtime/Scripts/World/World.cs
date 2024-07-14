@@ -519,6 +519,7 @@ namespace CraftSharp
         }
 
         private const int COLOR_SAMPLE_RADIUS = 2;
+        private const int COLOR_SAMPLE_RADIUS_SQR = COLOR_SAMPLE_RADIUS * COLOR_SAMPLE_RADIUS;
 
         /// <summary>
         /// Get biome at the specified location
@@ -538,8 +539,11 @@ namespace CraftSharp
             float3 colorSum = float3.zero;
             for (int x = -COLOR_SAMPLE_RADIUS;x <= COLOR_SAMPLE_RADIUS;x++)
                 for (int y = -COLOR_SAMPLE_RADIUS;y <= COLOR_SAMPLE_RADIUS;y++)
-                    for (int z = -COLOR_SAMPLE_RADIUS;z < COLOR_SAMPLE_RADIUS;z++)
+                    for (int z = -COLOR_SAMPLE_RADIUS;z <= COLOR_SAMPLE_RADIUS;z++)
                     {
+                        if (x * x + y * y + z * z > COLOR_SAMPLE_RADIUS_SQR)
+                            continue;
+                        
                         var b = GetBiome(blockLoc + new BlockLoc(x, y, z));
                         if (b != DUMMY_BIOME)
                         {
@@ -557,8 +561,11 @@ namespace CraftSharp
             float3 colorSum = float3.zero;
             for (int x = -COLOR_SAMPLE_RADIUS;x <= COLOR_SAMPLE_RADIUS;x++)
                 for (int y = -COLOR_SAMPLE_RADIUS;y <= COLOR_SAMPLE_RADIUS;y++)
-                    for (int z = -COLOR_SAMPLE_RADIUS;z < COLOR_SAMPLE_RADIUS;z++)
+                    for (int z = -COLOR_SAMPLE_RADIUS;z <= COLOR_SAMPLE_RADIUS;z++)
                     {
+                        if (x * x + y * y + z * z > COLOR_SAMPLE_RADIUS_SQR)
+                            continue;
+                        
                         var b = GetBiome(blockLoc + new BlockLoc(x, y, z));
                         if (b != DUMMY_BIOME)
                         {
@@ -576,8 +583,11 @@ namespace CraftSharp
             float3 colorSum = float3.zero;
             for (int x = -COLOR_SAMPLE_RADIUS;x <= COLOR_SAMPLE_RADIUS;x++)
                 for (int y = -COLOR_SAMPLE_RADIUS;y <= COLOR_SAMPLE_RADIUS;y++)
-                    for (int z = -COLOR_SAMPLE_RADIUS;z < COLOR_SAMPLE_RADIUS;z++)
+                    for (int z = -COLOR_SAMPLE_RADIUS;z <= COLOR_SAMPLE_RADIUS;z++)
                     {
+                        if (x * x + y * y + z * z > COLOR_SAMPLE_RADIUS_SQR)
+                            continue;
+                        
                         var b = GetBiome(blockLoc + new BlockLoc(x, y, z));
                         if (b != DUMMY_BIOME)
                         {
