@@ -447,7 +447,7 @@ namespace CraftSharp
                                     light[resX, resY, resZ] = chunkColumn.GetBlockLight(blocLoc);
                                     allao[resX, resY, resZ] = chunkColumn.GetAmbientOcclusion(blocLoc);
                                     
-                                    if (resX > 0 && resX < Chunk.SIZE && resY > 0 && resY < Chunk.SIZE && resZ > 0 && resZ < Chunk.SIZE)
+                                    if (resX > 0 && resX <= Chunk.SIZE && resY > 0 && resY <= Chunk.SIZE && resZ > 0 && resZ <= Chunk.SIZE)
                                     {
                                         // No padding for block color
                                         color[resX - 1, resY - 1, resZ - 1] = BlockStatePalette.INSTANCE.GetBlockColor(bloc.StateId, this, blocLoc, bloc.State);
