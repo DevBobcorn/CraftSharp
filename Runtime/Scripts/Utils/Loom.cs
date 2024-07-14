@@ -14,8 +14,8 @@ namespace CraftSharp
     {
         public static int maxThreads = 8;
         static int numThreads;
-        const float MAX_FRAMETIME = 1F;
-        private float _currentFrameStart = 0.01F;
+        const float MAX_FRAMETIME = 0.01F;
+        private float _currentFrameStart = 0F;
 
         private static Loom _current;
         public static Loom Current

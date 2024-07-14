@@ -235,7 +235,22 @@ namespace CraftSharp
         }
 
         /// <summary>
-        /// Check whether the data of a chunk column is ready
+        /// Check whether the data of a chunk column is loaded
+        /// </summary>
+        /// <param name="chunkX">ChunkColumn X</param>
+        /// <param name="chunkZ">ChunkColumn Z</param>
+        /// <returns>True if chunk column data is ready</returns>
+        public bool IsChunkColumnLoaded(int chunkX, int chunkZ)
+        {
+            // Chunk column data is sent one whole column per time,
+            // a whole air chunk is represent by null
+            if (columns.TryGetValue(new(chunkX, chunkZ), out ChunkColumn? chunkColumn))
+                return chunkColumn is not null && chunkColumn.FullyLoaded && chunkColumn.LightingPresent;
+            return false;
+        }
+
+        /// <summary>
+        /// Check whether the data of a chunk column is loaded
         /// </summary>
         /// <param name="chunkX">ChunkColumn X</param>
         /// <param name="chunkZ">ChunkColumn Z</param>
@@ -284,7 +299,7 @@ namespace CraftSharp
             return this[blockLoc.GetChunkX(), blockLoc.GetChunkZ()];
         }
 
-        private static readonly Block AIR_INSTANCE = new(0);
+        public static readonly Block AIR_INSTANCE = new(0);
 
         /// <summary>
         /// Get block at the specified location
@@ -296,9 +311,7 @@ namespace CraftSharp
             var column = GetChunkColumn(blockLoc);
             if (column != null)
             {
-                var chunk = column.GetChunk(blockLoc);
-                if (chunk != null)
-                    return chunk.GetBlock(blockLoc);
+                return column.GetBlock(blockLoc);
             }
             return AIR_INSTANCE; // Air
         }
@@ -323,17 +336,148 @@ namespace CraftSharp
             GetChunkColumn(blockLoc)?.SetBlockLight(blockLoc, newValue);
         }
 
-        public T[,,] GetValuesFromSection<T>(int minX, int minY, int minZ, int sizeX, int sizeY, int sizeZ, Func<BlockState, T> valueGetter)
+        public T[,,] GetValuesFromSection<T>(int minX, int minY, int minZ, int sizeX, int sizeY, int sizeZ, Func<Block, T> valueGetter)
         {
             T[,,] result = new T[sizeX, sizeY, sizeZ];
+            
+            // Min coordinate on each axis (inclusive)
+            // Max coordinate on each axis (exclusive)
+            int maxX = minX + sizeX, maxZ = minZ + sizeZ, maxY = minY + sizeY;
+            int minCX = minX >> 4;        // Min chunk X
+            int minCZ = minZ >> 4;        // Min chunk Z
+            int maxCX = (maxX - 1) >> 4;  // Max chunk X
+            int maxCZ = (maxZ - 1) >> 4;  // Max chunk Z
 
-            for (int x = 0; x < sizeX; x++)
-                for (int y = 0; y < sizeY; y++)
-                    for (int z = 0; z < sizeZ; z++)
+            for (int cx = minCX; cx <= maxCX; cx++)
+                for (int cz = minCZ; cz <= maxCZ; cz++)
+                {
+                    // Get the current chunk column
+                    var chunkColumn = this[cx, cz];
+
+                    if (chunkColumn is not null) // Chunk column is not empty
                     {
-                        var blockLoc = new BlockLoc(x + minX, y + minY, z + minZ);
-                        result[x, y, z] = valueGetter.Invoke(GetBlock(blockLoc).State);
+                        // Go through all valid xz locations within this chunk column
+                        for (int blocX = math.max(minX, cx << 4); blocX < math.min(maxX, (cx + 1) << 4); blocX++)
+                        {
+                            int resX = blocX - minX;
+                            for (int blocZ = math.max(minZ, cz << 4); blocZ < math.min(maxZ, (cz + 1) << 4); blocZ++)
+                            {
+                                int resZ = blocZ - minZ;
+                                // Then go though all blocks in this line
+                                for (int blocY = minY; blocY < maxY; blocY++)
+                                {
+                                    int resY = blocY - minY;
+                                    var blocLoc = new BlockLoc(blocX, blocY, blocZ);
+
+                                    result[resX, resY, resZ] = valueGetter(chunkColumn.GetBlock(blocLoc));
+                                }
+                            }
+                        }
                     }
+                    else // Chunk column is empty
+                    {
+                        var val = valueGetter(AIR_INSTANCE);
+
+                        // Go through all valid xz locations within this chunk column
+                        for (int blocX = math.max(minX, cx << 4); blocX < math.min(maxX, (cx + 1) << 4); blocX++)
+                        {
+                            int resX = blocX - minX;
+                            for (int blocZ = math.max(minZ, cz << 4); blocZ < math.min(maxZ, (cz + 1) << 4); blocZ++)
+                            {
+                                int resZ = blocZ - minZ;
+                                // Then go though all blocks in this line
+                                for (int blocY = minY; blocY < maxY; blocY++)
+                                {
+                                    int resY = blocY - minY;
+
+                                    result[resX, resY, resZ] = val;
+                                }
+                            }
+                        }
+                    }
+                }
+            
+            return result;
+        }
+
+        /// <summary>
+        /// Get all essential data for doing a chunk mesh build.
+        /// </summary>
+        public ChunkBuildData GetChunkBuildData(int chunkX, int chunkZ, int chunkYIndex)
+        {
+            var result = new ChunkBuildData();
+            var blocs = result.Blocks = new Block[Chunk.PADDED, Chunk.PADDED, Chunk.PADDED];
+            var light = result.Light = new byte[Chunk.PADDED, Chunk.PADDED, Chunk.PADDED];
+            var allao = result.AO = new bool[Chunk.PADDED, Chunk.PADDED, Chunk.PADDED];
+            var color = result.Color = new float3[Chunk.SIZE, Chunk.SIZE, Chunk.SIZE];
+            
+            int minCX = chunkX - 1;  // Min chunk X
+            int minCZ = chunkZ - 1;  // Min chunk Z
+            int maxCX = chunkX + 1;  // Max chunk X
+            int maxCZ = chunkZ + 1;  // Max chunk Z
+
+            // Max coordinate on each axis (inclusive)
+            int minX = (chunkX << 4) - 1,              minZ = (chunkZ << 4) - 1,              minY = (chunkYIndex << 4) + GetDimension().minY - 1;
+            // Max coordinate on each axis (exclusive)
+            int maxX = (chunkX << 4) + Chunk.SIZE + 1, maxZ = (chunkZ << 4) + Chunk.SIZE + 1, maxY = (chunkYIndex << 4) + GetDimension().minY + Chunk.SIZE + 1;
+
+            for (int cx = minCX; cx <= maxCX; cx++)
+                for (int cz = minCZ; cz <= maxCZ; cz++)
+                {
+                    // Get the current chunk column
+                    var chunkColumn = this[cx, cz];
+
+                    if (chunkColumn is not null) // Chunk column is not empty
+                    {
+                        // Go through all valid xz locations within this chunk column
+                        for (int blocX = math.max(minX, cx << 4); blocX < math.min(maxX, (cx + 1) << 4); blocX++)
+                        {
+                            int resX = blocX - minX;
+                            for (int blocZ = math.max(minZ, cz << 4); blocZ < math.min(maxZ, (cz + 1) << 4); blocZ++)
+                            {
+                                int resZ = blocZ - minZ;
+                                // Then go though all blocks in this line
+                                for (int blocY = minY; blocY < maxY; blocY++)
+                                {
+                                    int resY = blocY - minY;
+                                    var blocLoc = new BlockLoc(blocX, blocY, blocZ);
+
+                                    var bloc = chunkColumn.GetBlock(blocLoc);
+                                    blocs[resX, resY, resZ] = bloc;
+                                    light[resX, resY, resZ] = chunkColumn.GetBlockLight(blocLoc);
+                                    allao[resX, resY, resZ] = chunkColumn.GetAmbientOcclusion(blocLoc);
+                                    
+                                    if (resX > 0 && resX < Chunk.SIZE && resY > 0 && resY < Chunk.SIZE && resZ > 0 && resZ < Chunk.SIZE)
+                                    {
+                                        // No padding for block color
+                                        color[resX - 1, resY - 1, resZ - 1] = BlockStatePalette.INSTANCE.GetBlockColor(bloc.StateId, this, blocLoc, bloc.State);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else // Chunk column is empty
+                    {
+                        // Go through all valid xz locations within this chunk column
+                        for (int blocX = math.max(minX, cx << 4); blocX < math.min(maxX, (cx + 1) << 4); blocX++)
+                        {
+                            int resX = blocX - minX;
+                            for (int blocZ = math.max(minZ, cz << 4); blocZ < math.min(maxZ, (cz + 1) << 4); blocZ++)
+                            {
+                                int resZ = blocZ - minZ;
+                                // Then go though all blocks in this line
+                                for (int blocY = minY; blocY < maxY; blocY++)
+                                {
+                                    int resY = blocY - minY;
+
+                                    blocs[resX, resY, resZ] = AIR_INSTANCE;
+                                    light[resX, resY, resZ] = 0;
+                                    allao[resX, resY, resZ] = false;
+                                }
+                            }
+                        }
+                    }
+                }
             
             return result;
         }
@@ -348,91 +492,6 @@ namespace CraftSharp
                 return column.GetAmbientOcclusion(blockLoc);
             
             return false; // Not available
-        }
-
-        private Block GetUpBlock(Chunk selfChunk, BlockLoc blockLoc) // MC Y Pos
-        {
-            if (blockLoc.GetChunkBlockY() == Chunk.SIZE - 1)
-                return GetBlock(blockLoc.Up());
-            
-            // Target is in the same chunk
-            return selfChunk.GetBlock(blockLoc.Up());
-        }
-
-        private Block GetDownBlock(Chunk selfChunk, BlockLoc blockLoc) // MC Y Neg
-        {
-            if (blockLoc.GetChunkBlockY() == 0)
-                return GetBlock(blockLoc.Down());
-            
-            // Target is in the same chunk
-            return selfChunk.GetBlock(blockLoc.Down());
-        }
-
-        private Block GetEastBlock(Chunk selfChunk, BlockLoc blockLoc) // MC X Pos
-        {
-            if (blockLoc.GetChunkBlockX() == Chunk.SIZE - 1)
-                return GetBlock(blockLoc.East());
-            
-            // Target is in the same chunk
-            return selfChunk.GetBlock(blockLoc.East());
-        }
-
-        private Block GetWestBlock(Chunk selfChunk, BlockLoc blockLoc) // MC X Neg
-        {
-            if (blockLoc.GetChunkBlockX() == 0)
-                return GetBlock(blockLoc.West());
-            
-            // Target is in the same chunk
-            return selfChunk.GetBlock(blockLoc.West());
-        }
-
-        private Block GetSouthBlock(Chunk selfChunk, BlockLoc blockLoc) // MC Z Pos
-        {
-            if (blockLoc.GetChunkBlockZ() == Chunk.SIZE - 1)
-                return GetBlock(blockLoc.South());
-            
-            // Target is in the same chunk
-            return selfChunk.GetBlock(blockLoc.South());
-        }
-
-        private Block GetNorthBlock(Chunk selfChunk, BlockLoc blockLoc) // MC Z Neg
-        {
-            if (blockLoc.GetChunkBlockZ() == 0)
-                return GetBlock(blockLoc.North());
-            
-            // Target is in the same chunk
-            return selfChunk.GetBlock(blockLoc.North());
-        }
-
-        public int GetCullFlags(BlockLoc blockLoc, Block self, BlockNeighborCheck check)
-        {
-            var selfChunk = GetChunkColumn(blockLoc)?.GetChunk(blockLoc);
-            if (selfChunk == null)
-            {
-                return 0;
-            }
-
-            int cullFlags = 0;
-
-            if (check(self, GetUpBlock(selfChunk, blockLoc)))
-                cullFlags |= (1 << 0);
-
-            if (check(self, GetDownBlock(selfChunk, blockLoc)))
-                cullFlags |= (1 << 1);
-            
-            if (check(self, GetSouthBlock(selfChunk, blockLoc)))
-                cullFlags |= (1 << 2);
-
-            if (check(self, GetNorthBlock(selfChunk, blockLoc)))
-                cullFlags |= (1 << 3);
-            
-            if (check(self, GetEastBlock(selfChunk, blockLoc)))
-                cullFlags |= (1 << 4);
-
-            if (check(self, GetWestBlock(selfChunk, blockLoc)))
-                cullFlags |= (1 << 5);
-            
-            return cullFlags;
         }
 
         /// <summary>

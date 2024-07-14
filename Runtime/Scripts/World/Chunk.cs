@@ -8,6 +8,7 @@ namespace CraftSharp
     public class Chunk
     {
         public const int SIZE = 16;
+        public const int PADDED = SIZE + 2;
 
         /// <summary>
         /// Blocks contained into the chunk

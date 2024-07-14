@@ -87,6 +87,21 @@ namespace CraftSharp
             }
         }
 
+        /// <summary>
+        /// Get block at the specified location
+        /// </summary>
+        /// <param name="blockLoc">Location to retrieve block from</param>
+        /// <returns>Block at specified location or Air if the location is not loaded</returns>
+        public Block GetBlock(BlockLoc blockLoc)
+        {
+            var chunk = GetChunk(blockLoc);
+            if (chunk != null)
+            {
+                return chunk.GetBlock(blockLoc);
+            }
+            return World.AIR_INSTANCE; // Air
+        }
+
         public void SetBiomeIds(short[] biomes)
         {
             if (biomes.Length == this.biomes.Length)
