@@ -475,6 +475,11 @@ namespace CraftSharp
                             "cutout_mipped" => RenderType.CUTOUT_MIPPED,
                             "translucent"   => RenderType.TRANSLUCENT,
 
+                            "water"         => RenderType.WATER,
+                            "foliage"       => RenderType.FOLIAGE,
+                            "plants"        => RenderType.PLANTS,
+                            "tall_plants"   => RenderType.TALL_PLANTS,
+
                             _               => RenderType.SOLID
                         };
 
