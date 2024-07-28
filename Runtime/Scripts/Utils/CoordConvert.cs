@@ -7,23 +7,39 @@ namespace CraftSharp
     // See https://minecraft.fandom.com/wiki/Coordinates
     public static class CoordConvert
     {
-        // Swap X and Z axis...
-        public static Vector3 MC2Unity(float x, float y, float z) => new(z, y, x);
-
-        public static Vector3 MC2Unity(Location loc) => new((float)loc.Z, (float)loc.Y, (float)loc.X);
-
-        public static Vector3 MC2Unity(int x, int y, int z) => new(z, y, x);
-
-        public static Vector3 MC2Unity(Vector3 vec) => new(vec.z, vec.y, vec.x);
-
-        public static Location Unity2MC(Vector3 vec) => new(vec.z, vec.y, vec.x);
-
-        public static Vector3 ApproachOrigin(Vector3 original, float delta)
+        public static Vector3 GetPosDelta(Vector3Int originOffsetDelta)
         {
-            if (original.magnitude <= delta)
-                return Vector3.zero;
-            return original / original .magnitude * (original.magnitude - delta);
+            return -new Vector3(originOffsetDelta.x << 9, originOffsetDelta.y << 9, originOffsetDelta.z << 9);
         }
 
+        public static Vector3 MC2Unity(Vector3Int originOffset, float x, float y, float z)
+        {
+            return new(z - (originOffset.x << 9), y - (originOffset.y << 9), x - (originOffset.z << 9));
+        }
+
+        public static Vector3 MC2UnityDelta(Location loc)
+        {
+            return new((float) loc.Z, (float) loc.Y, (float) loc.X);
+        }
+
+        public static Vector3 MC2Unity(Vector3Int originOffset, Location loc)
+        {
+            return new((float) (loc.Z - (originOffset.x << 9)), (float) (loc.Y - (originOffset.y << 9)), (float) (loc.X - (originOffset.z << 9)));
+        }
+
+        public static Vector3 MC2Unity(Vector3Int originOffset, int x, int y, int z)
+        {
+            return new(z - (originOffset.x << 9), y - (originOffset.y << 9), x - (originOffset.z << 9));
+        }
+
+        public static Vector3 MC2Unity(Vector3Int originOffset, Vector3 vec)
+        {
+            return new(vec.z - (originOffset.x << 9), vec.y - (originOffset.y << 9), vec.x - (originOffset.z << 9));
+        }
+
+        public static Location Unity2MC(Vector3Int originOffset, Vector3 vec)
+        {
+            return new(vec.z + (originOffset.z << 9), vec.y + (originOffset.y << 9), vec.x + (originOffset.x << 9));
+        }
     }
 }
