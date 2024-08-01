@@ -15,7 +15,7 @@ namespace CraftSharp
         /// <summary>
         /// Get the Y index of the corresponding chunk in the world
         /// </summary>
-        public static int GetChunkY(this BlockLoc loc, int minY)
+        public static int GetChunkYIndex(this BlockLoc loc, int minY)
         {
             return (loc.Y - minY) >> 4;
         }

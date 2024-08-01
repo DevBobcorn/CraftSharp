@@ -336,17 +336,88 @@ namespace CraftSharp
             GetChunkColumn(blockLoc)?.SetBlockLight(blockLoc, newValue);
         }
 
-        public T[,,] GetValuesFromSection<T>(int minX, int minY, int minZ, int sizeX, int sizeY, int sizeZ, Func<Block, T> valueGetter)
+        /// <summary>
+        /// Set block light for a chunk
+        /// </summary>
+        public void SetBlockLightForChunk(int cx, int chunkYIndex, int cz, byte[,,] updatedLights)
         {
-            T[,,] result = new T[sizeX, sizeY, sizeZ];
+            // Get the current chunk column
+            var chunkColumn = this[cx, cz];
             
+            if (chunkColumn is not null) // Chunk column is not empty
+            {
+                var arr = chunkColumn.BlockLight;
+
+                // Go through all valid xz locations within this chunk column
+                for (int x = 0; x < 16; x++)
+                {
+                    for (int z = 0; z < 16; z++)
+                    {
+                        // Then go though all blocks in this line
+                        for (int y = 0; y < 16; y++)
+                        {
+                            // BlockLight array has a 1-chunk padding on each end
+                            arr[((y + ((chunkYIndex + 1) << 4)) << 8) | (z << 4) | x] = updatedLights[16 + x, 16 + y, 16 + z];
+                        }
+                    }
+                }
+            }
+        }
+
+        public void GetLightDataCacheForChunk(int chunkX, int chunkYIndex, int chunkZ, bool emissionOrBlockage, byte[,,] result)
+        {
+            // Min coordinate on each axis (inclusive)
+            int minX = (chunkX - 1) << 4, minZ = (chunkZ - 1) << 4;
+            // Min coordinate on each axis (inclusive)
+            // Max coordinate on each axis (exclusive)
+            int minCX = chunkX - 1;  // Min chunk X (inclusive)
+            int minCZ = chunkZ - 1;  // Min chunk Z (inclusive)
+            int maxCX = chunkX + 1;  // Max chunk X (inclusive)
+            int maxCZ = chunkZ + 1;  // Max chunk Z (inclusive)
+
+            for (int cx = minCX; cx <= maxCX; cx++)
+                for (int cz = minCZ; cz <= maxCZ; cz++)
+                {
+                    // Get the current chunk column
+                    var chunkColumn = this[cx, cz];
+                    
+                    if (chunkColumn is not null) // Chunk column is not empty
+                    {
+                        var maxBlocYIndex = chunkColumn.ColumnSize << 4;
+                        var arr = emissionOrBlockage ? chunkColumn.LightEmissionCache : chunkColumn.LightBlockageCache;
+
+                        // Go through all valid xz locations within this chunk column
+                        for (int blocX = cx << 4; blocX < (cx + 1) << 4; blocX++)
+                        {
+                            int resX = blocX - minX;
+                            for (int blocZ = cz << 4; blocZ < (cz + 1) << 4; blocZ++)
+                            {
+                                int resZ = blocZ - minZ;
+                                // Then go though all blocks in this line
+                                for (int resY = 0; resY < 48; resY++)
+                                {
+                                    int sy = (chunkYIndex << 4) + resY - 16;
+                                    if (sy < 0 || sy >= maxBlocYIndex) continue; // Make sure we're not sampling at invalid height
+
+                                    int index = (sy << 8) | ((resZ % 16) << 4) | (resX % 16);
+                                    result[resX, resY, resZ] = arr[index];
+                                }
+                            }
+                        }
+                    }
+                    /* Otherwise leave the values 0 */
+                }
+        }
+
+        public void GetValuesFromSection<T>(int minX, int minY, int minZ, int sizeX, int sizeY, int sizeZ, Func<Block, T> valueGetter, T[,,] result)
+        {
             // Min coordinate on each axis (inclusive)
             // Max coordinate on each axis (exclusive)
             int maxX = minX + sizeX, maxZ = minZ + sizeZ, maxY = minY + sizeY;
-            int minCX = minX >> 4;        // Min chunk X
-            int minCZ = minZ >> 4;        // Min chunk Z
-            int maxCX = (maxX - 1) >> 4;  // Max chunk X
-            int maxCZ = (maxZ - 1) >> 4;  // Max chunk Z
+            int minCX = minX >> 4;        // Min chunk X (inclusive)
+            int minCZ = minZ >> 4;        // Min chunk Z (inclusive)
+            int maxCX = (maxX - 1) >> 4;  // Max chunk X (inclusive)
+            int maxCZ = (maxZ - 1) >> 4;  // Max chunk Z (inclusive)
 
             for (int cx = minCX; cx <= maxCX; cx++)
                 for (int cz = minCZ; cz <= maxCZ; cz++)
@@ -396,8 +467,6 @@ namespace CraftSharp
                         }
                     }
                 }
-            
-            return result;
         }
 
         /// <summary>

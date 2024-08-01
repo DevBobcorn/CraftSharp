@@ -29,6 +29,11 @@ namespace CraftSharp
         public ConcurrentDictionary<int2, Queue<byte>> GetLightingCache();
 
         /// <summary>
+        /// Queue a chunk rebuild because of light being updated
+        /// </summary>
+        public void QueueChunkBuildAfterLightUpdate(int chunkX, int chunkY, int chunkZ);
+
+        /// <summary>
         /// Create an empty chunk column, invoked from network thread
         /// </summary>
         public void CreateEmptyChunkColumn(int chunkX, int chunkZ, int chunkColumnSize);

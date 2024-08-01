@@ -9,6 +9,9 @@ namespace CraftSharp
     /// </summary>
     public class ChunkColumn
     {
+        /// <summary>
+        /// How many chunks (including empty ones) are there in this column
+        /// </summary>
         public readonly int ColumnSize;
         public readonly int MinimumY;
 
@@ -19,18 +22,22 @@ namespace CraftSharp
         /// </summary>
         private readonly Chunk?[] chunks;
 
-        public bool ChunkIsEmpty(int chunkY)
+        public bool ChunkIsEmpty(int chunkYIndex)
         {
-            if (chunkY >= 0 && chunkY < ColumnSize)
-                return chunks[chunkY] is null;
+            if (chunkYIndex >= 0 && chunkYIndex < ColumnSize)
+                return chunks[chunkYIndex] is null;
             return true;
         }
 
         private readonly short[] biomes;
         private readonly byte[] skyLight, blockLight;
+        public byte[] SkyLight => skyLight;
+        public byte[] BlockLight => blockLight;
         private readonly bool[] aoCache;
         private readonly byte[] lightBlockageCache;
+        public byte[] LightBlockageCache => lightBlockageCache;
         private readonly byte[] lightEmissionCache;
+        public byte[] LightEmissionCache => lightEmissionCache;
 
         private bool lightingPresent = false;
         public bool LightingPresent => lightingPresent;
@@ -79,7 +86,7 @@ namespace CraftSharp
         {
             try
             {
-                return this[blockLoc.GetChunkY(MinimumY)];
+                return this[blockLoc.GetChunkYIndex(MinimumY)];
             }
             catch (IndexOutOfRangeException)
             {
@@ -248,26 +255,6 @@ namespace CraftSharp
                 return false;
 
             return aoCache[index];
-        }
-
-        public byte GetLightBlockage(BlockLoc blockLoc)
-        {
-            int index = ((blockLoc.Y - MinimumY) << 8) | (blockLoc.GetChunkBlockZ() << 4) | blockLoc.GetChunkBlockX();
-            
-            if (index < 0 || index >= lightBlockageCache.Length)
-                return 0;
-
-            return lightBlockageCache[index];
-        }
-
-        public byte GetLightEmission(BlockLoc blockLoc)
-        {
-            int index = ((blockLoc.Y - MinimumY) << 8) | (blockLoc.GetChunkBlockZ() << 4) | blockLoc.GetChunkBlockX();
-            
-            if (index < 0 || index >= lightEmissionCache.Length)
-                return 0;
-
-            return lightEmissionCache[index];
         }
     }
 }

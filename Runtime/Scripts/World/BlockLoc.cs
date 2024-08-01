@@ -187,14 +187,19 @@ namespace CraftSharp
             return new Location(this.X + 0.5F, this.Y + 0.5F, this.Z + 0.5F);
         }
 
-        public double DistanceTo(BlockLoc loc)
+        public double DistanceTo(BlockLoc blockLoc)
         {
-            return Math.Sqrt(Math.Pow(this.X - loc.X, 2) + Math.Pow(this.Y - loc.Y, 2) + Math.Pow(this.Z - loc.Z, 2));
+            return Math.Sqrt(Math.Pow(this.X - blockLoc.X, 2) + Math.Pow(this.Y - blockLoc.Y, 2) + Math.Pow(this.Z - blockLoc.Z, 2));
         }
 
-        public double SqrDistanceTo(BlockLoc loc)
+        public double SqrDistanceTo(BlockLoc blockLoc)
         {
-            return Math.Pow(this.X - loc.X, 2) + Math.Pow(this.Y - loc.Y, 2) + Math.Pow(this.Z - loc.Z, 2);
+            return Math.Pow(this.X - blockLoc.X, 2) + Math.Pow(this.Y - blockLoc.Y, 2) + Math.Pow(this.Z - blockLoc.Z, 2);
+        }
+
+        public int ManhattanDistanceTo(BlockLoc blockLoc)
+        {
+            return Math.Abs(this.X - blockLoc.X) + Math.Abs(this.Y - blockLoc.Y) + Math.Abs(this.Z - blockLoc.Z);
         }
 
         public BlockLoc Up()
