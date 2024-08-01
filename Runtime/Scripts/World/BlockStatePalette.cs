@@ -353,9 +353,10 @@ namespace CraftSharp
                             props.Add(prop.Key, prop.Value.StringValue);
 
                             // Special proc for waterlogged property...
-                            if (prop.Key == "waterlogged" && prop.Value.StringValue == "true")
-                                inWater = true;
-
+                            if (prop.Key == "waterlogged")
+                            {
+                                inWater = prop.Value.StringValue == "true";
+                            }
                         }
 
                         statesTable[stateId] = new(blockId, props)
