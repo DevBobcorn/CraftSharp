@@ -74,6 +74,42 @@ namespace CraftSharp
             return Array.Empty<int>();
         }
 
+        /// <summary>
+        /// Get one stateId from a given string, this string is expected to be complete and valid in most cases.
+        /// </summary>
+        public int GetStateIdFromString(string str, int defaultValue = UNKNOWN_NUM_ID)
+        {
+            var parts = str.Trim().Split('[');
+
+            if (parts.Length == 1) // No predicate specified
+            {
+                var blockId = ResourceLocation.FromString(parts[0]);
+
+                if (TryGetDefaultNumId(blockId, out int stateId))
+                {
+                    return stateId;
+                }
+            }
+            else if (parts.Length == 2 && parts[1].EndsWith(']')) // With predicates
+            {
+                var blockId = ResourceLocation.FromString(parts[0]);
+                var filter = parts[1][..^1]; // Remove trailing ']'
+                var predicate = BlockStatePredicate.FromString(filter);
+
+                var state = GetAll(blockId).FirstOrDefault(x => predicate.Check(x));
+
+                if (state is not null)
+                {
+                    return objectToNumId[state];
+                }
+            }
+
+            return defaultValue;
+        }
+
+        /// <summary>
+        /// Get an array of possible blockIds guessed from given incomplete id.
+        /// </summary>
         public ResourceLocation[] GetBlockIdCandidates(ResourceLocation incompleteBlockId)
         {
             return groupIdToGroup.Keys.Where(
