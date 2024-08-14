@@ -77,7 +77,7 @@ namespace CraftSharp
         /// <summary>
         /// Get one stateId from a given string, this string is expected to be complete and valid in most cases.
         /// </summary>
-        public int GetStateIdFromString(string str, int defaultValue = UNKNOWN_NUM_ID)
+        public int GetStateIdFromString(string str, int defaultOverride = UNKNOWN_NUM_ID)
         {
             var parts = str.Trim().Split('[');
 
@@ -97,14 +97,47 @@ namespace CraftSharp
                 var predicate = BlockStatePredicate.FromString(filter);
 
                 var state = GetAll(blockId).FirstOrDefault(x => predicate.Check(x));
-
                 if (state is not null)
                 {
                     return objectToNumId[state];
                 }
             }
 
-            return defaultValue;
+            return defaultOverride;
+        }
+
+        /// <summary>
+        /// Try to get one stateId from a given string, this string is expected to be complete and valid in most cases.
+        /// </summary>
+        public bool TryGetStateIdFromString(string str, out int stateId, int defaultOverride = UNKNOWN_NUM_ID)
+        {
+            var parts = str.Trim().Split('[');
+
+            if (parts.Length == 1) // No predicate specified
+            {
+                var blockId = ResourceLocation.FromString(parts[0]);
+
+                if (TryGetDefaultNumId(blockId, out stateId))
+                {
+                    return true;
+                }
+            }
+            else if (parts.Length == 2 && parts[1].EndsWith(']')) // With predicates
+            {
+                var blockId = ResourceLocation.FromString(parts[0]);
+                var filter = parts[1][..^1]; // Remove trailing ']'
+                var predicate = BlockStatePredicate.FromString(filter);
+
+                var state = GetAll(blockId).FirstOrDefault(x => predicate.Check(x));
+                if (state is not null)
+                {
+                    stateId = objectToNumId[state];
+                    return true;
+                }
+            }
+
+            stateId = defaultOverride;
+            return false;
         }
 
         /// <summary>
