@@ -5,15 +5,12 @@ namespace CraftSharp
     /// </summary>
     public record BlockEntityType
     {
-        public static readonly BlockEntityType DUMMY_BLOCK_ENTITY_TYPE = new(0, ResourceLocation.INVALID);
-
-        public int NumeralId { get; }
+        public static readonly BlockEntityType DUMMY_BLOCK_ENTITY_TYPE = new(ResourceLocation.INVALID);
 
         public ResourceLocation BlockEntityId { get; }
 
-        public BlockEntityType(int numId, ResourceLocation id)
+        public BlockEntityType(ResourceLocation id)
         {
-            NumeralId = numId;
             BlockEntityId = id;
         }
 

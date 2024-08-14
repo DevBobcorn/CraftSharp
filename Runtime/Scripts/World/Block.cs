@@ -43,14 +43,14 @@ namespace CraftSharp
         public BlockState State
         {
             get {
-                return BlockStatePalette.INSTANCE.FromId(StateId);
+                return BlockStatePalette.INSTANCE.GetByNumId(StateId);
             }
         }
 
         public ResourceLocation BlockId
         {
             get {
-                return BlockStatePalette.INSTANCE.GetBlock(StateId);
+                return BlockStatePalette.INSTANCE.GetGroupIdByNumId(StateId);
             }
         }
 

@@ -3,7 +3,7 @@ namespace CraftSharp
     public struct ResourceLocation
     {
         private const string DEFAULT_NAMESPACE = "minecraft";
-        public static readonly ResourceLocation INVALID = new ResourceLocation(DEFAULT_NAMESPACE, "<missingno>");
+        public static readonly ResourceLocation INVALID = new(DEFAULT_NAMESPACE, "<missingno>");
 
         public readonly string Namespace;
         public readonly string Path;

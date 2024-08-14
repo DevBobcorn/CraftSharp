@@ -9,6 +9,7 @@ namespace CraftSharp
         public static readonly ResourceLocation VOID_AIR_ID = new("void_air");
 
         public static readonly BlockState AIR_STATE = new(new ResourceLocation("air"));
+        public static readonly BlockState UNKNOWN   = new(ResourceLocation.INVALID);
 
         public readonly ResourceLocation BlockId; // Something like 'minecraft:grass_block'
         public readonly Dictionary<string, string> Properties;

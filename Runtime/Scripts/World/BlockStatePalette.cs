@@ -8,76 +8,48 @@ using Unity.Mathematics;
 
 namespace CraftSharp
 {
-    public class BlockStatePalette
+    public class BlockStatePalette : IdentifierGroupPalette<BlockState>
     {
         private static readonly char SP = Path.DirectorySeparatorChar;
 
         public static readonly BlockStatePalette INSTANCE = new();
+        public override string Name => "BlockState Palette";
+        protected override BlockState UnknownObject => BlockState.UNKNOWN;
 
-        public BlockState FromId(int stateId)
+        /// <summary>
+        /// Returns true if blockId is present AND results are not empty.
+        /// </summary>
+        public bool TryGetStateIdCandidatesFromString(string str, out int[] stateIds)
         {
-            return statesTable.GetValueOrDefault(stateId, BlockState.AIR_STATE);
-        }
-
-        public static int GetDefaultStateId(ResourceLocation blockId)
-        {
-            return INSTANCE.DefaultStateTable[blockId];
-        }
-
-        public static bool TryGetStateIdFromString(string state, out int stateId)
-        {
-            var parts = state.Trim().Split('[');
-
-            stateId = -1;
+            var parts = str.Trim().Split('[');
 
             if (parts.Length == 1) // No predicate specified
             {
                 var blockId = ResourceLocation.FromString(parts[0]);
 
-                if (INSTANCE.StateListTable.ContainsKey(blockId))
+                if (TryGetDefaultNumId(blockId, out int stateId))
                 {
-                    stateId = GetDefaultStateId(blockId);
+                    stateIds = new int[] { stateId };
                     return true;
                 }
-                else
-                {
-                    return false;
-                }
             }
             else if (parts.Length == 2 && parts[1].EndsWith(']')) // With predicates
             {
                 var blockId = ResourceLocation.FromString(parts[0]);
                 var filter = parts[1][..^1]; // Remove trailing ']'
+                var predicate = BlockStatePredicate.FromString(filter);
 
-                // StateListTable should have the same keys as DefaultStateTable
-                if (INSTANCE.StateListTable.ContainsKey(blockId))
-                {
-                    var predicate = BlockStatePredicate.FromString(filter);
-
-                    foreach (var sid in INSTANCE.StateListTable[blockId])
-                    {
-                        if (predicate.Check(INSTANCE.StatesTable[stateId]))
-                        {
-                            stateId = sid;
-                            return true;
-                        }
-                    }
-
-                    stateId = GetDefaultStateId(blockId);
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
+                return TryGetAllNumIds(blockId, out stateIds, (x) => predicate.Check(x));
             }
-            else
-            {
-                return false;
-            }
+
+            stateIds = Array.Empty<int>();
+            return false;
         }
 
-        public static int GetStateIdFromString(string state, int valueIfNotFound)
+        /// <summary>
+        /// Get block state numIds for input hint.
+        /// </summary>
+        public int[] GetStateIdCandidatesFromString(string state)
         {
             var parts = state.Trim().Split('[');
 
@@ -85,107 +57,30 @@ namespace CraftSharp
             {
                 var blockId = ResourceLocation.FromString(parts[0]);
 
-                if (INSTANCE.StateListTable.ContainsKey(blockId))
+                if (TryGetDefaultNumId(blockId, out int stateId))
                 {
-                    return GetDefaultStateId(blockId);
-                }
-                else
-                {
-                    return valueIfNotFound;
+                    return new int[] { stateId };
                 }
             }
             else if (parts.Length == 2 && parts[1].EndsWith(']')) // With predicates
             {
                 var blockId = ResourceLocation.FromString(parts[0]);
                 var filter = parts[1][..^1]; // Remove trailing ']'
+                var predicate = BlockStatePredicate.FromString(filter);
 
-                if (INSTANCE.StateListTable.ContainsKey(blockId)) // StateListTable should have the same keys as DefaultStateTable
-                {
-                    var predicate = BlockStatePredicate.FromString(filter);
-
-                    foreach (var stateId in INSTANCE.StateListTable[blockId])
-                    {
-                        if (predicate.Check(INSTANCE.StatesTable[stateId]))
-                            return stateId;
-                    }
-
-                    return GetDefaultStateId(blockId);
-                }
-                else
-                {
-                    return valueIfNotFound;
-                }
+                return GetAllNumIds(blockId, (x) => predicate.Check(x));
             }
-            else
-            {
-                return valueIfNotFound;
-            }
+            
+            return Array.Empty<int>();
         }
 
-        public static HashSet<int> GetStateIdsFromString(string state)
+        public ResourceLocation[] GetBlockIdCandidates(ResourceLocation incompleteBlockId)
         {
-            var parts = state.Trim().Split('[');
-
-            if (parts.Length == 1) // No predicate specified
-            {
-                var blockId = ResourceLocation.FromString(parts[0]);
-
-                if (INSTANCE.StateListTable.ContainsKey(blockId))
-                {
-                    return INSTANCE.StateListTable[blockId];
-                }
-                else
-                {
-                    return new HashSet<int>();
-                }
-            }
-            else if (parts.Length == 2 && parts[1].EndsWith(']')) // With predicates
-            {
-                var blockId = ResourceLocation.FromString(parts[0]);
-                var filter = parts[1][..^1]; // Remove trailing ']'
-
-                // StateListTable should have the same keys as DefaultStateTable
-                if (INSTANCE.StateListTable.ContainsKey(blockId))
-                {
-                    var predicate = BlockStatePredicate.FromString(filter);
-
-                    return INSTANCE.StateListTable[blockId].Where(x =>
-                            predicate.Check(INSTANCE.StatesTable[x]))
-                                    .ToHashSet();
-                }
-                else
-                {
-                    return new HashSet<int>();
-                }
-            }
-            else
-            {
-                return new HashSet<int>();
-            }
+            return groupIdToGroup.Keys.Where(
+                    x => x.Namespace == incompleteBlockId.Namespace &&
+                            x.Path.StartsWith(incompleteBlockId.Path)).Take(3).ToArray();
         }
-
-        public ResourceLocation GetBlock(int stateId)
-        {
-            return blocksTable.GetValueOrDefault(stateId, BlockState.AIR_ID);
-        }
-
-        public HashSet<int> GetStatesOfBlock(ResourceLocation blockId)
-        {
-            return stateListTable.GetValueOrDefault(blockId, new HashSet<int>());
-        }
-
-        private readonly Dictionary<ResourceLocation, HashSet<int>> stateListTable = new Dictionary<ResourceLocation, HashSet<int>>();
-        public Dictionary<ResourceLocation, HashSet<int>> StateListTable { get { return stateListTable; } }
-
-        private readonly Dictionary<ResourceLocation, int> defaultStateTable = new Dictionary<ResourceLocation, int>();
-        public Dictionary<ResourceLocation, int> DefaultStateTable { get { return defaultStateTable; } }
-
-        private readonly Dictionary<int, ResourceLocation> blocksTable = new Dictionary<int, ResourceLocation>();
-        public Dictionary<int, ResourceLocation> BlocksTable { get { return blocksTable; } }
-
-        private readonly Dictionary<int, BlockState> statesTable = new Dictionary<int, BlockState>();
-        public Dictionary<int, BlockState> StatesTable { get { return statesTable; } }
-
+        
         public readonly Dictionary<ResourceLocation, RenderType> RenderTypeTable = new();
 
         private readonly Dictionary<int, Func<World, BlockLoc, BlockState, float3>> blockColorRules = new();
@@ -203,9 +98,9 @@ namespace CraftSharp
         {
             Dictionary<string, HashSet<string>> result = new();
 
-            foreach (var stateId in stateListTable[blockId]) // For each possible state of this block
+            foreach (var stateId in GetAllNumIds(blockId)) // For each possible state of this block
             {
-                foreach (var pair in statesTable[stateId].Properties) // For each property in this state
+                foreach (var pair in numIdToObject[stateId].Properties) // For each property in this state
                 {
                     if (!result.ContainsKey(pair.Key))
                     {
@@ -222,31 +117,26 @@ namespace CraftSharp
         public (int, BlockState) GetBlockStateWithProperty(int sourceId, BlockState source, string key, string value)
         {
             var blockId = source.BlockId;
-            // Copy properties from source blockstate, with the
-            // property of specified key set to given value
-            var props = new Dictionary<string, string>(source.Properties)
-            {
-                [key] = value
-            };
-
+            // Copy properties from source blockstate, with the property of given key set to given value
+            var props = new Dictionary<string, string>(source.Properties) { [key] = value };
             var predicate = new BlockStatePredicate(props);
 
-            foreach (var stateId in stateListTable[blockId]) // For each blockstate of this block
+            foreach (var stateId in GetAllNumIds(blockId)) // For each blockstate of this block
             {
-                if (predicate.Check(statesTable[stateId]))
+                if (predicate.Check(numIdToObject[stateId]))
                 {
-                    return (stateId, statesTable[stateId]);
+                    return (stateId, numIdToObject[stateId]);
                 }
             }
 
             return (sourceId, source);
         }
 
-        public static ResourceLocation[] GetBlockIdCandidates(ResourceLocation incompleteBlockId)
+        protected override void ClearEntries()
         {
-            return INSTANCE.StateListTable.Keys.Where(
-                    x => x.Namespace == incompleteBlockId.Namespace &&
-                            x.Path.StartsWith(incompleteBlockId.Path)).Take(3).ToArray();
+            base.ClearEntries();
+            blockColorRules.Clear();
+            RenderTypeTable.Clear();
         }
 
         /// <summary>
@@ -257,14 +147,7 @@ namespace CraftSharp
         public void PrepareData(string dataVersion, DataLoadFlag flag)
         {
             // Clean up first...
-            statesTable.Clear();
-            blocksTable.Clear();
-            stateListTable.Clear();
-            defaultStateTable.Clear();
-            blockColorRules.Clear();
-            RenderTypeTable.Clear();
-
-            HashSet<int> knownStates = new HashSet<int>();
+            ClearEntries();
 
             string statesPath = PathHelper.GetExtraDataFile($"blocks{SP}blocks-{dataVersion}.json");
             string listsPath  = PathHelper.GetExtraDataFile("block_lists.json");
@@ -316,28 +199,18 @@ namespace CraftSharp
             foreach (KeyValuePair<string, Json.JSONData> item in palette.Properties)
             {
                 ResourceLocation blockId = ResourceLocation.FromString(item.Key);
-
-                if (stateListTable.ContainsKey(blockId))
-                    throw new InvalidDataException($"Duplicate block id {blockId}!");
-                
-                stateListTable[blockId] = new HashSet<int>();
+                int defaultStateId = int.MaxValue;
+                var states = new Dictionary<int, BlockState>();
 
                 foreach (Json.JSONData state in item.Value.Properties["states"].DataArray)
                 {
                     int stateId = int.Parse(state.Properties["id"].StringValue);
 
-                    if (knownStates.Contains(stateId))
-                        throw new InvalidDataException($"Duplicate state id {stateId}!?");
-
-                    knownStates.Add(stateId);
-                    blocksTable[stateId] = blockId;
-                    stateListTable[blockId].Add(stateId);
-
                     if (state.Properties.ContainsKey("default"))
                     {
                         if (state.Properties["default"].StringValue.ToLower() == "true")
                         {
-                            defaultStateTable[blockId] = stateId;
+                            defaultStateId = stateId;
                         }
                     }
 
@@ -359,7 +232,7 @@ namespace CraftSharp
                             }
                         }
 
-                        statesTable[stateId] = new(blockId, props)
+                        states[stateId] = new(blockId, props)
                         {
                             NoOcclusion = noOcclusion.Contains(blockId),
                             NoCollision = noCollision.Contains(blockId),
@@ -371,7 +244,7 @@ namespace CraftSharp
                     }
                     else
                     {
-                        statesTable[stateId] = new(blockId)
+                        states[stateId] = new(blockId)
                         {
                             NoOcclusion = noOcclusion.Contains(blockId),
                             NoCollision = noCollision.Contains(blockId),
@@ -383,13 +256,18 @@ namespace CraftSharp
                     }
                 }
             
-                if (!defaultStateTable.ContainsKey(blockId)) // Default block state of this block is not specified
+                if (defaultStateId == int.MaxValue) // Default block state of this block is not specified
                 {
-                    var firstStateId = stateListTable[blockId].First();
-                    defaultStateTable[blockId] = firstStateId;
+                    var firstStateId = states.First().Key;
+                    defaultStateId = firstStateId;
                     Debug.LogWarning($"Default blockstate of {blockId} is not specified, using first state ({firstStateId})");
                 }
+
+                AddEntry(blockId, defaultStateId, states);
             }
+
+            // Freeze after block and block states are loaded
+            FreezeEntries();
 
             //Debug.Log($"{statesTable.Count} block states loaded.");
 
@@ -419,9 +297,9 @@ namespace CraftSharp
                     {
                         var blockId = ResourceLocation.FromString(block.StringValue);
 
-                        if (stateListTable.ContainsKey(blockId))
+                        if (TryGetAllNumIds(blockId, out int[] stateIds))
                         {
-                            foreach (var stateId in stateListTable[blockId])
+                            foreach (var stateId in stateIds)
                             {
                                 if (!blockColorRules.TryAdd(stateId, ruleFunc))
                                     Debug.LogWarning($"Failed to apply dynamic color rules to {blockId} ({stateId})!");
@@ -438,13 +316,12 @@ namespace CraftSharp
                 foreach (var fixedRule in colorRules.Properties["fixed"].Properties)
                 {
                     var blockId = ResourceLocation.FromString(fixedRule.Key);
+                    var fixedColor = VectorUtil.Json2Float3(fixedRule.Value) / 255F;
+                    float3 ruleFunc(World world, BlockLoc loc, BlockState state) => fixedColor;
 
-                    if (stateListTable.ContainsKey(blockId))
+                    if (TryGetAllNumIds(blockId, out int[] stateIds))
                     {
-                        var fixedColor = VectorUtil.Json2Float3(fixedRule.Value) / 255F;
-                        Func<World, BlockLoc, BlockState, float3> ruleFunc = (world, loc, state) => fixedColor;
-
-                        foreach (var stateId in stateListTable[blockId])
+                        foreach (var stateId in stateIds)
                         {
                             if (!blockColorRules.TryAdd(stateId, ruleFunc))
                                 Debug.LogWarning($"Failed to apply fixed color rules to {blockId} ({stateId})!");
@@ -461,7 +338,7 @@ namespace CraftSharp
                 var renderTypeText = File.ReadAllText(renderTypePath, Encoding.UTF8);
                 var renderTypes = Json.ParseJson(renderTypeText);
 
-                var allBlockIds = stateListTable.Keys.ToHashSet();
+                var allBlockIds = groupIdToGroup.Keys.ToHashSet();
 
                 foreach (var pair in renderTypes.Properties)
                 {
@@ -512,10 +389,10 @@ namespace CraftSharp
                     byte lightBlockLevel = byte.Parse(pair.Key);
                     foreach (var blockStateElem in pair.Value.DataArray)
                     {
-                        var stateIds = GetStateIdsFromString(blockStateElem.StringValue);
+                        var stateIds = GetStateIdCandidatesFromString(blockStateElem.StringValue);
                         foreach (var stateId in stateIds)
                         {
-                            statesTable[stateId].LightBlockageLevel = lightBlockLevel;
+                            numIdToObject[stateId].LightBlockageLevel = lightBlockLevel;
                         }
                     }
                 }
@@ -525,10 +402,10 @@ namespace CraftSharp
                     byte lightEmissionLevel = byte.Parse(pair.Key);
                     foreach (var blockStateElem in pair.Value.DataArray)
                     {
-                        var stateIds = GetStateIdsFromString(blockStateElem.StringValue);
+                        var stateIds = GetStateIdCandidatesFromString(blockStateElem.StringValue);
                         foreach (var stateId in stateIds)
                         {
-                            statesTable[stateId].LightEmissionLevel = lightEmissionLevel;
+                            numIdToObject[stateId].LightEmissionLevel = lightEmissionLevel;
                         }
                     }
                 }
@@ -537,6 +414,10 @@ namespace CraftSharp
             {
                 Debug.LogWarning($"Failed to load block light: {e.Message}");
                 flag.Failed = true;
+            }
+            finally
+            {
+                FreezeEntries();
             }
 
             flag.Finished = true;

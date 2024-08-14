@@ -7,47 +7,15 @@ using UnityEngine;
 
 namespace CraftSharp
 {
-    public class ItemPalette
+    public class ItemPalette : IdentifierPalette<Item>
     {
         private static readonly char SP = Path.DirectorySeparatorChar;
         public static readonly ItemPalette INSTANCE = new();
+        public override string Name => "Item Palette";
+        protected override Item UnknownObject => Item.UNKNOWN;
 
-        private readonly Dictionary<int, Item> itemsTable = new();
-        public Dictionary<int, Item> ItemsTable { get { return itemsTable; } }
-
-        private readonly Dictionary<ResourceLocation, int> dictId = new();
         private readonly Dictionary<ResourceLocation, Func<ItemStack, float3[]>> itemColorRules = new();
 
-        /// <summary>
-        /// Get item from numeral id.
-        /// </summary>
-        public Item FromNumId(int id)
-        {
-            // Unknown item types may appear on Forge servers for custom items
-            if (!itemsTable.ContainsKey(id))
-                return Item.UNKNOWN;
-
-            return itemsTable[id];
-        }
-
-        /// <summary>
-        /// Get numeral id from item identifier.
-        /// </summary>
-        public int ToNumId(ResourceLocation identifier)
-        {
-            if (dictId.ContainsKey(identifier))
-                return dictId[identifier];
-            
-            throw new InvalidDataException($"Unknown Item {identifier}");
-        }
-
-        /// <summary>
-        /// Get item from item identifier.
-        /// </summary>
-        public Item FromId(ResourceLocation identifier)
-        {
-            return FromNumId(ToNumId(identifier));
-        }
 
         public bool IsTintable(ResourceLocation identifier)
         {
@@ -61,6 +29,12 @@ namespace CraftSharp
             return null;
         }
 
+        protected override void ClearEntries()
+        {
+            base.ClearEntries();
+            itemColorRules.Clear();
+        }
+
         /// <summary>
         /// Load item data from external files.
         /// </summary>
@@ -69,8 +43,7 @@ namespace CraftSharp
         public void PrepareData(string dataVersion, DataLoadFlag flag)
         {
             // Clear loaded stuff...
-            itemsTable.Clear();
-            dictId.Clear();
+            ClearEntries();
 
             string itemsPath = PathHelper.GetExtraDataFile($"items{SP}items-{dataVersion}.json");
             string listsPath  = PathHelper.GetExtraDataFile("item_lists.json");
@@ -84,78 +57,87 @@ namespace CraftSharp
                 return;
             }
 
-            // First read special item lists...
-            var lists = new Dictionary<string, HashSet<ResourceLocation>>
+            try
             {
-                { "non_stackable", new() },
-                { "stacklimit_16", new() },
-                { "uncommon", new() },
-                { "rare", new() },
-                { "epic", new() }
-            };
-
-            Json.JSONData spLists = Json.ParseJson(File.ReadAllText(listsPath, Encoding.UTF8));
-            foreach (var pair in lists)
-            {
-                if (spLists.Properties.ContainsKey(pair.Key))
+                // First read special item lists...
+                var lists = new Dictionary<string, HashSet<ResourceLocation>>
                 {
-                    foreach (var block in spLists.Properties[pair.Key].DataArray)
-                        pair.Value.Add(ResourceLocation.FromString(block.StringValue));
-                }
-            }
+                    { "non_stackable", new() },
+                    { "stacklimit_16", new() },
+                    { "uncommon", new() },
+                    { "rare", new() },
+                    { "epic", new() }
+                };
 
-            // References for later use
-            var rarityU = lists["uncommon"];
-            var rarityR = lists["rare"];
-            var rarityE = lists["epic"];
-            var nonStackables = lists["non_stackable"];
-            var stackLimit16s = lists["stacklimit_16"];
-
-            if (File.Exists(itemsPath))
-            {
-                var items = Json.ParseJson(File.ReadAllText(itemsPath, Encoding.UTF8));
-
-                foreach (var item in items.Properties)
+                Json.JSONData spLists = Json.ParseJson(File.ReadAllText(listsPath, Encoding.UTF8));
+                foreach (var pair in lists)
                 {
-                    if (int.TryParse(item.Key, out int numId))
+                    if (spLists.Properties.ContainsKey(pair.Key))
                     {
-                        var itemId = ResourceLocation.FromString(item.Value.StringValue);
-
-                        ItemRarity rarity = ItemRarity.Common;
-
-                        if (rarityE.Contains(itemId))
-                            rarity = ItemRarity.Epic;
-                        else if (rarityR.Contains(itemId))
-                            rarity = ItemRarity.Rare;
-                        else if (rarityU.Contains(itemId))
-                            rarity = ItemRarity.Uncommon;
-
-                        int stackLimit = Item.DEFAULT_STACK_LIMIT;
-
-                        if (nonStackables.Contains(itemId))
-                            stackLimit = 1;
-                        else if (stackLimit16s.Contains(itemId))
-                            stackLimit = 16;
-
-                        Item newItem = new(itemId)
-                        {
-                            Rarity = rarity,
-                            StackLimit = stackLimit
-                        };
-
-                        itemsTable.TryAdd(numId, newItem);
-                        dictId.TryAdd(itemId, numId);
-                        //UnityEngine.Debug.Log($"Loading item {numId} {item.Value.StringValue}");
+                        foreach (var block in spLists.Properties[pair.Key].DataArray)
+                            pair.Value.Add(ResourceLocation.FromString(block.StringValue));
                     }
                 }
+
+                // References for later use
+                var rarityU = lists["uncommon"];
+                var rarityR = lists["rare"];
+                var rarityE = lists["epic"];
+                var nonStackables = lists["non_stackable"];
+                var stackLimit16s = lists["stacklimit_16"];
+
+                if (File.Exists(itemsPath))
+                {
+                    var items = Json.ParseJson(File.ReadAllText(itemsPath, Encoding.UTF8));
+
+                    foreach (var item in items.Properties)
+                    {
+                        if (int.TryParse(item.Key, out int numId))
+                        {
+                            var itemId = ResourceLocation.FromString(item.Value.StringValue);
+
+                            ItemRarity rarity = ItemRarity.Common;
+
+                            if (rarityE.Contains(itemId))
+                                rarity = ItemRarity.Epic;
+                            else if (rarityR.Contains(itemId))
+                                rarity = ItemRarity.Rare;
+                            else if (rarityU.Contains(itemId))
+                                rarity = ItemRarity.Uncommon;
+
+                            int stackLimit = Item.DEFAULT_STACK_LIMIT;
+
+                            if (nonStackables.Contains(itemId))
+                                stackLimit = 1;
+                            else if (stackLimit16s.Contains(itemId))
+                                stackLimit = 16;
+
+                            Item newItem = new(itemId)
+                            {
+                                Rarity = rarity,
+                                StackLimit = stackLimit
+                            };
+
+                            AddEntry(itemId, numId, newItem);
+                        }
+                    }
+                }
+
+                // Hardcoded placeholder types for internal and network use
+                AddDirectionalEntry(Item.UNKNOWN.ItemId, -2, Item.UNKNOWN);
+                AddDirectionalEntry(Item.NULL.ItemId,    -1, Item.NULL);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"Error loading items: {e.Message}");
+                flag.Failed = true;
+            }
+            finally
+            {
+                FreezeEntries();
             }
 
-            // Hardcoded placeholder types for internal and network use
-            dictId[Item.UNKNOWN.ItemId] = -2;
-            dictId[Item.NULL.ItemId] = -1;
-
             // Load item color rules...
-            itemColorRules.Clear();
             Json.JSONData colorRules = Json.ParseJson(File.ReadAllText(colorsPath, Encoding.UTF8));
 
             if (colorRules.Properties.ContainsKey("fixed"))
@@ -164,10 +146,8 @@ namespace CraftSharp
                 {
                     var itemId = ResourceLocation.FromString(fixedRule.Key);
 
-                    if (dictId.ContainsKey(itemId))
+                    if (idToNumId.TryGetValue(itemId, out int numId))
                     {
-                        var numId = dictId[itemId];
-
                         var fixedColor = VectorUtil.Json2Float3(fixedRule.Value) / 255F;
                         float3[] ruleFunc(ItemStack itemStack) => new float3[] { fixedColor };
 
@@ -189,10 +169,8 @@ namespace CraftSharp
                 {
                     var itemId = ResourceLocation.FromString(fixedRule.Key);
 
-                    if (dictId.ContainsKey(itemId))
+                    if (idToNumId.TryGetValue(itemId, out int numId))
                     {
-                        var numId = dictId[itemId];
-
                         var colorList = fixedRule.Value.DataArray.ToArray();
                         var fixedColors = new float3[colorList.Length];
 
@@ -202,8 +180,9 @@ namespace CraftSharp
                         float3[] ruleFunc(ItemStack itemStack) => fixedColors;
 
                         if (!itemColorRules.TryAdd(itemId, ruleFunc))
+                        {
                             Debug.LogWarning($"Failed to apply fixed multi-color rules to {itemId} ({numId})!");
-                        
+                        }
                     }
                     else
                     {
