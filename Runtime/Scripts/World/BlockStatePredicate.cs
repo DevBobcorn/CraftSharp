@@ -17,7 +17,7 @@ namespace CraftSharp
 
         public static BlockStatePredicate FromString(string source)
         {
-            if (source == string.Empty)
+            if (source == string.Empty || source == "normal")
                 return EMPTY;
             
             var conditions = new Dictionary<string, string>();
