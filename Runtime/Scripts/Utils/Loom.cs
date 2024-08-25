@@ -164,16 +164,21 @@ namespace CraftSharp
 
         void LateUpdate()
         {
-            while (Time.realtimeSinceStartup - _currentFrameStart < MAX_FRAMETIME && _minorActions.Count > 0)
+            if (_minorActions.Count > 0)
             {
-                Action a;
-
-                lock (_minorActions)
+                // Make sure at least one minor action is performed so that they don't get stuck forever
+                do
                 {
-                    a = _minorActions.Dequeue();
-                }
+                    Action a;
 
-                a();
+                    lock (_minorActions)
+                    {
+                        a = _minorActions.Dequeue();
+                    }
+
+                    a();
+                }
+                while (Time.realtimeSinceStartup - _currentFrameStart < MAX_FRAMETIME && _minorActions.Count > 0);
             }
         }
     }
