@@ -1,3 +1,6 @@
+using System.Collections.Generic;
+using System.Linq;
+
 namespace CraftSharp
 {
     /// <summary>
@@ -124,16 +127,32 @@ namespace CraftSharp
         public static readonly ResourceLocation ZOMBIE_VILLAGER_ID = new("zombie_villager");
         public static readonly ResourceLocation ZOMBIFIED_PIGLIN_ID = new("zombified_piglin");
 
-        public static readonly EntityType DUMMY_ENTITY_TYPE = new(ResourceLocation.INVALID);
+        public static readonly EntityType DUMMY_ENTITY_TYPE = new(ResourceLocation.INVALID, 1F, 1F, true, new());
 
         public ResourceLocation EntityId { get; }
 
+        public float Width { get; }
+
+        public float Height { get; }
+
+        public bool SizeFixed { get; }
+
         public bool ContainsItem { get; }
 
-        public EntityType(ResourceLocation id, bool containsItem = false)
+        public readonly Dictionary<int, EntityMetaEntry> MetaEntries;
+        public readonly Dictionary<string, int> MetaSlotByName;
+        public readonly Dictionary<string, EntityMetaEntry> MetaEntriesByName;
+
+        public EntityType(ResourceLocation id, float w, float h, bool sf, Dictionary<int, EntityMetaEntry> e, bool c = false)
         {
             EntityId = id;
-            ContainsItem = containsItem;
+            Width = w;
+            Height = h;
+            SizeFixed = sf;
+            MetaEntries = e;
+            MetaSlotByName = e.ToDictionary(x => x.Value.Name, x => x.Key);
+            MetaEntriesByName = e.ToDictionary(x => x.Value.Name, x => x.Value);
+            ContainsItem = c;
         }
 
         public override string ToString()

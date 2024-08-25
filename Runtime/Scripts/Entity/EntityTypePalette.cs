@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text;
 using UnityEngine;
 
@@ -23,7 +25,7 @@ namespace CraftSharp
         {
             UnfreezeEntries();
 
-            AddEntry(identifier, numId, new(identifier));
+            AddEntry(identifier, numId, new(identifier, 1F, 1F, true, new()));
 
             FreezeEntries();
         }
@@ -44,9 +46,10 @@ namespace CraftSharp
             ClearEntries();
 
             var entityTypeListPath = PathHelper.GetExtraDataFile($"entities{SP}entity_types-{dataVersion}.json");
+            var entityDefPath = PathHelper.GetExtraDataFile($"entities{SP}entities-{dataVersion}.json");
             string listsPath  = PathHelper.GetExtraDataFile("entity_lists.json");
 
-            if (!File.Exists(entityTypeListPath) || !File.Exists(listsPath))
+            if (!File.Exists(entityTypeListPath) || !File.Exists(entityTypeListPath) || !File.Exists(listsPath))
             {
                 Debug.LogWarning("Entity data not complete!");
                 flag.Finished = true;
@@ -76,6 +79,7 @@ namespace CraftSharp
             try
             {
                 var entityTypeList = Json.ParseJson(File.ReadAllText(entityTypeListPath, Encoding.UTF8));
+                var entityDefs = Json.ParseJson(File.ReadAllText(entityDefPath, Encoding.UTF8));
 
                 foreach (var entityType in entityTypeList.Properties)
                 {
@@ -83,8 +87,24 @@ namespace CraftSharp
                     {
                         var entityTypeId = ResourceLocation.FromString(entityType.Value.StringValue);
 
+                        var entityDef = entityDefs.Properties[entityTypeId.ToString()];
+
+                        float w = float.Parse(entityDef.Properties["width"].StringValue,
+                                CultureInfo.InvariantCulture.NumberFormat);
+                        
+                        float h = float.Parse(entityDef.Properties["height"].StringValue,
+                                CultureInfo.InvariantCulture.NumberFormat);
+                        
+                        bool sf = bool.Parse(entityDef.Properties["size_fixed"].StringValue);
+
+                        // Read entity meta entries
+                        var metaEntries = entityDef.Properties["metadata"].Properties.
+                                ToDictionary(x => int.Parse(x.Key),
+                                        x => new EntityMetaEntry(x.Value.Properties["name"].StringValue,
+                                                EntityMetaDataTypeUtil.FromSerializedTypeName(x.Value.Properties["data_type"].StringValue)));
+
                         AddEntry(entityTypeId, numId, new EntityType(
-                                entityTypeId, containsItem.Contains(entityTypeId)));
+                                entityTypeId, w, h, sf, metaEntries, containsItem.Contains(entityTypeId)));
                     }
                     else
                     {
