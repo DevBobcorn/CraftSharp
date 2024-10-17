@@ -26,8 +26,10 @@ namespace CraftSharp
         /// <summary>
         /// The dimension info of the world
         /// </summary>
-        protected static Dimension curDimension = new();
-        protected static readonly Dictionary<string, Dimension> dimensionList = new();
+        protected static DimensionType curDimensionType = new();
+        protected static ResourceLocation curDimensionId = ResourceLocation.INVALID;
+        protected static readonly Dictionary<ResourceLocation, DimensionType> dimensionTypeList = new();
+        protected static readonly HashSet<ResourceLocation> knownDimensions = new();
 
         public static bool BiomesInitialized { get; private set; } = false;
 
@@ -37,49 +39,78 @@ namespace CraftSharp
         public static readonly Dictionary<int, Biome> BiomeList = new();
 
         /// <summary>
-        /// Storage of all dimensional data - 1.19.1 and above
+        /// Storage of all dimensional type data - 1.19.1 and above
         /// </summary>
         /// <param name="registryCodec">Registry Codec nbt data</param>
-        public static void StoreDimensionList(Dictionary<string, object> registryCodec)
+        public static void StoreDimensionTypeList(Dictionary<string, object> registryCodec)
         {
-            var dimensionListNbt = (object[])(((Dictionary<string, object>)registryCodec["minecraft:dimension_type"])["value"]);
-            foreach (Dictionary<string, object> dimensionNbt in dimensionListNbt)
+            if (registryCodec.ContainsKey("minecraft:dimension_type"))
             {
-                string dimensionName = (string)dimensionNbt["name"];
-                Dictionary<string, object> dimensionType = (Dictionary<string, object>)dimensionNbt["element"];
-                StoreOneDimension(dimensionName, dimensionType);
+                var dimensionListNbt = (object[])(((Dictionary<string, object>)
+                        registryCodec["minecraft:dimension_type"])["value"]);
+
+                foreach (Dictionary<string, object> dimensionTypeNbt in dimensionListNbt)
+                {
+                    string dimensionName = (string) dimensionTypeNbt["name"];
+                    var dimensionId = ResourceLocation.FromString(dimensionName);
+                    Dictionary<string, object> dimensionType = (Dictionary<string, object>)dimensionTypeNbt["element"];
+                    StoreOneDimensionType(dimensionId, dimensionType);
+                }
+            }
+            else
+            {
+                // TODO: Initialize from some dummy data
+                Debug.LogWarning("Dimension definitions not received, using dummy data");
+
+                StoreOneDimensionType(new ResourceLocation("overworld"), new());
             }
         }
 
         /// <summary>
-        /// Store one dimension - Directly used in 1.16.2 to 1.18.2
+        /// Store one dimension type - Directly used in 1.16.2 to 1.18.2
         /// </summary>
-        /// <param name="dimensionName">Dimension name</param>
+        /// <param name="dimensionTypeId">Dimension name</param>
         /// <param name="dimensionType">Dimension Type nbt data</param>
-        public static void StoreOneDimension(string dimensionName, Dictionary<string, object> dimensionType)
+        public static void StoreOneDimensionType(ResourceLocation dimensionTypeId, Dictionary<string, object> dimensionType)
         {
-            if (dimensionList.ContainsKey(dimensionName))
-                dimensionList.Remove(dimensionName);
-            dimensionList.Add(dimensionName, new Dimension(dimensionName, dimensionType));
+            if (dimensionTypeList.ContainsKey(dimensionTypeId))
+                dimensionTypeList.Remove(dimensionTypeId);
+            dimensionTypeList.Add(dimensionTypeId, new DimensionType(dimensionTypeId, dimensionType));
         }
 
         /// <summary>
-        /// Set current dimension - 1.16 and above
+        /// Set current dimension type - 1.16 and above
         /// </summary>
-        /// <param name="name">	The name of the dimension type</param>
+        /// <param name="dimensionTypeId">	The id of the dimension type</param>
         /// <param name="nbt">The dimension type (NBT Tag Compound)</param>
-        public static void SetDimension(string name)
+        public static void SetDimensionType(ResourceLocation dimensionTypeId)
         {
-            curDimension = dimensionList[name]; // Should not fail
+            curDimensionType = dimensionTypeList[dimensionTypeId]; // Should not fail
         }
 
         /// <summary>
-        /// Get current dimension
+        /// Set current dimension id
+        /// </summary>
+        public static void SetDimensionId(ResourceLocation dimensionId)
+        {
+            curDimensionId = dimensionId;
+        }
+
+        /// <summary>
+        /// Get current dimension type
         /// </summary>
         /// <returns>Current dimension</returns>
-        public static Dimension GetDimension()
+        public static DimensionType GetDimensionType()
         {
-            return curDimension;
+            return curDimensionType;
+        }
+
+        /// <summary>
+        /// Get current dimension id
+        /// </summary>
+        public static ResourceLocation GetDimensionId()
+        {
+            return curDimensionId;
         }
 
         public static Color32[] FoliageColormapPixels { get; set; } = { };
@@ -93,16 +124,25 @@ namespace CraftSharp
         /// <param name="registryCodec">Registry Codec nbt data</param>
         public static void StoreBiomeList(Dictionary<string, object> registryCodec)
         {
-            var biomeListNbt = (object[])((Dictionary<string, object>)registryCodec["minecraft:worldgen/biome"])["value"];
-
-            if (FoliageColormapPixels.Length == 0 || GrassColormapPixels.Length == 0)
+            if (registryCodec.ContainsKey("minecraft:dimension_type"))
             {
-                Debug.LogWarning("Biome colormap is not available. Color lookup will not be performed.");
+                var biomeListNbt = (object[])((Dictionary<string, object>)
+                        registryCodec["minecraft:worldgen/biome"])["value"];
+
+                if (FoliageColormapPixels.Length == 0 || GrassColormapPixels.Length == 0)
+                {
+                    Debug.LogWarning("Biome colormap is not available. Color lookup will not be performed.");
+                }
+
+                foreach (Dictionary<string, object> biomeNbt in biomeListNbt)
+                {
+                    StoreOneBiome(biomeNbt);
+                }
             }
-
-            foreach (Dictionary<string, object> biomeNbt in biomeListNbt)
+            else
             {
-                StoreOneBiome(biomeNbt);
+                // TODO: Initialize from some dummy data
+                Debug.LogWarning("Biome definitions not received, using dummy data");
             }
 
             BiomesInitialized = true;
@@ -486,9 +526,9 @@ namespace CraftSharp
             int maxCZ = chunkZ + 1;  // Max chunk Z
 
             // Max coordinate on each axis (inclusive)
-            int minX = (chunkX << 4) - 1,              minZ = (chunkZ << 4) - 1,              minY = (chunkYIndex << 4) + GetDimension().minY - 1;
+            int minX = (chunkX << 4) - 1,              minZ = (chunkZ << 4) - 1,              minY = (chunkYIndex << 4) + GetDimensionType().minY - 1;
             // Max coordinate on each axis (exclusive)
-            int maxX = (chunkX << 4) + Chunk.SIZE + 1, maxZ = (chunkZ << 4) + Chunk.SIZE + 1, maxY = (chunkYIndex << 4) + GetDimension().minY + Chunk.SIZE + 1;
+            int maxX = (chunkX << 4) + Chunk.SIZE + 1, maxZ = (chunkZ << 4) + Chunk.SIZE + 1, maxY = (chunkYIndex << 4) + GetDimensionType().minY + Chunk.SIZE + 1;
 
             for (int cx = minCX; cx <= maxCX; cx++)
                 for (int cz = minCZ; cz <= maxCZ; cz++)

@@ -7,12 +7,12 @@ namespace CraftSharp
     /// <summary>
     /// The dimension type, available after 1.16.2
     /// </summary>
-    public class Dimension
+    public class DimensionType
     {
         /// <summary>
-        /// The name of the dimension type (for example, "minecraft:overworld").
+        /// The id of the dimension type (for example, "minecraft:overworld").
         /// </summary>
-        public readonly string Name;
+        public readonly ResourceLocation Id;
 
         /// <summary>
         /// Whether piglins shake and transform to zombified piglins.
@@ -115,9 +115,9 @@ namespace CraftSharp
         /// <summary>
         /// Default value used in version below 1.17
         /// </summary>
-        public Dimension()
+        public DimensionType()
         {
-            this.Name = "minecraft:overworld";
+            this.Id = new ResourceLocation("overworld");
         }
 
         /// <summary>
@@ -125,14 +125,14 @@ namespace CraftSharp
         /// </summary>
         /// <param name="name">Dimension name</param>
         /// <param name="nbt">The dimension type (NBT Tag Compound)</param>
-        public Dimension(string name, Dictionary<string, object> nbt)
+        public DimensionType(ResourceLocation id, Dictionary<string, object> nbt)
         {
-            if (name == null)
-                throw new ArgumentNullException("name");
+            if (id == null)
+                throw new ArgumentNullException("id");
             if (nbt == null)
                 throw new ArgumentNullException("nbt Data");
 
-            this.Name = name;
+            this.Id = id;
 
             if (nbt.ContainsKey("piglin_safe"))
                 this.piglinSafe = 1 == (byte)nbt["piglin_safe"];

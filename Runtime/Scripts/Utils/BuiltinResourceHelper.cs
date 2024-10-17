@@ -12,7 +12,7 @@ namespace CraftSharp
         private static readonly char SP = Path.DirectorySeparatorChar;
 
         /// <summary>
-        /// Name of the file containing currently present resource version.
+        /// Id of the file containing currently present resource version.
         /// </summary>
         public static string RES_VERSION_FILE_NAME = "RES_VERSION";
 

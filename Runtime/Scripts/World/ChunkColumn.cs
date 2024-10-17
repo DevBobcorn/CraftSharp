@@ -48,7 +48,7 @@ namespace CraftSharp
         public ChunkColumn(int size = 16)
         {
             ColumnSize = size;
-            MinimumY = World.GetDimension().minY;
+            MinimumY = World.GetDimensionType().minY;
 
             chunks = new Chunk?[size];
             biomes = new short[64 * size];
