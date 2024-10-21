@@ -4,73 +4,77 @@ namespace CraftSharp
 {
     public record BlockState
     {
-        public static readonly ResourceLocation AIR_ID      = new("air");
-        public static readonly ResourceLocation CAVE_AIR_ID = new("cave_air");
-        public static readonly ResourceLocation VOID_AIR_ID = new("void_air");
+        public static readonly ResourceLocation AIR_ID            = new("air");
+        public static readonly ResourceLocation CAVE_AIR_ID       = new("cave_air");
+        public static readonly ResourceLocation VOID_AIR_ID       = new("void_air");
+        public static readonly ResourceLocation STRUCTURE_VOID_ID = new("structure_void");
 
-        public static readonly BlockState AIR_STATE = new(new ResourceLocation("air"));
-        public static readonly BlockState UNKNOWN   = new(ResourceLocation.INVALID);
+        public static readonly ResourceLocation LIGHT_ID         = new("light");
+        public static readonly ResourceLocation BARRIER_ID       = new("barrier");
+
+        public static readonly ResourceLocation WATER_ID         = new("water"); // Block state & fluid state
+        public static readonly ResourceLocation FLOWING_WATER_ID = new("flowing_water"); // Fluid state only
+        public static readonly ResourceLocation LAVA_ID          = new("lava");  // Block state & fluid state
+        public static readonly ResourceLocation FLOWING_LAVA_ID  = new("flowing_lava");  // Fluid state only
+
+        public static readonly BlockState AIR_STATE = new(new ResourceLocation("air"), 0F, 0F, true, 0, true, true, 0, 0, null, new());
+        public static readonly BlockState UNKNOWN   = new(ResourceLocation.INVALID, 0F, 0F, true, 0, true, true, 0, 0, null, new());
+
+        public static readonly HashSet<ResourceLocation> NO_SOLID_MESH_IDS = new()
+        {
+            AIR_ID, CAVE_AIR_ID, VOID_AIR_ID, STRUCTURE_VOID_ID,
+            LIGHT_ID, BARRIER_ID, WATER_ID, LAVA_ID
+        };
 
         public readonly ResourceLocation BlockId; // Something like 'minecraft:grass_block'
         public readonly Dictionary<string, string> Properties;
 
-        public bool NoCollision = false;
-        public bool NoOcclusion = false;
-        public bool InWater = false;
-        public bool InLava  = false;
-        public bool InLiquid
-        {
-            get {
-                return InWater || InLava;
-            }
-        }
-        public bool LikeAir   = false;
+        public readonly float BlastResistance;
+        public readonly float Hardness;
+
+        public readonly bool NoSolidMesh;
+        public readonly int FullFaceMask;
+        public readonly bool NoCollision;
+        public readonly bool NoOcclusion;
+
         // A block can have full collider box even if it doesn't collide with player,
         // in this case the collider is used for raycast detection. (e.g. Tall Grass)
-        public bool FullCollider = false;
-        public bool FaceOcclusionSolid => FullCollider && !NoOcclusion;
-        public bool AmbientOcclusionSolid => FullCollider && !NoCollision;
+        public bool FullShape;
+        public bool MeshFaceOcclusionSolid => FullShape && !NoOcclusion;
+        public bool AmbientOcclusionSolid => FullShape && !NoCollision;
+
+        public readonly ResourceLocation? FluidStateId;
+        public bool InLiquid => FluidStateId is not null;
+        public bool InWater => FluidStateId == WATER_ID || FluidStateId == FLOWING_WATER_ID;
+        public bool InLava  => FluidStateId == LAVA_ID  || FluidStateId == FLOWING_LAVA_ID;
+
+        public float Friction;
+        public float JumpFactor;
+        public float SpeedFactor;
 
         public byte LightBlockageLevel = 0;
         public byte LightEmissionLevel = 0;
 
-        public static BlockState FromString(string state)
-        {
-            var props = new Dictionary<string, string>();
-
-            // Add namespace if absent...
-            if (!state.Contains(':'))
-                state = state.Insert(0, "minecraft:");
-            
-            // Assign block state property values
-            if (state.Contains('['))
-            {
-                string[] parts = state.Split('[', 2);
-                var blockId = ResourceLocation.FromString(parts[0]);
-                string[] propStrs = parts[1].Substring(0, parts[1].Length - 1).Split(',');
-                foreach (var prop in propStrs)
-                {
-                    string[] keyVal = prop.Split('=', 2);
-                    props.Add(keyVal[0], keyVal[1]);
-                }
-                return new BlockState(blockId, props);
-            }
-            else
-            {
-                // Simple, only a block id
-                return new BlockState(ResourceLocation.FromString(state), props);
-            }
-        }
-
-        public BlockState(ResourceLocation blockId)
+        public BlockState(ResourceLocation blockId, float blastResistance, float hardness, bool noSolidMesh,
+                int fullFaceMask, bool noCollision, bool noOcclusion, byte lightBlockage, byte lightEmission,
+                ResourceLocation? fluidStateId, Dictionary<string, string> props)
         {
             this.BlockId = blockId;
-            this.Properties = new Dictionary<string, string>();
-        }
 
-        public BlockState(ResourceLocation blockId, Dictionary<string, string> props)
-        {
-            this.BlockId = blockId;
+            this.BlastResistance = blastResistance;
+            this.Hardness = hardness;
+            this.NoSolidMesh = noSolidMesh;
+
+            this.FullFaceMask = fullFaceMask;
+            this.NoCollision = noCollision;
+            this.NoOcclusion = noOcclusion;
+            FullShape = (FullFaceMask & 0b111111) == 0b111111; // All lowest 6 bits are set
+
+            this.LightBlockageLevel = lightBlockage;
+            this.LightEmissionLevel = lightEmission;
+
+            this.FluidStateId = fluidStateId;
+
             this.Properties = props;
         }
 

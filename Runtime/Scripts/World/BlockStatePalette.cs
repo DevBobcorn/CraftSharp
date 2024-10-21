@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 using Unity.Mathematics;
+using System.Globalization;
 
 namespace CraftSharp
 {
@@ -218,14 +219,11 @@ namespace CraftSharp
             // Clean up first...
             ClearEntries();
 
-            string statesPath = PathHelper.GetExtraDataFile($"blocks{SP}blocks-{dataVersion}.json");
-            string listsPath  = PathHelper.GetExtraDataFile("block_lists.json");
+            string blocksPath = PathHelper.GetExtraDataFile($"blocks{SP}blocks-{dataVersion}.json");
             string colorsPath = PathHelper.GetExtraDataFile("block_colors.json");
             string renderTypePath = PathHelper.GetExtraDataFile("block_render_type.json");
-            string blockLightPath = PathHelper.GetExtraDataFile("block_light.json");
 
-            if (!File.Exists(statesPath) || !File.Exists(listsPath) || !File.Exists(colorsPath)
-                    || !File.Exists(renderTypePath) || !File.Exists(blockLightPath))
+            if (!File.Exists(blocksPath) || !File.Exists(colorsPath) || !File.Exists(renderTypePath))
             {
                 Debug.LogWarning("Block data not complete!");
                 flag.Finished = true;
@@ -233,177 +231,160 @@ namespace CraftSharp
                 return;
             }
 
-            // First read special block lists...
-            var lists = new Dictionary<string, HashSet<ResourceLocation>>
+            try
             {
-                { "no_occlusion", new() },
-                { "no_collision", new() },
-                { "water_blocks", new() },
-                { "always_fulls", new() },
-                { "empty_blocks", new() }
-            };
+                var blocks = Json.ParseJson(File.ReadAllText(blocksPath, Encoding.UTF8));
 
-            Json.JSONData spLists = Json.ParseJson(File.ReadAllText(listsPath, Encoding.UTF8));
-            foreach (var pair in lists)
-            {
-                if (spLists.Properties.ContainsKey(pair.Key))
+                foreach (var block in blocks.Properties)
                 {
-                    foreach (var block in spLists.Properties[pair.Key].DataArray)
-                        pair.Value.Add(ResourceLocation.FromString(block.StringValue));
-                }
-            }
+                    ResourceLocation blockId = ResourceLocation.FromString(block.Key);
+                    int defaultStateId = int.MaxValue;
+                    var states = new Dictionary<int, BlockState>();
 
-            // References for later use
-            ResourceLocation lavaId   = new("lava");
-            var noOcclusion = lists["no_occlusion"];
-            var noCollision = lists["no_collision"];
-            var waterBlocks = lists["water_blocks"];
-            var alwaysFulls = lists["always_fulls"];
-            var emptyBlocks = lists["empty_blocks"];
+                    // Properties shared by all state of this block
+                    float blastResistance = float.Parse(block.Value.Properties["blast_resistance"]
+                            .StringValue, CultureInfo.InvariantCulture);
+                    float friction = float.Parse(block.Value.Properties["friction"]
+                            .StringValue, CultureInfo.InvariantCulture);
+                    float jumpFactor = float.Parse(block.Value.Properties["jump_factor"]
+                            .StringValue, CultureInfo.InvariantCulture);
+                    float speedFactor = float.Parse(block.Value.Properties["speed_factor"]
+                            .StringValue, CultureInfo.InvariantCulture);
 
-            // Then read block states...
-            Json.JSONData palette = Json.ParseJson(File.ReadAllText(statesPath, Encoding.UTF8));
-            //Debug.Log("Reading block states from " + statesPath);
+                    bool noSolidMesh = BlockState.NO_SOLID_MESH_IDS.Contains(blockId);
 
-            foreach (KeyValuePair<string, Json.JSONData> item in palette.Properties)
-            {
-                ResourceLocation blockId = ResourceLocation.FromString(item.Key);
-                int defaultStateId = int.MaxValue;
-                var states = new Dictionary<int, BlockState>();
-
-                foreach (Json.JSONData state in item.Value.Properties["states"].DataArray)
-                {
-                    int stateId = int.Parse(state.Properties["id"].StringValue);
-
-                    if (state.Properties.ContainsKey("default"))
+                    foreach (Json.JSONData state in block.Value.Properties["states"].DataArray)
                     {
-                        if (state.Properties["default"].StringValue.ToLower() == "true")
+                        int stateId = int.Parse(state.Properties["id"].StringValue);
+
+                        if (state.Properties.ContainsKey("default"))
                         {
-                            defaultStateId = stateId;
-                        }
-                    }
-
-                    if (state.Properties.ContainsKey("properties"))
-                    {
-                        // This block state contains block properties
-                        var props = new Dictionary<string, string>();
-
-                        var inWater = waterBlocks.Contains(blockId);
-
-                        foreach (var prop in state.Properties["properties"].Properties)
-                        {
-                            props.Add(prop.Key, prop.Value.StringValue);
-
-                            // Special proc for waterlogged property...
-                            if (prop.Key == "waterlogged")
+                            if (bool.Parse(state.Properties["default"].StringValue))
                             {
-                                inWater = prop.Value.StringValue == "true";
+                                defaultStateId = stateId;
                             }
                         }
 
-                        states[stateId] = new(blockId, props)
+                        var props = new Dictionary<string, string>();
+
+                        if (state.Properties.ContainsKey("properties"))
                         {
-                            NoOcclusion = noOcclusion.Contains(blockId),
-                            NoCollision = noCollision.Contains(blockId),
-                            InWater = inWater,
-                            InLava  = blockId == lavaId,
-                            LikeAir = emptyBlocks.Contains(blockId),
-                            FullCollider = alwaysFulls.Contains(blockId)
+                            foreach (var prop in state.Properties["properties"].Properties)
+                            {
+                                props.Add(prop.Key, prop.Value.StringValue);
+                            }
+                        }
+
+                        float hardness = float.Parse(state.Properties["hardness"]
+                                .StringValue, CultureInfo.InvariantCulture);
+
+                        int fullFaces = int.Parse(state.Properties["full_faces"].StringValue);
+                        bool noCollision = bool.Parse(state.Properties["no_collision"].StringValue);
+                        bool noOcclusion = bool.Parse(state.Properties["no_occlusion"].StringValue);
+
+                        byte lightEmission = byte.Parse(state.Properties["light_emission"].StringValue);
+                        byte lightBlockage = byte.Parse(state.Properties["light_blockage"].StringValue);
+
+                        ResourceLocation? fluidStateId = null;
+
+                        if (state.Properties.TryGetValue("fluid_state", out Json.JSONData fluidState))
+                        {
+                            fluidStateId = ResourceLocation.FromString(fluidState.StringValue);
+                        }
+
+                        states[stateId] = new BlockState(blockId, blastResistance, hardness, noSolidMesh, fullFaces,
+                                noCollision, noOcclusion, lightBlockage, lightEmission, fluidStateId, props)
+                        {
+                            // Assign non-readonly fields
+                            Friction = friction,
+                            JumpFactor = jumpFactor,
+                            SpeedFactor = speedFactor,
                         };
                     }
-                    else
-                    {
-                        states[stateId] = new(blockId)
-                        {
-                            NoOcclusion = noOcclusion.Contains(blockId),
-                            NoCollision = noCollision.Contains(blockId),
-                            InWater = waterBlocks.Contains(blockId),
-                            InLava  = blockId == lavaId,
-                            LikeAir = emptyBlocks.Contains(blockId),
-                            FullCollider = alwaysFulls.Contains(blockId)
-                        };
-                    }
-                }
             
-                if (defaultStateId == int.MaxValue) // Default block state of this block is not specified
-                {
-                    var firstStateId = states.First().Key;
-                    defaultStateId = firstStateId;
-                    Debug.LogWarning($"Default blockstate of {blockId} is not specified, using first state ({firstStateId})");
+                    if (defaultStateId == int.MaxValue) // Default block state of this block is not specified
+                    {
+                        var firstStateId = states.First().Key;
+                        defaultStateId = firstStateId;
+                        Debug.LogWarning($"Default blockstate of {blockId} is not specified, using first state ({firstStateId})");
+                    }
+
+                    AddEntry(blockId, defaultStateId, states);
                 }
 
-                AddEntry(blockId, defaultStateId, states);
-            }
+                //Debug.Log($"{numIdToObject.Count} block states loaded.");
 
-            // Freeze after block and block states are loaded
-            FreezeEntries();
+                // Load block color rules...
+                Json.JSONData colorRules = Json.ParseJson(File.ReadAllText(colorsPath, Encoding.UTF8));
 
-            //Debug.Log($"{statesTable.Count} block states loaded.");
-
-            // Load block color rules...
-            Json.JSONData colorRules = Json.ParseJson(File.ReadAllText(colorsPath, Encoding.UTF8));
-
-            if (colorRules.Properties.ContainsKey("dynamic"))
-            {
-                foreach (var dynamicRule in colorRules.Properties["dynamic"].Properties)
+                if (colorRules.Properties.ContainsKey("dynamic"))
                 {
-                    var ruleName = dynamicRule.Key;
-
-                    Func<World, BlockLoc, BlockState, float3> ruleFunc = ruleName switch
+                    foreach (var dynamicRule in colorRules.Properties["dynamic"].Properties)
                     {
-                        "foliage"  => (world, loc, state) => world.GetFoliageColor(loc),
-                        "grass"    => (world, loc, state) => world.GetGrassColor(loc),
-                        "redstone" => (world, loc, state) => {
-                            if (state.Properties.ContainsKey("power"))
-                                return new(int.Parse(state.Properties["power"]) / 16F, 0F, 0F);
-                            return float3.zero;
-                        },
+                        var ruleName = dynamicRule.Key;
 
-                        _         => (world, loc, state) => float3.zero
-                    };
+                        Func<World, BlockLoc, BlockState, float3> ruleFunc = ruleName switch
+                        {
+                            "foliage"  => (world, loc, state) => world.GetFoliageColor(loc),
+                            "grass"    => (world, loc, state) => world.GetGrassColor(loc),
+                            "redstone" => (world, loc, state) => {
+                                if (state.Properties.ContainsKey("power"))
+                                    return new(int.Parse(state.Properties["power"]) / 16F, 0F, 0F);
+                                return float3.zero;
+                            },
 
-                    foreach (var block in dynamicRule.Value.DataArray)
+                            _         => (world, loc, state) => float3.zero
+                        };
+
+                        foreach (var block in dynamicRule.Value.DataArray)
+                        {
+                            var blockId = ResourceLocation.FromString(block.StringValue);
+
+                            if (TryGetAllNumIds(blockId, out int[] stateIds))
+                            {
+                                foreach (var stateId in stateIds)
+                                {
+                                    if (!blockColorRules.TryAdd(stateId, ruleFunc))
+                                    {
+                                        Debug.LogWarning($"Failed to apply dynamic color rules to {blockId} ({stateId})!");
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                //Debug.LogWarning($"Applying dynamic color rules to undefined block {blockId}!");
+                            }
+                        }
+                    }
+                }
+
+                if (colorRules.Properties.ContainsKey("fixed"))
+                {
+                    foreach (var fixedRule in colorRules.Properties["fixed"].Properties)
                     {
-                        var blockId = ResourceLocation.FromString(block.StringValue);
+                        var blockId = ResourceLocation.FromString(fixedRule.Key);
+                        var fixedColor = VectorUtil.Json2Float3(fixedRule.Value) / 255F;
+                        float3 ruleFunc(World world, BlockLoc loc, BlockState state) => fixedColor;
 
                         if (TryGetAllNumIds(blockId, out int[] stateIds))
                         {
                             foreach (var stateId in stateIds)
                             {
                                 if (!blockColorRules.TryAdd(stateId, ruleFunc))
-                                    Debug.LogWarning($"Failed to apply dynamic color rules to {blockId} ({stateId})!");
+                                {
+                                    Debug.LogWarning($"Failed to apply fixed color rules to {blockId} ({stateId})!");
+                                }
                             }
                         }
-                        //else
-                        //    Debug.LogWarning($"Applying dynamic color rules to undefined block {blockId}!");
-                    }
-                }
-            }
-
-            if (colorRules.Properties.ContainsKey("fixed"))
-            {
-                foreach (var fixedRule in colorRules.Properties["fixed"].Properties)
-                {
-                    var blockId = ResourceLocation.FromString(fixedRule.Key);
-                    var fixedColor = VectorUtil.Json2Float3(fixedRule.Value) / 255F;
-                    float3 ruleFunc(World world, BlockLoc loc, BlockState state) => fixedColor;
-
-                    if (TryGetAllNumIds(blockId, out int[] stateIds))
-                    {
-                        foreach (var stateId in stateIds)
+                        else
                         {
-                            if (!blockColorRules.TryAdd(stateId, ruleFunc))
-                                Debug.LogWarning($"Failed to apply fixed color rules to {blockId} ({stateId})!");
+                            //Debug.LogWarning($"Applying fixed color rules to undefined block {blockId}!");
                         }
                     }
-                    //else
-                    //    Debug.LogWarning($"Applying fixed color rules to undefined block {blockId}!");
                 }
-            }
             
-            // Load and apply block render types...
-            try
-            {
+                // Load and apply block render types...
+            
                 var renderTypeText = File.ReadAllText(renderTypePath, Encoding.UTF8);
                 var renderTypes = Json.ParseJson(renderTypeText);
 
@@ -432,64 +413,26 @@ namespace CraftSharp
 
                         RenderTypeTable.Add(blockId, type);
                         allBlockIds.Remove(blockId);
+
+                        Debug.Log($"{blockId} uses {type}");
                     }
                 }
 
-                foreach (var blockId in allBlockIds) // Other blocks which doesn't its render type specifically stated
+                foreach (var blockId in allBlockIds) // Other blocks which doesn't have its render type specifically stated
                 {
                     RenderTypeTable.Add(blockId, RenderType.SOLID); // Default to solid
                 }
-
             }
-            catch (IOException e)
+            catch (Exception e)
             {
-                Debug.LogWarning($"Failed to load block render types: {e.Message}");
-                flag.Failed = true;
-            }
-
-            // Load and apply block light...
-            try
-            {
-                var blockLightText = File.ReadAllText(blockLightPath, Encoding.UTF8);
-                var blockLight = Json.ParseJson(blockLightText);
-
-                foreach (var pair in blockLight.Properties["light_block"].Properties)
-                {
-                    byte lightBlockLevel = byte.Parse(pair.Key);
-                    foreach (var blockStateElem in pair.Value.DataArray)
-                    {
-                        var stateIds = GetStateIdCandidatesFromString(blockStateElem.StringValue);
-                        foreach (var stateId in stateIds)
-                        {
-                            numIdToObject[stateId].LightBlockageLevel = lightBlockLevel;
-                        }
-                    }
-                }
-
-                foreach (var pair in blockLight.Properties["light_emission"].Properties)
-                {
-                    byte lightEmissionLevel = byte.Parse(pair.Key);
-                    foreach (var blockStateElem in pair.Value.DataArray)
-                    {
-                        var stateIds = GetStateIdCandidatesFromString(blockStateElem.StringValue);
-                        foreach (var stateId in stateIds)
-                        {
-                            numIdToObject[stateId].LightEmissionLevel = lightEmissionLevel;
-                        }
-                    }
-                }
-            }
-            catch (IOException e)
-            {
-                Debug.LogWarning($"Failed to load block light: {e.Message}");
+                Debug.LogError($"Error loading blocks: {e.Message}");
                 flag.Failed = true;
             }
             finally
             {
                 FreezeEntries();
+                flag.Finished = true;
             }
-
-            flag.Finished = true;
         }
     }
 }

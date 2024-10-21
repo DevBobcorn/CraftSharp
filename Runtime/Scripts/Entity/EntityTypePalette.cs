@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -45,11 +44,9 @@ namespace CraftSharp
             // Clear loaded stuff...
             ClearEntries();
 
-            var entityTypeListPath = PathHelper.GetExtraDataFile($"entities{SP}entity_types-{dataVersion}.json");
-            var entityDefPath = PathHelper.GetExtraDataFile($"entities{SP}entities-{dataVersion}.json");
-            string listsPath  = PathHelper.GetExtraDataFile("entity_lists.json");
+            var entityTypePath = PathHelper.GetExtraDataFile($"entities{SP}entity_types-{dataVersion}.json");
 
-            if (!File.Exists(entityTypeListPath) || !File.Exists(entityTypeListPath) || !File.Exists(listsPath))
+            if (!File.Exists(entityTypePath))
             {
                 Debug.LogWarning("Entity data not complete!");
                 flag.Finished = true;
@@ -57,37 +54,17 @@ namespace CraftSharp
                 return;
             }
 
-            // First read special entity lists...
-            var lists = new Dictionary<string, HashSet<ResourceLocation>>
-            {
-                { "contains_item", new() }
-            };
-
-            Json.JSONData spLists = Json.ParseJson(File.ReadAllText(listsPath, Encoding.UTF8));
-            foreach (var pair in lists)
-            {
-                if (spLists.Properties.ContainsKey(pair.Key))
-                {
-                    foreach (var block in spLists.Properties[pair.Key].DataArray)
-                        pair.Value.Add(ResourceLocation.FromString(block.StringValue));
-                }
-            }
-
-            // References for later use
-            var containsItem = lists["contains_item"];
-
             try
             {
-                var entityTypeList = Json.ParseJson(File.ReadAllText(entityTypeListPath, Encoding.UTF8));
-                var entityDefs = Json.ParseJson(File.ReadAllText(entityDefPath, Encoding.UTF8));
+                var entityTypes = Json.ParseJson(File.ReadAllText(entityTypePath, Encoding.UTF8));
 
-                foreach (var entityType in entityTypeList.Properties)
+                foreach (var entityType in entityTypes.Properties)
                 {
-                    if (int.TryParse(entityType.Key, out int numId))
-                    {
-                        var entityTypeId = ResourceLocation.FromString(entityType.Value.StringValue);
+                    var entityDef = entityType.Value;
 
-                        var entityDef = entityDefs.Properties[entityTypeId.ToString()];
+                    if (int.TryParse(entityDef.Properties["protocol_id"].StringValue, out int numId))
+                    {
+                        var entityTypeId = ResourceLocation.FromString(entityType.Key);
 
                         float w = float.Parse(entityDef.Properties["width"].StringValue,
                                 CultureInfo.InvariantCulture.NumberFormat);
@@ -101,10 +78,12 @@ namespace CraftSharp
                         var metaEntries = entityDef.Properties["metadata"].Properties.
                                 ToDictionary(x => int.Parse(x.Key),
                                         x => new EntityMetaEntry(x.Value.Properties["name"].StringValue,
-                                                EntityMetaDataTypeUtil.FromSerializedTypeName(x.Value.Properties["data_type"].StringValue)));
+                                            EntityMetaDataTypeUtil.FromSerializedTypeName(
+                                                x.Value.Properties["data_type"].StringValue)));
 
-                        AddEntry(entityTypeId, numId, new EntityType(
-                                entityTypeId, w, h, sf, metaEntries, containsItem.Contains(entityTypeId)));
+                        bool c = metaEntries.Values.Any(x => x.Name == "data_item" || x.Name == "data_item_stack");
+
+                        AddEntry(entityTypeId, numId, new EntityType(entityTypeId, w, h, sf, metaEntries, c));
                     }
                     else
                     {
@@ -120,9 +99,8 @@ namespace CraftSharp
             finally
             {
                 FreezeEntries();
+                flag.Finished = true;
             }
-
-            flag.Finished = true;
         }
     }
 }

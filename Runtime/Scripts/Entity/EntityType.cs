@@ -129,30 +129,27 @@ namespace CraftSharp
 
         public static readonly EntityType DUMMY_ENTITY_TYPE = new(ResourceLocation.INVALID, 1F, 1F, true, new());
 
-        public ResourceLocation EntityId { get; }
-
-        public float Width { get; }
-
-        public float Height { get; }
-
-        public bool SizeFixed { get; }
-
-        public bool ContainsItem { get; }
+        public readonly ResourceLocation EntityId;
+        public readonly float Width;
+        public readonly float Height;
+        public readonly bool SizeFixed;
+        public readonly bool ContainsItem;
 
         public readonly Dictionary<int, EntityMetaEntry> MetaEntries;
         public readonly Dictionary<string, int> MetaSlotByName;
         public readonly Dictionary<string, EntityMetaEntry> MetaEntriesByName;
 
-        public EntityType(ResourceLocation id, float w, float h, bool sf, Dictionary<int, EntityMetaEntry> e, bool c = false)
+        public EntityType(ResourceLocation id, float width, float height, bool sizeFixed,
+                Dictionary<int, EntityMetaEntry> metaEntries, bool containsItem = false)
         {
             EntityId = id;
-            Width = w;
-            Height = h;
-            SizeFixed = sf;
-            MetaEntries = e;
-            MetaSlotByName = e.ToDictionary(x => x.Value.Name, x => x.Key);
-            MetaEntriesByName = e.ToDictionary(x => x.Value.Name, x => x.Value);
-            ContainsItem = c;
+            Width = width;
+            Height = height;
+            SizeFixed = sizeFixed;
+            MetaEntries = metaEntries;
+            MetaSlotByName = metaEntries.ToDictionary(x => x.Value.Name, x => x.Key);
+            MetaEntriesByName = metaEntries.ToDictionary(x => x.Value.Name, x => x.Value);
+            ContainsItem = containsItem;
         }
 
         public override string ToString()

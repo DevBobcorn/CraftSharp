@@ -5,12 +5,12 @@ namespace CraftSharp
     public class BlockNeighborChecks
     {
         public static readonly BlockNeighborCheck WATER_SURFACE = new((self, neighbor)
-                => { return !(neighbor.State.InWater || neighbor.State.FaceOcclusionSolid); });
+                => { return !(neighbor.State.InWater || neighbor.State.MeshFaceOcclusionSolid); });
         public static readonly BlockNeighborCheck LAVA_SURFACE  = new((self, neighbor)
-                => { return !(neighbor.State.InLava  || neighbor.State.FaceOcclusionSolid); });
+                => { return !(neighbor.State.InLava  || neighbor.State.MeshFaceOcclusionSolid); });
 
         public static readonly BlockNeighborCheck NON_FULL_SOLID = new((self, neighbor)
-                => { return !neighbor.State.FaceOcclusionSolid; });
+                => { return !neighbor.State.MeshFaceOcclusionSolid; });
         
     }
 }
