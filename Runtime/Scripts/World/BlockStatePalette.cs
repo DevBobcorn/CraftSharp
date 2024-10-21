@@ -388,13 +388,13 @@ namespace CraftSharp
                 var renderTypeText = File.ReadAllText(renderTypePath, Encoding.UTF8);
                 var renderTypes = Json.ParseJson(renderTypeText);
 
-                var allBlockIds = groupIdToGroup.Keys.ToHashSet();
+                var restBlockIds = groupIdToGroup.Keys.ToHashSet();
 
                 foreach (var pair in renderTypes.Properties)
                 {
                     var blockId = ResourceLocation.FromString(pair.Key);
 
-                    if (allBlockIds.Contains(blockId))
+                    if (restBlockIds.Contains(blockId))
                     {
                         var type = pair.Value.StringValue.ToLower() switch
                         {
@@ -412,13 +412,11 @@ namespace CraftSharp
                         };
 
                         RenderTypeTable.Add(blockId, type);
-                        allBlockIds.Remove(blockId);
-
-                        Debug.Log($"{blockId} uses {type}");
+                        restBlockIds.Remove(blockId);
                     }
                 }
 
-                foreach (var blockId in allBlockIds) // Other blocks which doesn't have its render type specifically stated
+                foreach (var blockId in restBlockIds) // Other blocks which doesn't have its render type specifically stated
                 {
                     RenderTypeTable.Add(blockId, RenderType.SOLID); // Default to solid
                 }
