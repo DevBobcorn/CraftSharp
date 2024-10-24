@@ -129,7 +129,7 @@ namespace CraftSharp
 
         public static readonly EntityType DUMMY_ENTITY_TYPE = new(ResourceLocation.INVALID, 1F, 1F, true, new());
 
-        public readonly ResourceLocation EntityId;
+        public readonly ResourceLocation TypeId;
         public readonly float Width;
         public readonly float Height;
         public readonly bool SizeFixed;
@@ -142,7 +142,7 @@ namespace CraftSharp
         public EntityType(ResourceLocation id, float width, float height, bool sizeFixed,
                 Dictionary<int, EntityMetaEntry> metaEntries, bool containsItem = false)
         {
-            EntityId = id;
+            TypeId = id;
             Width = width;
             Height = height;
             SizeFixed = sizeFixed;
@@ -154,7 +154,7 @@ namespace CraftSharp
 
         public override string ToString()
         {
-            return EntityId.ToString();
+            return TypeId.ToString();
         }
     }
 }

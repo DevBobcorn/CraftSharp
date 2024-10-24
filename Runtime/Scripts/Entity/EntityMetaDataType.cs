@@ -1,5 +1,8 @@
 namespace CraftSharp
 {
+    /// <summary>
+    /// See 
+    /// </summary>
     public enum EntityMetaDataType
     {
         Byte,
