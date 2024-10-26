@@ -14,9 +14,9 @@ namespace CraftSharp
     {
         // Using biome colors of minecraft:plains as default
         // See https://minecraft.fandom.com/wiki/Plains
-        public static readonly int DEFAULT_FOLIAGE = 0x77AB2F;
-        public static readonly int DEFAULT_GRASS   = 0x91BD59;
-        public static readonly int DEFAULT_WATER   = 0x3F76E4;
+        public const int DEFAULT_FOLIAGE = 0x77AB2F;
+        public const int DEFAULT_GRASS = 0x91BD59;
+        public const int DEFAULT_WATER = 0x3F76E4;
 
         public static readonly Biome DUMMY_BIOME = new(ResourceLocation.INVALID,
                 0, DEFAULT_FOLIAGE, DEFAULT_GRASS, DEFAULT_WATER, 0, 0);
@@ -26,43 +26,48 @@ namespace CraftSharp
         /// <summary>
         /// The dimension info of the world
         /// </summary>
-        protected static DimensionType curDimensionType = new();
-        protected static ResourceLocation curDimensionId = ResourceLocation.INVALID;
-        protected static readonly Dictionary<ResourceLocation, DimensionType> dimensionTypeList = new();
-        protected static readonly HashSet<ResourceLocation> knownDimensions = new();
+        private static DimensionType curDimensionType = new();
+
+        private static ResourceLocation curDimensionId = ResourceLocation.INVALID;
+        private static readonly Dictionary<ResourceLocation, DimensionType> knownDimensionTypes = new();
 
         public static bool BiomesInitialized { get; private set; } = false;
+
+        private class BiomePalette : IdentifierPalette<Biome>
+        {
+            protected override string Name => "Biome Palette";
+
+            public void Register(ResourceLocation id, int numId, Biome obj)
+            {
+                base.AddEntry(id, numId, obj);
+            }
+
+            public void Clear()
+            {
+                base.ClearEntries();
+            }
+
+            protected override Biome UnknownObject => DUMMY_BIOME;
+        }
 
         /// <summary>
         /// The biomes of the world
         /// </summary>
-        public static readonly Dictionary<int, Biome> BiomeList = new();
+        private static readonly BiomePalette BiomeRegistry = new();
+
+        public static readonly ResourceLocation DIMENSION_TYPE_ID = new("dimension_type");
+
+        public static readonly ResourceLocation WORLDGEN_BIOME_ID = new("worldgen/biome");
 
         /// <summary>
         /// Storage of all dimensional type data - 1.19.1 and above
         /// </summary>
-        /// <param name="registryCodec">Registry Codec nbt data</param>
-        public static void StoreDimensionTypeList(Dictionary<string, object> registryCodec)
+        public static void StoreDimensionTypeList((ResourceLocation id, int numId, object? obj)[] dimensionTypeList)
         {
-            if (registryCodec.ContainsKey("minecraft:dimension_type"))
+            foreach (var (dimensionId, _, dimensionDef) in dimensionTypeList)
             {
-                var dimensionListNbt = (object[])(((Dictionary<string, object>)
-                        registryCodec["minecraft:dimension_type"])["value"]);
-
-                foreach (Dictionary<string, object> dimensionTypeNbt in dimensionListNbt)
-                {
-                    string dimensionName = (string) dimensionTypeNbt["name"];
-                    var dimensionId = ResourceLocation.FromString(dimensionName);
-                    Dictionary<string, object> dimensionType = (Dictionary<string, object>)dimensionTypeNbt["element"];
-                    StoreOneDimensionType(dimensionId, dimensionType);
-                }
-            }
-            else
-            {
-                // TODO: Initialize from some dummy data
-                Debug.LogWarning("Dimension definitions not received, using dummy data");
-
-                StoreOneDimensionType(new ResourceLocation("overworld"), new());
+                Dictionary<string, object> dimensionType = (Dictionary<string, object>) dimensionDef!;
+                StoreOneDimensionType(dimensionId, dimensionType);
             }
         }
 
@@ -73,19 +78,24 @@ namespace CraftSharp
         /// <param name="dimensionType">Dimension Type nbt data</param>
         public static void StoreOneDimensionType(ResourceLocation dimensionTypeId, Dictionary<string, object> dimensionType)
         {
-            if (dimensionTypeList.ContainsKey(dimensionTypeId))
-                dimensionTypeList.Remove(dimensionTypeId);
-            dimensionTypeList.Add(dimensionTypeId, new DimensionType(dimensionTypeId, dimensionType));
+            if (knownDimensionTypes.ContainsKey(dimensionTypeId))
+                knownDimensionTypes.Remove(dimensionTypeId);
+            knownDimensionTypes.Add(dimensionTypeId, new DimensionType(dimensionTypeId, dimensionType));
         }
 
         /// <summary>
         /// Set current dimension type - 1.16 and above
         /// </summary>
         /// <param name="dimensionTypeId">	The id of the dimension type</param>
-        /// <param name="nbt">The dimension type (NBT Tag Compound)</param>
         public static void SetDimensionType(ResourceLocation dimensionTypeId)
         {
-            curDimensionType = dimensionTypeList[dimensionTypeId]; // Should not fail
+            if (!knownDimensionTypes.ContainsKey(dimensionTypeId))
+            {
+                knownDimensionTypes.Add(dimensionTypeId, new DimensionType());
+                Debug.LogWarning($"{dimensionTypeId} is not registered. Using a dummy overworld-like dimension type.");
+            }
+
+            curDimensionType = knownDimensionTypes[dimensionTypeId]; // Should not fail
         }
 
         /// <summary>
@@ -116,33 +126,24 @@ namespace CraftSharp
         public static Color32[] FoliageColormapPixels { get; set; } = { };
         public static Color32[] GrassColormapPixels { get; set; } = { };
 
-        public static int ColormapSize { get; set; } = 0;
+        public static int ColormapSize { get; set; }
         
         /// <summary>
         /// Storage of all dimensional data - 1.19.1 and above
         /// </summary>
-        /// <param name="registryCodec">Registry Codec nbt data</param>
-        public static void StoreBiomeList(Dictionary<string, object> registryCodec)
+        public static void StoreBiomeList((ResourceLocation id, int numId, object? obj)[] biomeList)
         {
-            if (registryCodec.ContainsKey("minecraft:dimension_type"))
+            // Clear up registry
+            BiomeRegistry.Clear();
+            
+            if (FoliageColormapPixels.Length == 0 || GrassColormapPixels.Length == 0)
             {
-                var biomeListNbt = (object[])((Dictionary<string, object>)
-                        registryCodec["minecraft:worldgen/biome"])["value"];
-
-                if (FoliageColormapPixels.Length == 0 || GrassColormapPixels.Length == 0)
-                {
-                    Debug.LogWarning("Biome colormap is not available. Color lookup will not be performed.");
-                }
-
-                foreach (Dictionary<string, object> biomeNbt in biomeListNbt)
-                {
-                    StoreOneBiome(biomeNbt);
-                }
+                Debug.LogWarning("Biome colormap is not available. Color lookup will not be performed.");
             }
-            else
+
+            foreach (var (id, numId, obj) in biomeList)
             {
-                // TODO: Initialize from some dummy data
-                Debug.LogWarning("Biome definitions not received, using dummy data");
+                StoreOneBiome(id, numId, ((Dictionary<string, object>) obj!)!);
             }
 
             BiomesInitialized = true;
@@ -151,30 +152,19 @@ namespace CraftSharp
         /// <summary>
         /// Store one biome
         /// </summary>
-        /// <param name="biomeName">Biome name</param>
-        /// <param name="biomeData">Information of this biome</param>
-        public static void StoreOneBiome(Dictionary<string, object> biomeData)
+        private static void StoreOneBiome(ResourceLocation biomeId, int numId, Dictionary<string, object> biomeDef)
         {
-            var biomeName = (string)biomeData["name"];
-            var biomeNumId = (int)biomeData["id"];
-            var biomeId = ResourceLocation.FromString(biomeName);
-
-            if (BiomeList.ContainsKey(biomeNumId))
-                BiomeList.Remove(biomeNumId);
-            
             //Debug.Log($"Biome registered:\n{Json.Dictionary2Json(biomeData)}");
 
             int sky = 0, foliage = 0, grass = 0, water = 0, fog = 0, waterFog = 0;
-            float temperature = 0F, downfall = 0F, adjustedTemp = 0F, adjustedRain = 0F;
+            float temperature = 0F, downfall = 0F;
             Precipitation precipitation = Precipitation.None;
 
-            var biomeDef = (Dictionary<string, object>)biomeData["element"];
-
-            if (biomeDef.ContainsKey("downfall"))
-                downfall = (float) biomeDef["downfall"];
+            if (biomeDef.TryGetValue("downfall", out var value))
+                downfall = (float) value;
                             
-            if (biomeDef.ContainsKey("temperature"))
-                temperature = (float) biomeDef["temperature"];
+            if (biomeDef.TryGetValue("temperature", out var value1))
+                temperature = (float) value1;
             
             if (biomeDef.ContainsKey("precipitation"))
             {
@@ -191,21 +181,21 @@ namespace CraftSharp
                     Debug.LogWarning($"Unexpected precipitation type: {biomeDef["precipitation"]}");
             }
 
-            if (biomeDef.ContainsKey("effects"))
+            if (biomeDef.TryGetValue("effects", out var value2))
             {
-                var effects = (Dictionary<string, object>)biomeDef["effects"];
+                var effects = (Dictionary<string, object>)value2;
 
-                if (effects.ContainsKey("sky_color"))
-                    sky = (int) effects["sky_color"];
+                if (effects.TryGetValue("sky_color", out var effect))
+                    sky = (int) effect;
                 
-                adjustedTemp = Mathf.Clamp01(temperature);
-                adjustedRain = Mathf.Clamp01(downfall) * adjustedTemp;
+                var adjustedTemp = Mathf.Clamp01(temperature);
+                var adjustedRain = Mathf.Clamp01(downfall) * adjustedTemp;
 
-                int sampleX = (int)((1F - adjustedTemp) * ColormapSize);
-                int sampleY = (int)(adjustedRain * ColormapSize);
+                int sampleX = (int) ((1F - adjustedTemp) * ColormapSize);
+                int sampleY = (int) (adjustedRain * ColormapSize);
 
-                if (effects.ContainsKey("foliage_color"))
-                    foliage = (int)effects["foliage_color"];
+                if (effects.TryGetValue("foliage_color", out var effect1))
+                    foliage = (int) effect1;
                 else // Read foliage color from color map. See https://minecraft.fandom.com/wiki/Color
                 {
                     var color = (FoliageColormapPixels.Length == 0) ? (Color32) Color.magenta :
@@ -213,8 +203,8 @@ namespace CraftSharp
                     foliage = (color.r << 16) | (color.g << 8) | color.b;
                 }
                 
-                if (effects.ContainsKey("grass_color"))
-                    grass = (int)effects["grass_color"];
+                if (effects.TryGetValue("grass_color", out var effect2))
+                    grass = (int) effect2;
                 else // Read grass color from color map. Same as above
                 {
                     var color = (GrassColormapPixels.Length == 0) ? (Color32) Color.magenta :
@@ -222,14 +212,14 @@ namespace CraftSharp
                     grass = (color.r << 16) | (color.g << 8) | color.b;
                 }
                 
-                if (effects.ContainsKey("fog_color"))
-                    fog = (int)effects["fog_color"];
+                if (effects.TryGetValue("fog_color", out var effect3))
+                    fog = (int) effect3;
                 
-                if (effects.ContainsKey("water_color"))
-                    water = (int)effects["water_color"];
+                if (effects.TryGetValue("water_color", out var effect4))
+                    water = (int) effect4;
                 
-                if (effects.ContainsKey("water_fog_color"))
-                    waterFog = (int)effects["water_fog_color"];
+                if (effects.TryGetValue("water_fog_color", out var effect5))
+                    waterFog = (int) effect5;
             }
 
             Biome biome = new(biomeId, sky, foliage, grass, water, fog, waterFog)
@@ -239,7 +229,7 @@ namespace CraftSharp
                 Precipitation = precipitation
             };
 
-            BiomeList.Add(biomeNumId, biome);
+            BiomeRegistry.Register(biomeId, numId, biome);
         }
 
         #endregion
@@ -283,24 +273,9 @@ namespace CraftSharp
         public bool IsChunkColumnLoaded(int chunkX, int chunkZ)
         {
             // Chunk column data is sent one whole column per time,
-            // a whole air chunk is represent by null
+            // a whole air chunk is represented by null
             if (columns.TryGetValue(new(chunkX, chunkZ), out ChunkColumn? chunkColumn))
-                return chunkColumn is not null && chunkColumn.FullyLoaded && chunkColumn.LightingPresent;
-            return false;
-        }
-
-        /// <summary>
-        /// Check whether the data of a chunk column is loaded
-        /// </summary>
-        /// <param name="chunkX">ChunkColumn X</param>
-        /// <param name="chunkZ">ChunkColumn Z</param>
-        /// <returns>True if chunk column data is ready</returns>
-        public bool IsChunkColumnReady(int chunkX, int chunkZ)
-        {
-            // Chunk column data is sent one whole column per time,
-            // a whole air chunk is represent by null
-            if (columns.TryGetValue(new(chunkX, chunkZ), out ChunkColumn? chunkColumn))
-                return chunkColumn is not null && chunkColumn.FullyLoaded && chunkColumn.LightingPresent;
+                return chunkColumn is { FullyLoaded: true, LightingPresent: true };
             return false;
         }
 
@@ -556,7 +531,7 @@ namespace CraftSharp
                                     light[resX, resY, resZ] = chunkColumn.GetBlockLight(blocLoc);
                                     allao[resX, resY, resZ] = chunkColumn.GetAmbientOcclusion(blocLoc);
                                     
-                                    if (resX > 0 && resX <= Chunk.SIZE && resY > 0 && resY <= Chunk.SIZE && resZ > 0 && resZ <= Chunk.SIZE)
+                                    if (resX is > 0 and <= Chunk.SIZE && resY is > 0 and <= Chunk.SIZE && resZ is > 0 and <= Chunk.SIZE)
                                     {
                                         // No padding for block color
                                         color[resX - 1, resY - 1, resZ - 1] = BlockStatePalette.INSTANCE.GetBlockColor(bloc.StateId, this, blocLoc, bloc.State);
@@ -597,10 +572,7 @@ namespace CraftSharp
         public bool GetAmbientOcclusion(BlockLoc blockLoc)
         {
             var column = GetChunkColumn(blockLoc);
-            if (column != null)
-                return column.GetAmbientOcclusion(blockLoc);
-            
-            return false; // Not available
+            return column != null && column.GetAmbientOcclusion(blockLoc);
         }
 
         /// <summary>
@@ -637,7 +609,12 @@ namespace CraftSharp
         {
             var column = GetChunkColumn(blockLoc);
             if (column != null)
-                return BiomeList.GetValueOrDefault(column.GetBiomeId(blockLoc), DUMMY_BIOME);
+            {
+                if (BiomeRegistry.TryGetByNumId(column.GetBiomeId(blockLoc), out Biome biome))
+                {
+                    return biome;
+                }
+            }
             
             return DUMMY_BIOME; // Not available
         }

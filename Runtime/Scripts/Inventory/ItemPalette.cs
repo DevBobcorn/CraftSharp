@@ -11,7 +11,7 @@ namespace CraftSharp
     {
         private static readonly char SP = Path.DirectorySeparatorChar;
         public static readonly ItemPalette INSTANCE = new();
-        public override string Name => "Item Palette";
+        protected override string Name => "Item Palette";
         protected override Item UnknownObject => Item.UNKNOWN;
 
         private readonly Dictionary<ResourceLocation, Func<ItemStack, float3[]>> itemColorRules = new();

@@ -1,6 +1,8 @@
+using System;
+
 namespace CraftSharp
 {
-    public struct ResourceLocation
+    public readonly struct ResourceLocation : IEquatable<ResourceLocation>
     {
         private const string DEFAULT_NAMESPACE = "minecraft";
         public static readonly ResourceLocation INVALID = new(DEFAULT_NAMESPACE, "<missingno>");
@@ -41,14 +43,18 @@ namespace CraftSharp
 
         public override bool Equals(object obj)
         {
-            if (obj is ResourceLocation)
+            if (obj is ResourceLocation other)
             {
-                ResourceLocation other = (ResourceLocation) obj;
                 return this.Namespace == other.Namespace && this.Path == other.Path;
             }
             return false;
         }
 
+        public bool Equals(ResourceLocation other)
+        {
+            return Namespace == other.Namespace && Path == other.Path;
+        }
+        
         public override int GetHashCode()
         {
             return Namespace.GetHashCode() ^ Path.GetHashCode();

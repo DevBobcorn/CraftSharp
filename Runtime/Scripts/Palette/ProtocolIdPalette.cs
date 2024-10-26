@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 
 namespace CraftSharp
 {
@@ -10,9 +9,9 @@ namespace CraftSharp
     /// </summary>
     public abstract class ProtocolIdPalette<T>
     {
-        public const int UNKNOWN_NUM_ID = -1;
+        protected const int UNKNOWN_NUM_ID = -1;
 
-        public abstract string Name { get; }
+        protected abstract string Name { get; }
         protected abstract T UnknownObject { get; }
 
         protected readonly Dictionary<int, T> numIdToObject = new();

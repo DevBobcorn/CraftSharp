@@ -14,7 +14,7 @@ namespace CraftSharp
         private static readonly char SP = Path.DirectorySeparatorChar;
 
         public static readonly BlockStatePalette INSTANCE = new();
-        public override string Name => "BlockState Palette";
+        protected override string Name => "BlockState Palette";
         protected override BlockState UnknownObject => BlockState.UNKNOWN;
 
         /// <summary>
@@ -159,8 +159,8 @@ namespace CraftSharp
 
         public float3 GetBlockColor(int stateId, World world, BlockLoc loc, BlockState state)
         {
-            if (blockColorRules.ContainsKey(stateId))
-                return blockColorRules[stateId].Invoke(world, loc, state);
+            if (blockColorRules.TryGetValue(stateId, out var rule))
+                return rule.Invoke(world, loc, state);
             return ORIGINAL_BLOCK_COLOR;
         }
 
@@ -257,9 +257,9 @@ namespace CraftSharp
                     {
                         int stateId = int.Parse(state.Properties["id"].StringValue);
 
-                        if (state.Properties.ContainsKey("default"))
+                        if (state.Properties.TryGetValue("default", out var property))
                         {
-                            if (bool.Parse(state.Properties["default"].StringValue))
+                            if (bool.Parse(property.StringValue))
                             {
                                 defaultStateId = stateId;
                             }
@@ -267,9 +267,9 @@ namespace CraftSharp
 
                         var props = new Dictionary<string, string>();
 
-                        if (state.Properties.ContainsKey("properties"))
+                        if (state.Properties.TryGetValue("properties", out var stateProperty))
                         {
-                            foreach (var prop in state.Properties["properties"].Properties)
+                            foreach (var prop in stateProperty.Properties)
                             {
                                 props.Add(prop.Key, prop.Value.StringValue);
                             }
@@ -298,7 +298,7 @@ namespace CraftSharp
                             // Assign non-readonly fields
                             Friction = friction,
                             JumpFactor = jumpFactor,
-                            SpeedFactor = speedFactor,
+                            SpeedFactor = speedFactor
                         };
                     }
             
@@ -317,29 +317,24 @@ namespace CraftSharp
                 // Load block color rules...
                 Json.JSONData colorRules = Json.ParseJson(File.ReadAllText(colorsPath, Encoding.UTF8));
 
-                if (colorRules.Properties.ContainsKey("dynamic"))
+                if (colorRules.Properties.TryGetValue("dynamic", out var rulesProperty))
                 {
-                    foreach (var dynamicRule in colorRules.Properties["dynamic"].Properties)
+                    foreach (var (ruleName, value) in rulesProperty.Properties)
                     {
-                        var ruleName = dynamicRule.Key;
-
                         Func<World, BlockLoc, BlockState, float3> ruleFunc = ruleName switch
                         {
-                            "foliage"  => (world, loc, state) => world.GetFoliageColor(loc),
-                            "grass"    => (world, loc, state) => world.GetGrassColor(loc),
-                            "redstone" => (world, loc, state) => {
-                                if (state.Properties.ContainsKey("power"))
-                                    return new(int.Parse(state.Properties["power"]) / 16F, 0F, 0F);
-                                return float3.zero;
-                            },
+                            "foliage"  => (world, loc, _) => world.GetFoliageColor(loc),
+                            "grass"    => (world, loc, _) => world.GetGrassColor(loc),
+                            "redstone" => (_, _, state) => state.Properties
+                                .TryGetValue("power", out var property) ?
+                                    new(int.Parse(property) / 16F, 0F, 0F) : float3.zero,
 
-                            _         => (world, loc, state) => float3.zero
+                            _          => (_, _, _) => float3.zero
                         };
 
-                        foreach (var block in dynamicRule.Value.DataArray)
+                        foreach (var blockId in value.DataArray
+                                     .Select(block => ResourceLocation.FromString(block.StringValue)))
                         {
-                            var blockId = ResourceLocation.FromString(block.StringValue);
-
                             if (TryGetAllNumIds(blockId, out int[] stateIds))
                             {
                                 foreach (var stateId in stateIds)
@@ -350,17 +345,13 @@ namespace CraftSharp
                                     }
                                 }
                             }
-                            else
-                            {
-                                //Debug.LogWarning($"Applying dynamic color rules to undefined block {blockId}!");
-                            }
                         }
                     }
                 }
 
-                if (colorRules.Properties.ContainsKey("fixed"))
+                if (colorRules.Properties.TryGetValue("fixed", out var colorRulesProperty))
                 {
-                    foreach (var fixedRule in colorRules.Properties["fixed"].Properties)
+                    foreach (var fixedRule in colorRulesProperty.Properties)
                     {
                         var blockId = ResourceLocation.FromString(fixedRule.Key);
                         var fixedColor = VectorUtil.Json2Float3(fixedRule.Value) / 255F;
@@ -375,10 +366,6 @@ namespace CraftSharp
                                     Debug.LogWarning($"Failed to apply fixed color rules to {blockId} ({stateId})!");
                                 }
                             }
-                        }
-                        else
-                        {
-                            //Debug.LogWarning($"Applying fixed color rules to undefined block {blockId}!");
                         }
                     }
                 }

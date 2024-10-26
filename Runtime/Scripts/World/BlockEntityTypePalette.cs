@@ -11,7 +11,7 @@ namespace CraftSharp
         private static readonly char SP = Path.DirectorySeparatorChar;
 
         public static readonly BlockEntityTypePalette INSTANCE = new();
-        public override string Name => "BlockEntityType Palette";
+        protected override string Name => "BlockEntityType Palette";
         protected override BlockEntityType UnknownObject => BlockEntityType.DUMMY_BLOCK_ENTITY_TYPE;
 
         private readonly Dictionary<ResourceLocation, BlockEntityType> blockEntityMapping = new();

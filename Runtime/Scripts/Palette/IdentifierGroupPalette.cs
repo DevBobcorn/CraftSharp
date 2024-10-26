@@ -23,10 +23,10 @@ namespace CraftSharp
             }
         }
 
-        public static readonly ResourceLocation UNKNOWN_ID = ResourceLocation.INVALID;
+        private static readonly ResourceLocation UNKNOWN_ID = ResourceLocation.INVALID;
 
         protected readonly Dictionary<ResourceLocation, IdentifierGroup> groupIdToGroup = new();
-        protected readonly Dictionary<int, ResourceLocation> numIdToGroupId = new();
+        private readonly Dictionary<int, ResourceLocation> numIdToGroupId = new();
 
         protected override void ClearEntries()
         {
@@ -59,10 +59,8 @@ namespace CraftSharp
         {
             if (groupIdToGroup.TryGetValue(id, out IdentifierGroup group))
             {
-                if (filter is null)
-                    return group.NumIds.Select(x => numIdToObject[x]).ToArray();
-                else
-                    return group.NumIds.Select(x => numIdToObject[x]).Where(x => filter(x)).ToArray();
+                return filter is null ? group.NumIds.Select(x => numIdToObject[x]).ToArray() :
+                    group.NumIds.Select(x => numIdToObject[x]).Where(filter).ToArray();
             }
 
             return new T[] { };
@@ -75,10 +73,8 @@ namespace CraftSharp
         {
             if (groupIdToGroup.TryGetValue(id, out IdentifierGroup group))
             {
-                if (filter is null)
-                    return group.NumIds.ToArray();
-                else
-                    return group.NumIds.Select(x => numIdToObject[x]).Where(x => filter(x)).Select(x => objectToNumId[x]).ToArray();
+                return filter is null ? group.NumIds.ToArray() : group.NumIds.Select(x => numIdToObject[x])
+                    .Where(filter).Select(x => objectToNumId[x]).ToArray();
             }
 
             return new int[] { };
@@ -92,11 +88,9 @@ namespace CraftSharp
         {
             if (groupIdToGroup.TryGetValue(id, out IdentifierGroup group))
             {
-                if (filter is null)
-                    results = group.NumIds.Select(x => numIdToObject[x]).ToArray();
-                else
-                    results = group.NumIds.Select(x => numIdToObject[x]).Where(x => filter(x)).ToArray();
-                
+                results = filter is null ? group.NumIds.Select(x => numIdToObject[x]).ToArray()
+                    : group.NumIds.Select(x => numIdToObject[x]).Where(filter).ToArray();
+
                 return results.Length > 0;
             }
 
@@ -112,11 +106,9 @@ namespace CraftSharp
         {
             if (groupIdToGroup.TryGetValue(id, out IdentifierGroup group))
             {
-                if (filter is null)
-                    results = group.NumIds.ToArray();
-                else
-                    results = group.NumIds.Select(x => numIdToObject[x]).Where(x => filter(x)).Select(x => objectToNumId[x]).ToArray();
-                
+                results = filter is null ? group.NumIds.ToArray() : group.NumIds.Select(x => numIdToObject[x])
+                    .Where(filter).Select(x => objectToNumId[x]).ToArray();
+
                 return results.Length > 0;
             }
 
@@ -129,12 +121,8 @@ namespace CraftSharp
         /// </summary>
         public T GetDefault(ResourceLocation id)
         {
-            if (groupIdToGroup.TryGetValue(id, out IdentifierGroup group))
-            {
-                return numIdToObject[group.DefaultNumId];
-            }
-
-            return UnknownObject;
+            return groupIdToGroup.TryGetValue(id, out IdentifierGroup group) ?
+                numIdToObject[group.DefaultNumId] : UnknownObject;
         }
 
         /// <summary>
@@ -142,12 +130,8 @@ namespace CraftSharp
         /// </summary>
         public int GetDefaultNumId(ResourceLocation id)
         {
-            if (groupIdToGroup.TryGetValue(id, out IdentifierGroup group))
-            {
-                return group.DefaultNumId;
-            }
-
-            return UNKNOWN_NUM_ID;
+            return groupIdToGroup.TryGetValue(id, out IdentifierGroup group) ?
+                group.DefaultNumId : UNKNOWN_NUM_ID;
         }
 
         /// <summary>
@@ -198,12 +182,7 @@ namespace CraftSharp
         /// </summary>
         public ResourceLocation GetGroupIdByNumId(int numId)
         {
-            if (numIdToGroupId.TryGetValue(numId, out ResourceLocation id))
-            {
-                return id;
-            }
-            
-            return UNKNOWN_ID;
+            return numIdToGroupId.GetValueOrDefault(numId, UNKNOWN_ID);
         }
 
         /// <summary>

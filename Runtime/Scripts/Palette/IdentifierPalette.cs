@@ -10,10 +10,10 @@ namespace CraftSharp
     /// </summary>
     public abstract class IdentifierPalette<T> : ProtocolIdPalette<T>
     {
-        public static readonly ResourceLocation UNKNOWN_ID = ResourceLocation.INVALID;
+        private static readonly ResourceLocation UNKNOWN_ID = ResourceLocation.INVALID;
 
         protected readonly Dictionary<ResourceLocation, int> idToNumId = new();
-        protected readonly Dictionary<int, ResourceLocation> numIdToId = new();
+        private readonly Dictionary<int, ResourceLocation> numIdToId = new();
 
         protected override void ClearEntries()
         {
@@ -103,22 +103,12 @@ namespace CraftSharp
 
         public ResourceLocation GetIdByNumId(int numId)
         {
-            if (numIdToId.TryGetValue(numId, out ResourceLocation id))
-            {
-                return id;
-            }
-            
-            return UNKNOWN_ID;
+            return numIdToId.GetValueOrDefault(numId, UNKNOWN_ID);
         }
 
         public int GetNumIdById(ResourceLocation id)
         {
-            if (idToNumId.TryGetValue(id, out int numId))
-            {
-                return numId;
-            }
-            
-            return UNKNOWN_NUM_ID;
+            return idToNumId.GetValueOrDefault(id, UNKNOWN_NUM_ID);
         }
 
         /// <summary>
@@ -128,7 +118,7 @@ namespace CraftSharp
         {
             if (EntriesFrozen)
             {
-                throw new InvalidOperationException("Cannot add to a frozon palette");
+                throw new InvalidOperationException("Cannot add to a frozen palette");
             }
 
             if (obj is null)
@@ -172,7 +162,7 @@ namespace CraftSharp
         {
             if (EntriesFrozen)
             {
-                throw new InvalidOperationException("Cannot add to a frozon palette");
+                throw new InvalidOperationException("Cannot add to a frozen palette");
             }
 
             if (obj is null)
@@ -180,31 +170,14 @@ namespace CraftSharp
                 Debug.LogWarning($"Trying to add null into {Name} ({id}, {numId})");
                 return;
             }
-
-            if (!idToNumId.ContainsKey(id))
+            
+            if (numIdToObject.TryAdd(numId, obj))
             {
-                if (!numIdToObject.ContainsKey(numId))
-                {
-                    if (!objectToNumId.ContainsKey(obj))
-                    {
-                        numIdToObject.Add(numId, obj);
-                        //objectToNumId.Add(obj, numId);
-                        //idToNumId.Add(id, numId);
-                        numIdToId.Add(numId, id);
-                    }
-                    else
-                    {
-                        Debug.LogWarning($"Object already registered in {Name}: {obj}");
-                    }
-                }
-                else
-                {
-                    Debug.LogWarning($"Numeral id already registered in {Name}: {numId}");
-                }
+                numIdToId.Add(numId, id);
             }
             else
             {
-                Debug.LogWarning($"Identifier already registered in {Name}: {id}");
+                Debug.LogWarning($"Numeral id already registered in {Name}: {numId}");
             }
         }
     }

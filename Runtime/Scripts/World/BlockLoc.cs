@@ -25,13 +25,7 @@ namespace CraftSharp
         /// <summary>
         /// Get location with zeroed coordinates
         /// </summary>
-        public static BlockLoc Zero
-        {
-            get
-            {
-                return new BlockLoc(0, 0, 0);
-            }
-        }
+        public static BlockLoc Zero => new(0, 0, 0);
 
         /// <summary>
         /// Create a new location
@@ -72,8 +66,6 @@ namespace CraftSharp
         /// <returns>TRUE if the locations are equals</returns>
         public override bool Equals(object obj)
         {
-            if (obj == null)
-                return false;
             if (obj is BlockLoc)
             {
                 return ((int)this.X) == ((int)((BlockLoc)obj).X)
@@ -91,10 +83,6 @@ namespace CraftSharp
         /// <returns>TRUE if the locations are equals</returns>
         public static bool operator ==(BlockLoc loc1, BlockLoc loc2)
         {
-            if (loc1 == null && loc2 == null)
-                return true;
-            if (loc1 == null || loc2 == null)
-                return false;
             return loc1.Equals(loc2);
         }
 
@@ -106,10 +94,6 @@ namespace CraftSharp
         /// <returns>TRUE if the locations are equals</returns>
         public static bool operator !=(BlockLoc loc1, BlockLoc loc2)
         {
-            if (loc1 == null && loc2 == null)
-                return false;
-            if (loc1 == null || loc2 == null)
-                return true;
             return !loc1.Equals(loc2);
         }
 
@@ -174,7 +158,7 @@ namespace CraftSharp
         /// <returns>String representation of the location</returns>
         public override string ToString()
         {
-            return string.Format("X: {0} Y: {1} Z: {2}", X, Y, Z);
+            return $"X: {X} Y: {Y} Z: {Z}";
         }
 
         public Location ToLocation()

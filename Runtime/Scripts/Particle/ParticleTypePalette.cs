@@ -12,7 +12,7 @@ namespace CraftSharp
         private static readonly char SP = Path.DirectorySeparatorChar;
 
         public static readonly ParticleTypePalette INSTANCE = new();
-        public override string Name => "ParticleType Palette";
+        protected override string Name => "ParticleType Palette";
         protected override ParticleType UnknownObject => ParticleType.DUMMY_PARTICLE_TYPE;
 
         protected override void ClearEntries()

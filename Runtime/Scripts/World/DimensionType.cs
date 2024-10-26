@@ -118,6 +118,11 @@ namespace CraftSharp
         public DimensionType()
         {
             this.Id = new ResourceLocation("overworld");
+
+            this.minY = -64;
+            this.height = 384;
+            this.maxY = this.minY + this.height - 1;
+            this.logicalHeight = 384;
         }
 
         /// <summary>

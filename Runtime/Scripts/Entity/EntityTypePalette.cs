@@ -12,7 +12,7 @@ namespace CraftSharp
         private static readonly char SP = Path.DirectorySeparatorChar;
 
         public static readonly EntityTypePalette INSTANCE = new();
-        public override string Name => "EntityType Palette";
+        protected override string Name => "EntityType Palette";
         protected override EntityType UnknownObject => EntityType.DUMMY_ENTITY_TYPE;
 
         /// <summary>

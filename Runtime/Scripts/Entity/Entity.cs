@@ -10,9 +10,9 @@ namespace CraftSharp
     public class Entity
     {
         /// <summary>
-        /// ID of the entity on the Minecraft server
+        /// Id of the entity on the Minecraft server
         /// </summary>
-        public int ID;
+        public int Id;
 
         /// <summary>
         /// UUID of the entity if it is a player.
@@ -108,12 +108,12 @@ namespace CraftSharp
         /// <summary>
         /// Create a new entity based on Entity ID, Entity Type and location
         /// </summary>
-        /// <param name="ID">Entity ID</param>
+        /// <param name="Id">Entity ID</param>
         /// <param name="type">Entity Type Enum</param>
         /// <param name="location">Entity location</param>
-        public Entity(int ID, EntityType type, Location location)
+        public Entity(int Id, EntityType type, Location location)
         {
-            this.ID = ID;
+            this.Id = Id;
             this.Type = type;
             this.Location = location;
             this.Health = 1F;
@@ -125,12 +125,12 @@ namespace CraftSharp
         /// <summary>
         /// Create a new entity based on Entity ID, Entity Type and location
         /// </summary>
-        /// <param name="ID">Entity ID</param>
+        /// <param name="Id">Entity ID</param>
         /// <param name="type">Entity Type Enum</param>
         /// <param name="location">Entity location</param>
-        public Entity(int ID, EntityType type, Location location, byte yaw, byte pitch, byte headYaw, int objectData)
+        public Entity(int Id, EntityType type, Location location, byte yaw, byte pitch, byte headYaw, int objectData)
         {
-            this.ID = ID;
+            this.Id = Id;
             this.Type = type;
             this.Location = location;
             this.Health = 1F;
@@ -146,14 +146,14 @@ namespace CraftSharp
         /// <summary>
         /// Create a new entity based on Entity ID, Entity Type, location, name and UUID
         /// </summary>
-        /// <param name="ID">Entity ID</param>
+        /// <param name="Id">Entity ID</param>
         /// <param name="type">Entity Type Enum</param>
         /// <param name="location">Entity location</param>
         /// <param name="uuid">Player uuid</param>
         /// <param name="name">Player name</param>
-        public Entity(int ID, EntityType type, Location location, Guid uuid, string? name)
+        public Entity(int Id, EntityType type, Location location, Guid uuid, string? name)
         {
-            this.ID = ID;
+            this.Id = Id;
             this.Type = type;
             this.Location = location;
             this.UUID = uuid;
@@ -166,7 +166,7 @@ namespace CraftSharp
 
         public override string ToString()
         {
-            return "Entity " + ID + " (" + Type.ToString() + ")";
+            return "Entity " + Id + " (" + Type.ToString() + ")";
         }
     }
 }

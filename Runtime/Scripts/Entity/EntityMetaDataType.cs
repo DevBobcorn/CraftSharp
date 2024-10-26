@@ -38,6 +38,7 @@ namespace CraftSharp
         OptionalBlockId,
         Nbt,
         Particle,
+        Particles, // Added in 1.20.5
         /// <summary>
         /// VarInt x3
         /// </summary>
@@ -51,6 +52,7 @@ namespace CraftSharp
         /// VarInt
         /// </summary>
         CatVariant,
+        WolfVariant, // Added in 1.20.5
         FrogVariant,
         /// <summary>
         /// String + Position
@@ -68,6 +70,7 @@ namespace CraftSharp
         /// VarInt
         /// </summary>
         SnifferState,
+        ArmadilloState,
         /// <summary>
         /// Float x3
         /// </summary>
