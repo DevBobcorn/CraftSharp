@@ -66,7 +66,7 @@ namespace CraftSharp
                 EntityMetaDataType.String                 => typeof (string),
                 EntityMetaDataType.Chat                   => typeof (string),
                 EntityMetaDataType.OptionalChat           => typeof (string),
-                EntityMetaDataType.Slot                   => typeof (string),
+                EntityMetaDataType.Slot                   => typeof (ItemStack),
                 EntityMetaDataType.Boolean                => typeof (bool),
                 EntityMetaDataType.Rotation               => typeof (Vector3),
                 EntityMetaDataType.Position               => typeof (Location),

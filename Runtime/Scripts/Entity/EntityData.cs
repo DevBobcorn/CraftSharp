@@ -7,7 +7,7 @@ namespace CraftSharp
     /// <summary>
     /// Represents an entity evolving into a Minecraft world
     /// </summary>
-    public class Entity
+    public class EntityData
     {
         /// <summary>
         /// Id of the entity on the Minecraft server
@@ -23,21 +23,6 @@ namespace CraftSharp
         /// Nickname of the entity if it is a player.
         /// </summary>
         public string? Name;
-        
-        /// <summary>
-        /// CustomName of the entity.
-        /// </summary>
-        public string? CustomNameJson;
-        
-        /// <summary>
-        /// IsCustomNameVisible of the entity.
-        /// </summary>
-        public bool IsCustomNameVisible;
-
-        /// <summary>
-        /// CustomName of the entity.
-        /// </summary>
-        public string? CustomName;
 
         /// <summary>
         /// Entity type
@@ -86,24 +71,9 @@ namespace CraftSharp
         public float MaxHealth;
         
         /// <summary>
-        /// Item of the entity if ItemFrame or Item
-        /// </summary>
-        public ItemStack? Item;
-        
-        /// <summary>
-        /// Entity pose in the Minecraft world
-        /// </summary>
-        public EntityPose Pose;
-        
-        /// <summary>
         /// Entity metadata
         /// </summary>
         public Dictionary<int, object?>? Metadata;
-
-        /// <summary>
-        /// Entity equipment
-        /// </summary>
-        public Dictionary<int, ItemStack> Equipment;
 
         /// <summary>
         /// Create a new entity based on Entity ID, Entity Type and location
@@ -111,15 +81,13 @@ namespace CraftSharp
         /// <param name="Id">Entity ID</param>
         /// <param name="type">Entity Type Enum</param>
         /// <param name="location">Entity location</param>
-        public Entity(int Id, EntityType type, Location location)
+        public EntityData(int Id, EntityType type, Location location)
         {
             this.Id = Id;
             this.Type = type;
             this.Location = location;
             this.Health = 1F;
             this.MaxHealth = 1F;
-            this.Equipment = new Dictionary<int, ItemStack>();
-            this.Item = null;
         }
 
         /// <summary>
@@ -128,15 +96,13 @@ namespace CraftSharp
         /// <param name="Id">Entity ID</param>
         /// <param name="type">Entity Type Enum</param>
         /// <param name="location">Entity location</param>
-        public Entity(int Id, EntityType type, Location location, byte yaw, byte pitch, byte headYaw, int objectData)
+        public EntityData(int Id, EntityType type, Location location, byte yaw, byte pitch, byte headYaw, int objectData)
         {
             this.Id = Id;
             this.Type = type;
             this.Location = location;
             this.Health = 1F;
             this.MaxHealth = 1F;
-            this.Equipment = new Dictionary<int, ItemStack>();
-            this.Item = null;
             this.Yaw = GetYawFromByte(yaw);
             this.Pitch = GetPitchFromByte(pitch);
             this.HeadYaw = GetHeadYawFromByte(headYaw);
@@ -151,7 +117,7 @@ namespace CraftSharp
         /// <param name="location">Entity location</param>
         /// <param name="uuid">Player uuid</param>
         /// <param name="name">Player name</param>
-        public Entity(int Id, EntityType type, Location location, Guid uuid, string? name)
+        public EntityData(int Id, EntityType type, Location location, Guid uuid, string? name)
         {
             this.Id = Id;
             this.Type = type;
@@ -160,8 +126,6 @@ namespace CraftSharp
             this.Name = name;
             this.Health = 1F;
             this.MaxHealth = 1F;
-            this.Equipment = new Dictionary<int, ItemStack>();
-            this.Item = null;
         }
 
         public override string ToString()
