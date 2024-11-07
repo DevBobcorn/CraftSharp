@@ -22,6 +22,9 @@ namespace CraftSharp
         public bool? AlwaysEdible;
         public bool? FastFood;
 
+        // Tier level for tiered item
+        public TierLevel? TierLevel;
+
         public bool IsStackable => StackLimit > 1;
 
         public Item(ResourceLocation itemId, int stackLimit, ItemRarity rarity, ItemActionType actionType, bool edible, ResourceLocation? itemBlock)

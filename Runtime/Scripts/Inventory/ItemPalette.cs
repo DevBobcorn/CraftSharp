@@ -126,7 +126,7 @@ namespace CraftSharp
                             "knowledge_book"   => ItemActionType.KnowledgeBook,
                             "debug_stick"      => ItemActionType.DebugStick,
 
-                            _                  => throw new NotImplementedException($"Item action type {item.Value.Properties["action_type"].StringValue} is not defined!")
+                            _                  => throw new InvalidDataException($"Item action type {item.Value.Properties["action_type"].StringValue} is not defined!")
                         };
 
                         var stackLimit = int.Parse(item.Value.Properties["stack_limit"].StringValue);
@@ -140,6 +140,28 @@ namespace CraftSharp
                         }
 
                         Item newItem = new(itemId, stackLimit, rarity, actionType, edible, itemBlockId);
+
+                        if (edible) // Set food settings
+                        {
+                            newItem.AlwaysEdible = bool.Parse(item.Value.Properties["always_edible"].StringValue);
+                            newItem.FastFood = bool.Parse(item.Value.Properties["fast_food"].StringValue);
+                        }
+
+                        if (actionType == ItemActionType.Axe || actionType == ItemActionType.Pickaxe || actionType == ItemActionType.Shovel ||
+                            actionType == ItemActionType.Hoe || actionType == ItemActionType.Sword)
+                        {
+                            newItem.TierLevel = item.Value.Properties["tier"].StringValue switch
+                            {
+                                "wood"      => TierLevel.Wood,
+                                "stone"     => TierLevel.Stone,
+                                "iron"      => TierLevel.Iron,
+                                "diamond"   => TierLevel.Diamond,
+                                "netherite" => TierLevel.Netherite,
+                                "gold"      => TierLevel.Gold,
+
+                                _           => throw new InvalidDataException($"Item tier {item.Value.Properties["tier"].StringValue} is not defined!")
+                            };
+                        }
 
                         AddEntry(itemId, numId, newItem);
                     }
