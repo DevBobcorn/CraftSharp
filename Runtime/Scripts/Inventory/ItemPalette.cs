@@ -66,7 +66,7 @@ namespace CraftSharp
                     {
                         var itemId = ResourceLocation.FromString(item.Key);
 
-                        ItemRarity rarity = item.Value.Properties["rarity"].StringValue switch
+                        var rarity = item.Value.Properties["rarity"].StringValue switch
                         {
                             "common"   => ItemRarity.Common,
                             "uncommon" => ItemRarity.Uncommon,
@@ -76,8 +76,61 @@ namespace CraftSharp
                             _          => ItemRarity.Common
                         };
 
-                        int stackLimit = int.Parse(item.Value.Properties["stack_limit"].StringValue);
-                        bool edible = bool.Parse(item.Value.Properties["edible"].StringValue);
+                        var actionType = item.Value.Properties["action_type"].StringValue switch
+                        {
+                            "none"             => ItemActionType.None,
+
+                            "block"            => ItemActionType.Block,
+                            "lighter"          => ItemActionType.Lighter,
+                            "filled_bucket"    => ItemActionType.FilledBucket,
+
+                            "shears"           => ItemActionType.Shears,
+                            "axe"              => ItemActionType.Axe,
+                            "pickaxe"          => ItemActionType.Pickaxe,
+                            "shovel"           => ItemActionType.Shovel,
+                            "hoe"              => ItemActionType.Hoe,
+                            "sword"            => ItemActionType.Sword,
+                            "bow"              => ItemActionType.Bow,
+                            "crossbow"         => ItemActionType.Crossbow,
+                            "trident"          => ItemActionType.Trident,
+                            "shield"           => ItemActionType.Shield,
+
+                            "drinkable_bottle" => ItemActionType.DrinkableBottle,
+                            "drinkable_bucket" => ItemActionType.DrinkableBucket,
+                            "food_on_a_stick"  => ItemActionType.FoodOnAStick,
+                            "empty_map"        => ItemActionType.EmptyMap,
+                            "writable_book"    => ItemActionType.WritableBook,
+                            "written_book"     => ItemActionType.WrittenBook,
+
+                            "bone_meal"        => ItemActionType.BoneMeal,
+                            "honeycomb"        => ItemActionType.Honeycomb,
+                            "record"           => ItemActionType.Record,
+                            "empty_bottle"     => ItemActionType.EmptyBottle,
+                            "empty_bucket"     => ItemActionType.EmptyBucket,
+
+                            "name_tag"         => ItemActionType.NameTag,
+
+                            "splash_potion"    => ItemActionType.SplashPotion,
+                            "lingering_potion" => ItemActionType.LingeringPotion,
+                            "spawn_egg"        => ItemActionType.SpawnEgg,
+                            "firework_rocket"  => ItemActionType.FireworkRocket,
+                            "hanging_entity"   => ItemActionType.HangingEntity,
+                            "armor_stand"      => ItemActionType.ArmorStand,
+                            "boat"             => ItemActionType.Boat,
+                            "minecart"         => ItemActionType.Minecart,
+                            "end_crystal"      => ItemActionType.EndCrystal,
+                            "ender_pearl"      => ItemActionType.EnderPearl,
+                            "projectile"       => ItemActionType.Projectile,
+                            "fishing_rod"      => ItemActionType.FishingRod,
+                            "lead"             => ItemActionType.Lead,
+                            "knowledge_book"   => ItemActionType.KnowledgeBook,
+                            "debug_stick"      => ItemActionType.DebugStick,
+
+                            _                  => throw new NotImplementedException($"Item action type {item.Value.Properties["action_type"].StringValue} is not defined!")
+                        };
+
+                        var stackLimit = int.Parse(item.Value.Properties["stack_limit"].StringValue);
+                        var edible = bool.Parse(item.Value.Properties["edible"].StringValue);
 
                         ResourceLocation? itemBlockId = null;
 
@@ -86,7 +139,7 @@ namespace CraftSharp
                             itemBlockId = ResourceLocation.FromString(blockId.StringValue);
                         }
 
-                        Item newItem = new(itemId, stackLimit, rarity, edible, itemBlockId);
+                        Item newItem = new(itemId, stackLimit, rarity, actionType, edible, itemBlockId);
 
                         AddEntry(itemId, numId, newItem);
                     }

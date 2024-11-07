@@ -19,7 +19,7 @@ namespace CraftSharp
         float Damage,
         int EnchantmentValue)
     {
-        public static readonly Dictionary<TierLevel, ItemTier> Tiers = new Dictionary<TierLevel, ItemTier>
+        public static readonly Dictionary<TierLevel, ItemTier> Tiers = new()
         {
             { TierLevel.Wood, new ItemTier(0, 59, 2.0f, 0.0f, 15) },
             { TierLevel.Stone, new ItemTier(1, 131, 4.0f, 1.0f, 5) },
