@@ -60,7 +60,7 @@
         EndCrystal,
         EyeOfEnder,
         EnderPearl,
-        Projectile,      // Egg / Snowball / Experience bottle
+        ThrowableItem,   // Egg / Snowball / Experience bottle
         MobBucket,       // Fish bucket / Axolotl bucket / Tadpole bucket
     }
 }

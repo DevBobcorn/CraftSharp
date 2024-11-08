@@ -129,7 +129,7 @@ namespace CraftSharp
                             "end_crystal"      => ItemActionType.EndCrystal,
                             "eye_of_ender"     => ItemActionType.EyeOfEnder,
                             "ender_pearl"      => ItemActionType.EnderPearl,
-                            "projectile"       => ItemActionType.Projectile,
+                            "throwable_item"   => ItemActionType.ThrowableItem,
                             "mob_bucket"       => ItemActionType.MobBucket,                            
 
                             _                  => throw new InvalidDataException($"Item action type {item.Value.Properties["action_type"].StringValue} is not defined!")
