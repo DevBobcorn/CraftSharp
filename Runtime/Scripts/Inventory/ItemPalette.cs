@@ -156,14 +156,14 @@ namespace CraftSharp
                         if (actionType == ItemActionType.Axe || actionType == ItemActionType.Pickaxe || actionType == ItemActionType.Shovel ||
                             actionType == ItemActionType.Hoe || actionType == ItemActionType.Sword)
                         {
-                            newItem.TierLevel = item.Value.Properties["tier"].StringValue switch
+                            newItem.TierType = item.Value.Properties["tier"].StringValue switch
                             {
-                                "wood"      => TierLevel.Wood,
-                                "stone"     => TierLevel.Stone,
-                                "iron"      => TierLevel.Iron,
-                                "diamond"   => TierLevel.Diamond,
-                                "netherite" => TierLevel.Netherite,
-                                "gold"      => TierLevel.Gold,
+                                "wood"      => TierType.Wood,
+                                "stone"     => TierType.Stone,
+                                "iron"      => TierType.Iron,
+                                "diamond"   => TierType.Diamond,
+                                "netherite" => TierType.Netherite,
+                                "gold"      => TierType.Gold,
 
                                 _           => throw new InvalidDataException($"Item tier {item.Value.Properties["tier"].StringValue} is not defined!")
                             };

@@ -22,8 +22,8 @@ namespace CraftSharp
         public bool? AlwaysEdible;
         public bool? FastFood;
 
-        // Tier level for tiered item
-        public TierLevel? TierLevel;
+        // Tier type for tiered item
+        public TierType? TierType;
 
         public bool IsStackable => StackLimit > 1;
 

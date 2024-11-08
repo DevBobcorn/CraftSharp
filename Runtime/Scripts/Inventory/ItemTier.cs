@@ -2,7 +2,7 @@
 
 namespace CraftSharp
 {
-    public enum TierLevel
+    public enum TierType
     {
         Wood,
         Stone,
@@ -19,14 +19,14 @@ namespace CraftSharp
         float Damage,
         int EnchantmentValue)
     {
-        public static readonly Dictionary<TierLevel, ItemTier> Tiers = new()
+        public static readonly Dictionary<TierType, ItemTier> Tiers = new()
         {
-            { TierLevel.Wood, new ItemTier(0, 59, 2.0f, 0.0f, 15) },
-            { TierLevel.Stone, new ItemTier(1, 131, 4.0f, 1.0f, 5) },
-            { TierLevel.Iron, new ItemTier(2, 250, 6.0f, 2.0f, 14) },
-            { TierLevel.Diamond, new ItemTier(3, 1561, 8.0f, 3.0f, 10) },
-            { TierLevel.Netherite, new ItemTier(4, 2031, 9.0f, 4.0f, 15) },
-            { TierLevel.Gold, new ItemTier(0, 32, 12.0f, 0.0f, 22) }
+            { TierType.Wood, new ItemTier(0, 59, 2.0f, 0.0f, 15) },
+            { TierType.Stone, new ItemTier(1, 131, 4.0f, 1.0f, 5) },
+            { TierType.Iron, new ItemTier(2, 250, 6.0f, 2.0f, 14) },
+            { TierType.Diamond, new ItemTier(3, 1561, 8.0f, 3.0f, 10) },
+            { TierType.Netherite, new ItemTier(4, 2031, 9.0f, 4.0f, 15) },
+            { TierType.Gold, new ItemTier(0, 32, 12.0f, 0.0f, 22) }
         };
 
         public int Level { get; } = Level;
