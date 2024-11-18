@@ -53,7 +53,7 @@ namespace CraftSharp
             };
         }
 
-        public static Type GetType(object value, EntityMetaDataType dataType)
+        public static Type GetType(EntityMetaDataType dataType)
         {
             return dataType switch {
                 EntityMetaDataType.Byte                   => typeof (byte),

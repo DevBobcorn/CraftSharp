@@ -37,6 +37,9 @@ namespace CraftSharp
         public readonly bool NoCollision;
         public readonly bool NoOcclusion;
 
+        public BlockShape Shape;
+        public BlockShape CollisionShape;
+
         // A block can have full collider box even if it doesn't collide with player,
         // in this case the collider is used for raycast detection. (e.g. Tall Grass)
         public bool FullShape;

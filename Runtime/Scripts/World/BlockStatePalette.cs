@@ -275,15 +275,15 @@ namespace CraftSharp
                             }
                         }
 
-                        float hardness = float.Parse(state.Properties["hardness"]
+                        var hardness = float.Parse(state.Properties["hardness"]
                                 .StringValue, CultureInfo.InvariantCulture);
 
-                        int fullFaces = int.Parse(state.Properties["full_faces"].StringValue);
-                        bool noCollision = bool.Parse(state.Properties["no_collision"].StringValue);
-                        bool noOcclusion = bool.Parse(state.Properties["no_occlusion"].StringValue);
+                        var fullFaces = int.Parse(state.Properties["full_faces"].StringValue);
+                        var noCollision = bool.Parse(state.Properties["no_collision"].StringValue);
+                        var noOcclusion = bool.Parse(state.Properties["no_occlusion"].StringValue);
 
-                        byte lightEmission = byte.Parse(state.Properties["light_emission"].StringValue);
-                        byte lightBlockage = byte.Parse(state.Properties["light_blockage"].StringValue);
+                        var lightEmission = byte.Parse(state.Properties["light_emission"].StringValue);
+                        var lightBlockage = byte.Parse(state.Properties["light_blockage"].StringValue);
 
                         ResourceLocation? fluidStateId = null;
 
@@ -292,13 +292,38 @@ namespace CraftSharp
                             fluidStateId = ResourceLocation.FromString(fluidState.StringValue);
                         }
 
+                        BlockShape shape, collisionShape;
+
+                        if (state.Properties.TryGetValue("aabbs", out var aabbList))
+                        {
+                            var aabbs = (aabbList.DataArray).Select(x => BlockShapeAABB.FromString(x.StringValue)).ToArray();
+                            shape = new BlockShape(aabbs);
+
+                            if (state.Properties.TryGetValue("collision_aabbs", out var colAabbList))
+                            {
+                                var colAabbs = (colAabbList.DataArray).Select(x => BlockShapeAABB.FromString(x.StringValue)).ToArray();
+                                collisionShape = new BlockShape(colAabbs);
+                            }
+                            else
+                            {
+                                collisionShape = shape;
+                            }
+                        }
+                        else
+                        {
+                            shape = BlockShape.EMPTY;
+                            collisionShape = BlockShape.EMPTY;
+                        }
+
                         states[stateId] = new BlockState(blockId, blastResistance, hardness, noSolidMesh, fullFaces,
                                 noCollision, noOcclusion, lightBlockage, lightEmission, fluidStateId, props)
                         {
                             // Assign non-readonly fields
                             Friction = friction,
                             JumpFactor = jumpFactor,
-                            SpeedFactor = speedFactor
+                            SpeedFactor = speedFactor,
+                            Shape = shape,
+                            CollisionShape = collisionShape,
                         };
                     }
             
