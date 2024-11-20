@@ -153,6 +153,8 @@ namespace CraftSharp
         
         public readonly Dictionary<ResourceLocation, RenderType> RenderTypeTable = new();
 
+        public readonly Dictionary<ResourceLocation, OffsetType> OffsetTypeTable = new();
+
         private readonly Dictionary<int, Func<World, BlockLoc, BlockState, float3>> blockColorRules = new();
 
         private static readonly float3 ORIGINAL_BLOCK_COLOR = new(1F);
@@ -207,6 +209,7 @@ namespace CraftSharp
             base.ClearEntries();
             blockColorRules.Clear();
             RenderTypeTable.Clear();
+            OffsetTypeTable.Clear();
         }
 
         /// <summary>
@@ -406,9 +409,19 @@ namespace CraftSharp
                 {
                     var blockId = ResourceLocation.FromString(pair.Key);
 
+                    var renderTypeStr = pair.Value.StringValue.ToLower();
+                    var offsetTypeStr = string.Empty;
+
+                    if (renderTypeStr.Contains('+'))
+                    {
+                        var split = renderTypeStr.Split('+', 1);
+                        renderTypeStr = split[0];
+                        offsetTypeStr = split[1];
+                    }
+
                     if (restBlockIds.Contains(blockId))
                     {
-                        var type = pair.Value.StringValue.ToLower() switch
+                        var renderType = renderTypeStr switch
                         {
                             "solid"         => RenderType.SOLID,
                             "cutout"        => RenderType.CUTOUT,
@@ -423,7 +436,17 @@ namespace CraftSharp
                             _               => RenderType.SOLID
                         };
 
-                        RenderTypeTable.Add(blockId, type);
+                        var offsetType = offsetTypeStr switch
+                        {
+                            "xz"            => OffsetType.XZ,
+                            "xyz"           => OffsetType.XYZ,
+
+                            _               => OffsetType.NONE
+                        };
+
+                        RenderTypeTable.Add(blockId, renderType);
+                        OffsetTypeTable.Add(blockId, offsetType);
+
                         restBlockIds.Remove(blockId);
                     }
                 }
@@ -431,6 +454,7 @@ namespace CraftSharp
                 foreach (var blockId in restBlockIds) // Other blocks which doesn't have its render type specifically stated
                 {
                     RenderTypeTable.Add(blockId, RenderType.SOLID); // Default to solid
+                    OffsetTypeTable.Add(blockId, OffsetType.NONE);  // Default to none
                 }
             }
             catch (Exception e)
