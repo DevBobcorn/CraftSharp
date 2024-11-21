@@ -414,7 +414,7 @@ namespace CraftSharp
 
                     if (renderTypeStr.Contains('+'))
                     {
-                        var split = renderTypeStr.Split('+', 1);
+                        var split = renderTypeStr.Split('+', 2);
                         renderTypeStr = split[0];
                         offsetTypeStr = split[1];
                     }
