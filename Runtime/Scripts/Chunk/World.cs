@@ -492,7 +492,6 @@ namespace CraftSharp
             var result = new ChunkBuildData();
             var blocs = result.Blocks = new Block[Chunk.PADDED, Chunk.PADDED, Chunk.PADDED];
             var light = result.Light = new byte[Chunk.PADDED, Chunk.PADDED, Chunk.PADDED];
-            var allao = result.AO = new bool[Chunk.PADDED, Chunk.PADDED, Chunk.PADDED];
             var color = result.Color = new float3[Chunk.SIZE, Chunk.SIZE, Chunk.SIZE];
             
             int minCX = chunkX - 1;  // Min chunk X
@@ -529,7 +528,6 @@ namespace CraftSharp
                                     var bloc = chunkColumn.GetBlock(blocLoc);
                                     blocs[resX, resY, resZ] = bloc;
                                     light[resX, resY, resZ] = chunkColumn.GetBlockLight(blocLoc);
-                                    allao[resX, resY, resZ] = chunkColumn.GetAmbientOcclusion(blocLoc);
                                     
                                     if (resX is > 0 and <= Chunk.SIZE && resY is > 0 and <= Chunk.SIZE && resZ is > 0 and <= Chunk.SIZE)
                                     {
@@ -556,7 +554,6 @@ namespace CraftSharp
 
                                     blocs[resX, resY, resZ] = AIR_INSTANCE;
                                     light[resX, resY, resZ] = 0;
-                                    allao[resX, resY, resZ] = false;
                                 }
                             }
                         }
@@ -564,15 +561,6 @@ namespace CraftSharp
                 }
             
             return result;
-        }
-
-        /// <summary>
-        /// Check if the block at specified location causes ambient occlusion
-        /// </summary>
-        public bool GetAmbientOcclusion(BlockLoc blockLoc)
-        {
-            var column = GetChunkColumn(blockLoc);
-            return column != null && column.GetAmbientOcclusion(blockLoc);
         }
 
         /// <summary>
