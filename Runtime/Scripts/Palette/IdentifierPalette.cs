@@ -112,6 +112,32 @@ namespace CraftSharp
         }
 
         /// <summary>
+        /// Update object by id
+        /// </summary>
+        public void UpdateById(ResourceLocation id, T obj)
+        {
+            if (EntriesFrozen)
+            {
+                throw new InvalidOperationException("Cannot update object value for frozen palette!");
+            }
+
+            if (idToNumId.TryGetValue(id, out int numId))
+            {
+                if (objectToNumId.TryGetValue(obj, out int registeredNumId))
+                {
+                    var registeredId = numIdToId[registeredNumId];
+                    throw new InvalidOperationException($"The object is already registered with id [{registeredNumId}] {registeredId}");
+                }
+                else
+                {
+                    objectToNumId.Remove(numIdToObject[numId]);
+                    numIdToObject[numId] = obj;
+                    objectToNumId.Add(obj, numId);
+                }
+            }
+        }
+
+        /// <summary>
         /// Add an entry to the palette
         /// </summary>
         protected virtual void AddEntry(ResourceLocation id, int numId, T obj)

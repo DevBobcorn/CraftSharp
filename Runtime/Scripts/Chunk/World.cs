@@ -21,6 +21,8 @@ namespace CraftSharp
         public static readonly Biome DUMMY_BIOME = new(ResourceLocation.INVALID,
                 0, DEFAULT_FOLIAGE, DEFAULT_GRASS, DEFAULT_WATER, 0, 0);
         
+        public static readonly DimensionType DUMMY_DIMENSION_TYPE = new(ResourceLocation.INVALID, new());
+        
         #region Static data storage and access
         
         /// <summary>
@@ -29,7 +31,27 @@ namespace CraftSharp
         private static DimensionType curDimensionType = new();
 
         private static ResourceLocation curDimensionId = ResourceLocation.INVALID;
-        private static readonly Dictionary<ResourceLocation, DimensionType> knownDimensionTypes = new();
+
+        public static bool DimensionTypesInitialized { get; private set; } = false;
+
+        private class DimensionTypePalette : IdentifierPalette<DimensionType>
+        {
+            protected override string Name => "Dimension Type Palette";
+
+            public void Register(ResourceLocation id, int numId, DimensionType obj)
+            {
+                base.AddEntry(id, numId, obj);
+            }
+
+            public void Clear()
+            {
+                base.ClearEntries();
+            }
+
+            protected override DimensionType UnknownObject => DUMMY_DIMENSION_TYPE;
+        }
+
+        private static readonly DimensionTypePalette DimensionTypeRegistry = new();
 
         public static bool BiomesInitialized { get; private set; } = false;
 
@@ -51,7 +73,7 @@ namespace CraftSharp
         }
 
         /// <summary>
-        /// The biomes of the world
+        /// Known biomes of the world
         /// </summary>
         private static readonly BiomePalette BiomeRegistry = new();
 
@@ -59,11 +81,29 @@ namespace CraftSharp
 
         public static readonly ResourceLocation WORLDGEN_BIOME_ID = new("worldgen/biome");
 
-        // TODO: Move this to a JSON file.
-        private static readonly (ResourceLocation id, int numId, object? obj)[] BUILTIN_DIMENSION_TYPES = {
+        private static readonly ResourceLocation OVERWORLD_ID       = new("overworld");
+        private static readonly ResourceLocation OVERWORLD_CAVES_ID = new("overworld_caves");
+        private static readonly ResourceLocation THE_END_ID         = new("the_end");
+        private static readonly ResourceLocation THE_NETHER_ID      = new("the_nether");
+
+        private static readonly Dictionary<ResourceLocation, int> BUILTIN_DIMENSION_TYPE_NUM_IDS = new()
+        {
+            [OVERWORLD_ID]       = 0,
+            [OVERWORLD_CAVES_ID] = 1,
+            [THE_END_ID]         = 2,
+            [THE_NETHER_ID]      = 3,
+        };
+
+        /// <summary>
+        /// Builtin dimension type definitions
+        /// <br/>
+        /// TODO: Move this to a JSON file.
+        /// </summary>
+        private static readonly (ResourceLocation id, int numId, Dictionary<string, object> obj)[] BUILTIN_DIMENSION_TYPES =
+        {
             // Definition for minecraft:overworld
             (
-                new ResourceLocation("overworld"), 0,
+                OVERWORLD_ID, 0,
                 new Dictionary<string, object>
                 {
                     { "piglin_safe", (byte)0 },
@@ -93,7 +133,7 @@ namespace CraftSharp
             ),
             // Definition for minecraft:overworld_caves
             (
-                new ResourceLocation("overworld_caves"), 1,
+                OVERWORLD_CAVES_ID, 1,
                 new Dictionary<string, object>
                 {
                     { "piglin_safe", (byte)0 },
@@ -123,7 +163,7 @@ namespace CraftSharp
             ),
             // Definition for minecraft:the_end
             (
-                new ResourceLocation("the_end"), 2,
+                THE_END_ID, 2,
                 new Dictionary<string, object>
                 {
                     { "piglin_safe", (byte)0 },
@@ -154,7 +194,7 @@ namespace CraftSharp
             ),
             // Definition for minecraft:the_nether
             (
-                new ResourceLocation("the_nether"), 3,
+                THE_NETHER_ID, 3,
                 new Dictionary<string, object>
                 {
                     { "piglin_safe", (byte)1 },
@@ -179,48 +219,96 @@ namespace CraftSharp
             ),
         };
 
-        public static void LoadDefaultDimensions1206Plus()
-        {
-            StoreDimensionTypeList(BUILTIN_DIMENSION_TYPES);
-        }
-
         /// <summary>
         /// Storage of all dimensional type data - 1.19.1 and above
         /// </summary>
         public static void StoreDimensionTypeList((ResourceLocation id, int numId, object? obj)[] dimensionTypeList)
         {
-            foreach (var (dimensionId, _, dimensionDef) in dimensionTypeList)
+            foreach (var (dimensionId, numId, dimensionDef) in dimensionTypeList)
             {
                 Dictionary<string, object> dimensionType = (Dictionary<string, object>) dimensionDef!;
-                StoreOneDimensionType(dimensionId, dimensionType);
+                StoreOneDimensionType(dimensionId, numId, dimensionType);
             }
+
+            DimensionTypesInitialized = true;
         }
 
         /// <summary>
         /// Store one dimension type - Directly used in 1.16.2 to 1.18.2
+        /// <br/>
+        /// Candidate num id is used when the dimension type is not previously
+        /// registered yet, and this dimension type is not builtin.
         /// </summary>
-        /// <param name="dimensionTypeId">Dimension name</param>
-        /// <param name="dimensionType">Dimension Type nbt data</param>
-        public static void StoreOneDimensionType(ResourceLocation dimensionTypeId, Dictionary<string, object> dimensionType)
+        public static void StoreOneDimensionType(ResourceLocation dimensionTypeId, int candidatedNumId, Dictionary<string, object> dimensionTypeDef)
         {
-            if (knownDimensionTypes.ContainsKey(dimensionTypeId))
-                knownDimensionTypes.Remove(dimensionTypeId);
-            knownDimensionTypes.Add(dimensionTypeId, new DimensionType(dimensionTypeId, dimensionType));
+            if (DimensionTypeRegistry.CheckId(dimensionTypeId)) // Update existing entry with same id
+            {
+                DimensionTypeRegistry.UpdateById(dimensionTypeId, new DimensionType(dimensionTypeId, dimensionTypeDef));
+
+                Debug.Log($"Updated dimension type [{DimensionTypeRegistry.GetNumIdById(dimensionTypeId)}] {dimensionTypeId}");
+            }
+            else // Add a new entry with given id
+            {
+                if (BUILTIN_DIMENSION_TYPE_NUM_IDS.TryGetValue(dimensionTypeId, out int numId))
+                {
+                    candidatedNumId = numId; // Use builtin num id if this dimension type is builtin type
+                }
+
+                DimensionTypeRegistry.Register(dimensionTypeId, candidatedNumId, new DimensionType(dimensionTypeId, dimensionTypeDef));
+
+                Debug.Log($"Registered dimension type [{DimensionTypeRegistry.GetNumIdById(dimensionTypeId)}] {dimensionTypeId}");
+            }
+        }
+
+        public static int GetNextDimensionTypeNumIdCandidate()
+        {
+            int numId = 10000; // Assign a new num id, start from 10000 to avoid clash with received num ids
+            while (DimensionTypeRegistry.CheckNumId(numId)) numId += 1;
+
+            return numId;
+        }
+        
+        /// <summary>
+        /// Get dimension type id by num id
+        /// </summary>
+        public static ResourceLocation GetDimensionTypeIdByNumId(int dimensionTypeNumId)
+        {
+            if (!DimensionTypeRegistry.CheckNumId(dimensionTypeNumId))
+            {
+                for (int i = 0; i < BUILTIN_DIMENSION_TYPES.Length; i++)
+                {
+                    if (BUILTIN_DIMENSION_TYPES[i].numId == dimensionTypeNumId)
+                    {
+                        return BUILTIN_DIMENSION_TYPES[i].id;
+                    }
+                }
+
+                throw new InvalidOperationException($"Dimension type with num id {dimensionTypeNumId} is neither builtin nor registered");
+            }
+
+            return DimensionTypeRegistry.GetIdByNumId(dimensionTypeNumId);
         }
 
         /// <summary>
-        /// Set current dimension type - 1.16 and above
+        /// Set current dimension type
         /// </summary>
-        /// <param name="dimensionTypeId">	The id of the dimension type</param>
         public static void SetDimensionType(ResourceLocation dimensionTypeId)
         {
-            if (!knownDimensionTypes.ContainsKey(dimensionTypeId))
+            if (!DimensionTypeRegistry.CheckId(dimensionTypeId))
             {
-                knownDimensionTypes.Add(dimensionTypeId, new DimensionType());
-                Debug.LogWarning($"{dimensionTypeId} is not registered. Using a dummy overworld-like dimension type.");
+                if (BUILTIN_DIMENSION_TYPE_NUM_IDS.TryGetValue(dimensionTypeId, out int numId))
+                {
+                    StoreOneDimensionType(dimensionTypeId, numId, BUILTIN_DIMENSION_TYPES[numId].obj);
+                    Debug.LogWarning($"{dimensionTypeId} is not registered. Using builtin dimension type definition.");
+                }
+                else
+                {
+                    StoreOneDimensionType(dimensionTypeId, GetNextDimensionTypeNumIdCandidate(), new());
+                    Debug.LogWarning($"{dimensionTypeId} is not registered. Using a dummy overworld-like dimension type. ()");
+                }
             }
 
-            curDimensionType = knownDimensionTypes[dimensionTypeId]; // Should not fail
+            curDimensionType = DimensionTypeRegistry.GetById(dimensionTypeId);
         }
 
         /// <summary>
@@ -355,6 +443,18 @@ namespace CraftSharp
             };
 
             BiomeRegistry.Register(biomeId, numId, biome);
+        }
+
+        /// <summary>
+        /// Clear biome and dimension type registry
+        /// </summary>
+        public static void ClearWorldGenData()
+        {
+            BiomeRegistry.Clear();
+            DimensionTypeRegistry.Clear();
+
+            BiomesInitialized = false;
+            DimensionTypesInitialized = false;
         }
 
         #endregion
