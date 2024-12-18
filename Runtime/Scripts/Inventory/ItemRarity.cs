@@ -1,6 +1,6 @@
 namespace CraftSharp
 {
-    public enum ItemRarity
+    public enum ItemRarity : int
     {
         Common,    // White
         Uncommon,  // Yellow

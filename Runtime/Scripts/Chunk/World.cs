@@ -59,6 +59,131 @@ namespace CraftSharp
 
         public static readonly ResourceLocation WORLDGEN_BIOME_ID = new("worldgen/biome");
 
+        // TODO: Move this to a JSON file.
+        private static readonly (ResourceLocation id, int numId, object? obj)[] BUILTIN_DIMENSION_TYPES = {
+            // Definition for minecraft:overworld
+            (
+                new ResourceLocation("overworld"), 0,
+                new Dictionary<string, object>
+                {
+                    { "piglin_safe", (byte)0 },
+                    { "natural", 1 },
+                    { "ambient_light", 0.0 },
+                    { "monster_spawn_block_light_limit", 0 },
+                    { "infiniburn", "#minecraft:infiniburn_overworld" },
+                    { "respawn_anchor_works", 0 },
+                    { "has_skylight", 1 },
+                    { "bed_works", 1 },
+                    { "effects", "minecraft:overworld" },
+                    { "has_raids", 1 },
+                    { "logical_height", 384 },
+                    { "coordinate_scale", 1.0 },
+                    { "monster_spawn_light_level", new Dictionary<string, object>
+                        {
+                            { "min_inclusive", 0 },
+                            { "max_inclusive", 7 },
+                            { "type", "minecraft:uniform" }
+                        }
+                    },
+                    { "min_y", -64 },
+                    { "ultrawarm", 0 },
+                    { "has_ceiling", 0 },
+                    { "height", 384 }
+                }
+            ),
+            // Definition for minecraft:overworld_caves
+            (
+                new ResourceLocation("overworld_caves"), 1,
+                new Dictionary<string, object>
+                {
+                    { "piglin_safe", (byte)0 },
+                    { "natural", 1 },
+                    { "ambient_light", 0.0 },
+                    { "monster_spawn_block_light_limit", 0 },
+                    { "infiniburn", "#minecraft:infiniburn_overworld" },
+                    { "respawn_anchor_works", 0 },
+                    { "has_skylight", 1 },
+                    { "bed_works", 1 },
+                    { "effects", "minecraft:overworld" },
+                    { "has_raids", 1 },
+                    { "logical_height", 384 },
+                    { "coordinate_scale", 1.0 },
+                    { "monster_spawn_light_level", new Dictionary<string, object>
+                        {
+                            { "min_inclusive", 0 },
+                            { "max_inclusive", 7 },
+                            { "type", "minecraft:uniform" }
+                        }
+                    },
+                    { "min_y", -64 },
+                    { "ultrawarm", 0 },
+                    { "has_ceiling", 1 },
+                    { "height", 384 }
+                }
+            ),
+            // Definition for minecraft:the_end
+            (
+                new ResourceLocation("the_end"), 2,
+                new Dictionary<string, object>
+                {
+                    { "piglin_safe", (byte)0 },
+                    { "natural", 0 },
+                    { "ambient_light", 0.0 },
+                    { "monster_spawn_block_light_limit", 0 },
+                    { "infiniburn", "#minecraft:infiniburn_end" },
+                    { "respawn_anchor_works", 0 },
+                    { "has_skylight", 0 },
+                    { "bed_works", 0 },
+                    { "effects", "minecraft:the_end" },
+                    { "fixed_time", 6000 },
+                    { "has_raids", 1 },
+                    { "logical_height", 256 },
+                    { "coordinate_scale", 1.0 },
+                    { "monster_spawn_light_level", new Dictionary<string, object>
+                        {
+                            { "min_inclusive", 0 },
+                            { "max_inclusive", 7 },
+                            { "type", "minecraft:uniform" }
+                        }
+                    },
+                    { "min_y", 0 },
+                    { "ultrawarm", 0 },
+                    { "has_ceiling", 0 },
+                    { "height", 256 }
+                }
+            ),
+            // Definition for minecraft:the_nether
+            (
+                new ResourceLocation("the_nether"), 3,
+                new Dictionary<string, object>
+                {
+                    { "piglin_safe", (byte)1 },
+                    { "natural", 0 },
+                    { "ambient_light", 0.1 },
+                    { "monster_spawn_block_light_limit", 15 },
+                    { "infiniburn", "#minecraft:infiniburn_nether" },
+                    { "respawn_anchor_works", 1 },
+                    { "has_skylight", 0 },
+                    { "bed_works", 0 },
+                    { "effects", "minecraft:the_nether" },
+                    { "fixed_time", 18000 },
+                    { "has_raids", 0 },
+                    { "logical_height", 128 },
+                    { "coordinate_scale", 8.0 },
+                    { "monster_spawn_light_level", 7 },
+                    { "min_y", 0 },
+                    { "ultrawarm", 1 },
+                    { "has_ceiling", 1 },
+                    { "height", 256 }
+                }
+            ),
+        };
+
+        public static void LoadDefaultDimensions1206Plus()
+        {
+            StoreDimensionTypeList(BUILTIN_DIMENSION_TYPES);
+        }
+
         /// <summary>
         /// Storage of all dimensional type data - 1.19.1 and above
         /// </summary>
