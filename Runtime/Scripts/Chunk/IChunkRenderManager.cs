@@ -13,6 +13,11 @@ namespace CraftSharp
         public void SetBlock(BlockLoc blockLoc, Block block);
 
         /// <summary>
+        /// Get block at the specified location
+        /// </summary>
+        public Block GetBlock(BlockLoc blockLoc);
+
+        /// <summary>
         /// Add a new block entity render to the world
         /// </summary>
         public void AddBlockEntityRender(BlockLoc blockLoc, BlockEntityType blockEntityType, Dictionary<string, object>? tags = null);
