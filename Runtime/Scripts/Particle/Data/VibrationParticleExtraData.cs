@@ -1,9 +1,6 @@
 namespace CraftSharp
 {
-    /// <summary>
-    /// Data for 'minecraft:vibration' particle in 1.19.3+
-    /// </summary>
-    public record VibrationParticleExtraDataV2 : ParticleExtraData
+    public record VibrationParticleExtraData : ParticleExtraData
     {
         // For 'block' position source
         public Location Position;
@@ -15,7 +12,7 @@ namespace CraftSharp
         public int Ticks;
         public readonly bool UseBlockPosSource;
 
-        public VibrationParticleExtraDataV2(Location position, int ticks)
+        public VibrationParticleExtraData(Location position, int ticks)
         {
             Position = position;
             Ticks = ticks;
@@ -23,7 +20,7 @@ namespace CraftSharp
             UseBlockPosSource = true;
         }
 
-        public VibrationParticleExtraDataV2(int entityId, float eyeHeight, int ticks)
+        public VibrationParticleExtraData(int entityId, float eyeHeight, int ticks)
         {
             EntityId = entityId;
             EyeHeight = eyeHeight;

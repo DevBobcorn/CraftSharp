@@ -59,10 +59,12 @@ namespace CraftSharp
                                 "block"                 => ParticleExtraDataType.Block,
                                 "dust"                  => ParticleExtraDataType.Dust,
                                 "dust_color_transition" => ParticleExtraDataType.DustColorTransition,
-                                "color"                 => ParticleExtraDataType.Color,
+                                "color"                 => ParticleExtraDataType.EntityEffect,
                                 "sculk_charge"          => ParticleExtraDataType.SculkCharge,
                                 "item"                  => ParticleExtraDataType.Item,
-                                "vibration"             => ParticleExtraDataType.Vibration,
+                                "vibration"             => ParticleExtraDataType.Vibration,   // 1.17 - 1.18.2
+                                "vibration_v2"          => ParticleExtraDataType.VibrationV2, // 1.19 - 1.20.4
+                                "vibration_v3"          => ParticleExtraDataType.VibrationV3, // 1.20.5+
                                 "shriek"                => ParticleExtraDataType.Shriek,
 
                                 _                       => ParticleExtraDataType.None,

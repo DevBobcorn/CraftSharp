@@ -21,7 +21,7 @@
         /// <summary>
         /// Int
         /// </summary>
-        Color,               // Added in 1.20.5 for entity_effect
+        EntityEffect,        // Added in 1.20.5
         /// <summary>
         /// Float
         /// </summary>
@@ -31,9 +31,17 @@
         /// </summary>
         Item,
         /// <summary>
-        /// VarInt + Position + VarInt + Float + VarInt
+        /// Location + [String + (Location | VarInt)] + VarInt
         /// </summary>
-        Vibration,           // Added in 1.17
+        Vibration,           // 1.17 - 1.18.2
+        /// <summary>
+        /// [String + (Location | VarInt + Float)] + VarInt
+        /// </summary>
+        VibrationV2,         // 1.19 - 1.20.4
+        /// <summary>
+        /// [VarInt + (Location | VarInt + Float)] + VarInt
+        /// </summary>
+        VibrationV3,         // 1.20.5+
         /// <summary>
         /// VarInt
         /// </summary>
