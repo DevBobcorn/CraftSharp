@@ -26,7 +26,7 @@ namespace CraftSharp
             EyeHeight = eyeHeight;
             Ticks = ticks;
 
-            UseBlockPosSource = true;
+            UseBlockPosSource = false;
         }
     }
 }
