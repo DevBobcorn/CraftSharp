@@ -1,27 +1,33 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-
-namespace CraftSharp
+﻿namespace CraftSharp
 {
-    /// <summary>
-    /// Represents a Minecraft Particle Type
-    /// </summary>
-    public record ParticleType
+    public record BaseParticleType
     {
-        public static readonly ParticleType DUMMY_PARTICLE_TYPE = new(ResourceLocation.INVALID, ParticleExtraDataType.None);
-
         public readonly ResourceLocation TypeId;
-        public readonly ParticleExtraDataType ExtraDataType;
+        public readonly ParticleExtraDataType OptionType;
 
-        public ParticleType(ResourceLocation id, ParticleExtraDataType extraDataType)
+        public BaseParticleType(ResourceLocation id, ParticleExtraDataType optionType)
         {
             TypeId = id;
-            ExtraDataType = extraDataType;
+            OptionType = optionType;
         }
 
         public override string ToString()
         {
             return TypeId.ToString();
+        }
+    }
+
+    /// <summary>
+    /// Represents a Minecraft Particle Type
+    /// </summary>
+    public record ParticleType<T> : BaseParticleType where T : ParticleExtraData
+    {
+        public static readonly ParticleType<EmptyParticleExtraData> DUMMY_PARTICLE_TYPE =
+                new(ResourceLocation.INVALID, ParticleExtraDataType.None);
+
+        public ParticleType(ResourceLocation id, ParticleExtraDataType optionType) : base(id, optionType)
+        {
+
         }
     }
 }

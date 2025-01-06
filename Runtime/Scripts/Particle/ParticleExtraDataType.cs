@@ -31,17 +31,13 @@
         /// </summary>
         Item,
         /// <summary>
-        /// Location + [String + (Location | VarInt)] + VarInt
+        /// Location + [String + (Location | VarInt)] + VarInt (1.17 - 1.18.2)
+        /// <br/>
+        /// [String + (Location | VarInt + Float)] + VarInt    (1.19 - 1.20.4)
+        /// <br/>
+        /// [VarInt + (Location | VarInt + Float)] + VarInt    (1.20.5+)
         /// </summary>
-        Vibration,           // 1.17 - 1.18.2
-        /// <summary>
-        /// [String + (Location | VarInt + Float)] + VarInt
-        /// </summary>
-        VibrationV2,         // 1.19 - 1.20.4
-        /// <summary>
-        /// [VarInt + (Location | VarInt + Float)] + VarInt
-        /// </summary>
-        VibrationV3,         // 1.20.5+
+        Vibration,           // Added in 1.17
         /// <summary>
         /// VarInt
         /// </summary>

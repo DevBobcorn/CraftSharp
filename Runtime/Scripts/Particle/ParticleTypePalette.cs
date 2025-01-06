@@ -5,13 +5,13 @@ using UnityEngine;
 
 namespace CraftSharp
 {
-    public class ParticleTypePalette : IdentifierPalette<ParticleType>
+    public class ParticleTypePalette : IdentifierPalette<BaseParticleType>
     {
         private static readonly char SP = Path.DirectorySeparatorChar;
 
         public static readonly ParticleTypePalette INSTANCE = new();
         protected override string Name => "ParticleType Palette";
-        protected override ParticleType UnknownObject => ParticleType.DUMMY_PARTICLE_TYPE;
+        protected override BaseParticleType UnknownObject => ParticleType<EmptyParticleExtraData>.DUMMY_PARTICLE_TYPE;
 
         protected override void ClearEntries()
         {
@@ -50,11 +50,11 @@ namespace CraftSharp
                     {
                         var particleTypeId = ResourceLocation.FromString(particleType.Key);
 
-                        ParticleExtraDataType particleExtraData = ParticleExtraDataType.None;
+                        ParticleExtraDataType optionType = ParticleExtraDataType.None;
 
                         if (particleDef.Properties.TryGetValue("extra_data", out Json.JSONData extraDataValue))
                         {
-                            particleExtraData = extraDataValue.StringValue switch
+                            optionType = extraDataValue.StringValue switch
                             {
                                 "block"                 => ParticleExtraDataType.Block,
                                 "dust"                  => ParticleExtraDataType.Dust,
@@ -62,16 +62,16 @@ namespace CraftSharp
                                 "color"                 => ParticleExtraDataType.EntityEffect,
                                 "sculk_charge"          => ParticleExtraDataType.SculkCharge,
                                 "item"                  => ParticleExtraDataType.Item,
-                                "vibration"             => ParticleExtraDataType.Vibration,   // 1.17 - 1.18.2
-                                "vibration_v2"          => ParticleExtraDataType.VibrationV2, // 1.19 - 1.20.4
-                                "vibration_v3"          => ParticleExtraDataType.VibrationV3, // 1.20.5+
+                                "vibration"             => ParticleExtraDataType.Vibration,
                                 "shriek"                => ParticleExtraDataType.Shriek,
 
                                 _                       => ParticleExtraDataType.None,
                             };
                         }
 
-                        AddEntry(particleTypeId, numId, new ParticleType(particleTypeId, particleExtraData));
+                        Type type = optionType.GetDataType();
+
+                        AddEntry(particleTypeId, numId, new ParticleType<EmptyParticleExtraData>(particleTypeId, optionType));
                     }
                     else
                     {
