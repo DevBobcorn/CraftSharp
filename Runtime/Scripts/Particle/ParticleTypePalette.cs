@@ -69,9 +69,14 @@ namespace CraftSharp
                             };
                         }
 
-                        Type type = optionType.GetDataType();
+                        var optionClassType = optionType.GetDataType();
+                        var particleClassType = typeof (ParticleType<>);
+                        var newParticleClassType = particleClassType.MakeGenericType(optionClassType);
 
-                        AddEntry(particleTypeId, numId, new ParticleType<EmptyParticleExtraData>(particleTypeId, optionType));
+                        var newParticleType = (BaseParticleType) Activator.CreateInstance(
+                            newParticleClassType, particleTypeId, optionType);
+
+                        AddEntry(particleTypeId, numId, newParticleType);
                     }
                     else
                     {
