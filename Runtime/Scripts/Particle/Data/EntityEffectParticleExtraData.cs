@@ -1,13 +1,12 @@
+using UnityEngine;
+
 namespace CraftSharp
 {
     public record EntityEffectParticleExtraData : ParticleExtraData
     {
-        /// <summary>
-        /// The ARGB components of the color encoded as an int
-        /// </summary>
-        public int Color;
+        public Color32 Color;
 
-        public EntityEffectParticleExtraData(int color)
+        public EntityEffectParticleExtraData(Color32 color)
         {
             Color = color;
         }

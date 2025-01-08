@@ -1,14 +1,14 @@
-using Unity.Mathematics;
+using UnityEngine;
 
 namespace CraftSharp
 {
     public record DustColorTransitionParticleExtraData : ParticleExtraData
     {
-        public float3 ColorFrom;
-        public float3 ColorTo;
+        public Color32 ColorFrom;
+        public Color32 ColorTo;
         public float Scale;
 
-        public DustColorTransitionParticleExtraData(float3 colorFrom, float3 colorTo, float scale)
+        public DustColorTransitionParticleExtraData(Color32 colorFrom, Color32 colorTo, float scale)
         {
             ColorFrom = colorFrom;
             ColorTo = colorTo;
