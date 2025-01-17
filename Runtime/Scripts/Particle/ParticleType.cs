@@ -3,12 +3,12 @@
     public record BaseParticleType
     {
         public readonly ResourceLocation TypeId;
-        public readonly ParticleExtraDataType OptionType;
+        public readonly ParticleExtraDataType ExtraDataType;
 
         public BaseParticleType(ResourceLocation id, ParticleExtraDataType optionType)
         {
             TypeId = id;
-            OptionType = optionType;
+            ExtraDataType = optionType;
         }
 
         public override string ToString()
