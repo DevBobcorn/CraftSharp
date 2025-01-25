@@ -33,7 +33,7 @@ namespace CraftSharp
         /// </summary>
         public static int GetChunkBlockX(this BlockLoc loc)
         {
-            return ((loc.X % Chunk.SIZE) + Chunk.SIZE) % Chunk.SIZE;
+            return loc.X & 0xF;
         }
 
         /// <summary>
@@ -41,7 +41,7 @@ namespace CraftSharp
         /// </summary>
         public static int GetChunkBlockY(this BlockLoc loc)
         {
-            return ((loc.Y % Chunk.SIZE) + Chunk.SIZE) % Chunk.SIZE;
+            return loc.Y & 0xF;
         }
 
         /// <summary>
@@ -49,7 +49,7 @@ namespace CraftSharp
         /// </summary>
         public static int GetChunkBlockZ(this BlockLoc loc)
         {
-            return ((loc.Z % Chunk.SIZE) + Chunk.SIZE) % Chunk.SIZE;
+            return loc.Z & 0xF;
         }
     }
 }
