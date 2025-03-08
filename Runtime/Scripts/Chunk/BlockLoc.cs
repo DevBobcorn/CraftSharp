@@ -42,7 +42,7 @@ namespace CraftSharp
         /// </summary>
         /// <param name="blockLoc">Other location for computing distance</param>
         /// <returns>Distance to the specified location, without using a square root</returns>
-        public double DistanceSquared(BlockLoc blockLoc)
+        public readonly double DistanceSquared(BlockLoc blockLoc)
         {
             return ((X - blockLoc.X) * (X - blockLoc.X))
                  + ((Y - blockLoc.Y) * (Y - blockLoc.Y))
@@ -54,7 +54,7 @@ namespace CraftSharp
         /// </summary>
         /// <param name="blockLoc">Other location for computing distance</param>
         /// <returns>Distance to the specified location, with square root so lower performances</returns>
-        public double Distance(BlockLoc blockLoc)
+        public readonly double Distance(BlockLoc blockLoc)
         {
             return Math.Sqrt(DistanceSquared(blockLoc));
         }
@@ -64,13 +64,13 @@ namespace CraftSharp
         /// </summary>
         /// <param name="obj">Object to compare to</param>
         /// <returns>TRUE if the locations are equals</returns>
-        public override bool Equals(object obj)
+        public readonly override bool Equals(object obj)
         {
-            if (obj is BlockLoc)
+            if (obj is BlockLoc loc)
             {
-                return ((int)this.X) == ((int)((BlockLoc)obj).X)
-                    && ((int)this.Y) == ((int)((BlockLoc)obj).Y)
-                    && ((int)this.Z) == ((int)((BlockLoc)obj).Z);
+                return ((int)this.X) == ((int)loc.X)
+                    && ((int)this.Y) == ((int)loc.Y)
+                    && ((int)this.Z) == ((int)loc.Z);
             }
             return false;
         }
@@ -145,7 +145,7 @@ namespace CraftSharp
         /// Z: -4096 to +4095
         /// </remarks>
         /// <returns>A simplified version of the location</returns>
-        public override int GetHashCode()
+        public readonly override int GetHashCode()
         {
             return (X & ~((~0) << 13)) << 19
                  | (Y & ~((~0) << 13)) << 13
@@ -156,68 +156,68 @@ namespace CraftSharp
         /// Convert the location into a string representation
         /// </summary>
         /// <returns>String representation of the location</returns>
-        public override string ToString()
+        public readonly override string ToString()
         {
             return $"X: {X} Y: {Y} Z: {Z}";
         }
 
-        public Location ToLocation()
+        public readonly Location ToLocation()
         {
             return new Location(this.X, this.Y, this.Z);
         }
 
-        public Location ToCenterLocation()
+        public readonly Location ToCenterLocation()
         {
             return new Location(this.X + 0.5F, this.Y + 0.5F, this.Z + 0.5F);
         }
 
-        public double DistanceTo(BlockLoc blockLoc)
+        public readonly double DistanceTo(BlockLoc blockLoc)
         {
             return Math.Sqrt(Math.Pow(this.X - blockLoc.X, 2) + Math.Pow(this.Y - blockLoc.Y, 2) + Math.Pow(this.Z - blockLoc.Z, 2));
         }
 
-        public double SqrDistanceTo(BlockLoc blockLoc)
+        public readonly double SqrDistanceTo(BlockLoc blockLoc)
         {
             return Math.Pow(this.X - blockLoc.X, 2) + Math.Pow(this.Y - blockLoc.Y, 2) + Math.Pow(this.Z - blockLoc.Z, 2);
         }
 
-        public int ManhattanDistanceTo(BlockLoc blockLoc)
+        public readonly int ManhattanDistanceTo(BlockLoc blockLoc)
         {
             return Math.Abs(this.X - blockLoc.X) + Math.Abs(this.Y - blockLoc.Y) + Math.Abs(this.Z - blockLoc.Z);
         }
 
-        public BlockLoc Up()
+        public readonly BlockLoc Up()
         {
-            return this + new BlockLoc( 0, 1, 0);
+            return new BlockLoc(X, Y + 1, Z);
         }
 
-        public BlockLoc Down()
+        public readonly BlockLoc Down()
         {
-            return this + new BlockLoc( 0,-1, 0);
+            return new BlockLoc(X, Y - 1, Z);
         }
 
         // MC Z Neg
-        public BlockLoc North()
+        public readonly BlockLoc North()
         {
-            return this + new BlockLoc( 0, 0,-1);
+            return new BlockLoc(X, Y, Z - 1);
         }
 
         // MC Z Pos
-        public BlockLoc South()
+        public readonly BlockLoc South()
         {
-            return this + new BlockLoc( 0, 0, 1);
+            return new BlockLoc(X, Y, Z + 1);
         }
 
         // MC X Pos
-        public BlockLoc East()
+        public readonly BlockLoc East()
         {
-            return this + new BlockLoc( 1, 0, 0);
+            return new BlockLoc(X + 1, Y, Z);
         }
 
         // MC X Neg
-        public BlockLoc West()
+        public readonly BlockLoc West()
         {
-            return this + new BlockLoc(-1, 0, 0);
+            return new BlockLoc(X - 1, Y, Z);
         }
     }
 }
