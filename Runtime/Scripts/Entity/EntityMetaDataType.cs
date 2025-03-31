@@ -27,7 +27,7 @@ namespace CraftSharp
         /// VarInt
         /// </summary>
         Direction,
-        OptionalUuid,
+        OptionalUUID,
         /// <summary>
         /// VarInt
         /// </summary>
