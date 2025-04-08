@@ -127,7 +127,7 @@ namespace CraftSharp
         public static readonly ResourceLocation ZOMBIE_VILLAGER_ID = new("zombie_villager");
         public static readonly ResourceLocation ZOMBIFIED_PIGLIN_ID = new("zombified_piglin");
 
-        public static readonly EntityType DUMMY_ENTITY_TYPE = new(ResourceLocation.INVALID, 1F, 1F, true, new());
+        public static readonly EntityType DUMMY_ENTITY_TYPE = new(ResourceLocation.INVALID, 1F, 1F, true, new(), false);
 
         public readonly ResourceLocation TypeId;
         public readonly float Width;
@@ -140,7 +140,7 @@ namespace CraftSharp
         public readonly Dictionary<string, EntityMetaEntry> MetaEntriesByName;
 
         public EntityType(ResourceLocation id, float width, float height, bool sizeFixed,
-                Dictionary<int, EntityMetaEntry> metaEntries, bool containsItem = false)
+                Dictionary<int, EntityMetaEntry> metaEntries, bool containsItem)
         {
             TypeId = id;
             Width = width;

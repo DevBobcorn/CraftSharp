@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace CraftSharp
 {
     /// <summary>
-    /// Represents an entity evolving into a Minecraft world
+    /// Represents an entity in a Minecraft world
     /// </summary>
     public class EntityData
     {
@@ -76,43 +76,47 @@ namespace CraftSharp
         public Dictionary<int, object?>? Metadata;
 
         /// <summary>
-        /// Create a new entity based on Entity ID, Entity Type and location
+        /// Create a new entity based on Entity Id, Entity Type and location
         /// </summary>
-        /// <param name="Id">Entity ID</param>
+        /// <param name="Id">Entity Id</param>
         /// <param name="type">Entity Type Enum</param>
         /// <param name="location">Entity location</param>
         public EntityData(int Id, EntityType type, Location location)
         {
             this.Id = Id;
-            this.Type = type;
-            this.Location = location;
-            this.Health = 1F;
-            this.MaxHealth = 1F;
+            Type = type;
+            Location = location;
+            Health = 1F;
+            MaxHealth = 1F;
         }
 
         /// <summary>
-        /// Create a new entity based on Entity ID, Entity Type and location
+        /// Create a new entity based on Entity Id, Entity Type and location
         /// </summary>
-        /// <param name="Id">Entity ID</param>
+        /// <param name="Id">Entity Id</param>
         /// <param name="type">Entity Type Enum</param>
         /// <param name="location">Entity location</param>
+        /// <param name="yaw">Entity yaw</param>
+        /// <param name="pitch">Head pitch</param>
+        /// <param name="headYaw">Head yaw</param>
+        /// <param name="objectData">Object data</param>
         public EntityData(int Id, EntityType type, Location location, byte yaw, byte pitch, byte headYaw, int objectData)
         {
             this.Id = Id;
-            this.Type = type;
-            this.Location = location;
-            this.Health = 1F;
-            this.MaxHealth = 1F;
-            this.Yaw = GetYawFromByte(yaw);
-            this.Pitch = GetPitchFromByte(pitch);
-            this.HeadYaw = GetHeadYawFromByte(headYaw);
-            this.ObjectData = objectData;
+            Type = type;
+            Location = location;
+            Health = 1F;
+            MaxHealth = 1F;
+            Yaw = GetYawFromByte(yaw);
+            Pitch = GetPitchFromByte(pitch);
+            HeadYaw = GetHeadYawFromByte(headYaw);
+            ObjectData = objectData;
         }
 
         /// <summary>
-        /// Create a new entity based on Entity ID, Entity Type, location, name and UUID
+        /// Create a new entity based on Entity Id, Entity Type, location, name and UUID
         /// </summary>
-        /// <param name="Id">Entity ID</param>
+        /// <param name="Id">Entity Id</param>
         /// <param name="type">Entity Type Enum</param>
         /// <param name="location">Entity location</param>
         /// <param name="uuid">Player uuid</param>
@@ -120,17 +124,17 @@ namespace CraftSharp
         public EntityData(int Id, EntityType type, Location location, Guid uuid, string? name)
         {
             this.Id = Id;
-            this.Type = type;
-            this.Location = location;
-            this.UUID = uuid;
-            this.Name = name;
-            this.Health = 1F;
-            this.MaxHealth = 1F;
+            Type = type;
+            Location = location;
+            UUID = uuid;
+            Name = name;
+            Health = 1F;
+            MaxHealth = 1F;
         }
 
         public override string ToString()
         {
-            return "Entity " + Id + " (" + Type.ToString() + ")";
+            return "Entity " + Id + " (" + Type + ")";
         }
     }
 }

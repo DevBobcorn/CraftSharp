@@ -53,13 +53,11 @@ namespace CraftSharp
             {
                 var blockEntityTypes = Json.ParseJson(File.ReadAllText(blockEntityTypeListPath, Encoding.UTF8));
 
-                foreach (var blockEntityType in blockEntityTypes.Properties)
+                foreach (var (key, blockEntityDef) in blockEntityTypes.Properties)
                 {
-                    var blockEntityDef = blockEntityType.Value;
-
                     if (int.TryParse(blockEntityDef.Properties["protocol_id"].StringValue, out int numId))
                     {
-                        var blockEntityTypeId = ResourceLocation.FromString(blockEntityType.Key);
+                        var blockEntityTypeId = ResourceLocation.FromString(key);
                         var associatedBlockIds = new HashSet<ResourceLocation>();
 
                         foreach (var block in blockEntityDef.Properties["blocks"].DataArray)
@@ -81,7 +79,7 @@ namespace CraftSharp
                     }
                     else
                     {
-                        Debug.LogWarning($"Invalid numeral block entity type key [{blockEntityType.Key}]");
+                        Debug.LogWarning($"Invalid numeral block entity type key [{key}]");
                     }
                 }
             }

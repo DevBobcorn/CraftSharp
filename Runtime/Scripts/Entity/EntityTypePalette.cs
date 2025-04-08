@@ -24,14 +24,9 @@ namespace CraftSharp
         {
             UnfreezeEntries();
 
-            AddEntry(identifier, numId, new(identifier, 1F, 1F, true, new()));
+            AddEntry(identifier, numId, new(identifier, 1F, 1F, true, new(), false));
 
             FreezeEntries();
-        }
-
-        protected override void ClearEntries()
-        {
-            base.ClearEntries();
         }
 
         /// <summary>
@@ -58,21 +53,19 @@ namespace CraftSharp
             {
                 var entityTypes = Json.ParseJson(File.ReadAllText(entityTypePath, Encoding.UTF8));
 
-                foreach (var entityType in entityTypes.Properties)
+                foreach (var (key, entityDef) in entityTypes.Properties)
                 {
-                    var entityDef = entityType.Value;
-
                     if (int.TryParse(entityDef.Properties["protocol_id"].StringValue, out int numId))
                     {
-                        var entityTypeId = ResourceLocation.FromString(entityType.Key);
+                        var entityTypeId = ResourceLocation.FromString(key);
 
-                        float w = float.Parse(entityDef.Properties["width"].StringValue,
+                        var w = float.Parse(entityDef.Properties["width"].StringValue,
                                 CultureInfo.InvariantCulture.NumberFormat);
                         
-                        float h = float.Parse(entityDef.Properties["height"].StringValue,
+                        var h = float.Parse(entityDef.Properties["height"].StringValue,
                                 CultureInfo.InvariantCulture.NumberFormat);
                         
-                        bool sf = bool.Parse(entityDef.Properties["size_fixed"].StringValue);
+                        var sf = bool.Parse(entityDef.Properties["size_fixed"].StringValue);
 
                         // Read entity meta entries
                         var metaEntries = entityDef.Properties["metadata"].Properties.
@@ -81,13 +74,13 @@ namespace CraftSharp
                                             EntityMetaDataTypeUtil.FromSerializedTypeName(
                                                 x.Value.Properties["data_type"].StringValue)));
 
-                        bool c = metaEntries.Values.Any(x => x.Name == "data_item" || x.Name == "data_item_stack");
+                        bool c = metaEntries.Values.Any(x => x.Name is "data_item" or "data_item_stack");
 
                         AddEntry(entityTypeId, numId, new EntityType(entityTypeId, w, h, sf, metaEntries, c));
                     }
                     else
                     {
-                        Debug.LogWarning($"Invalid numeral entity type key [{entityType.Key}]");
+                        Debug.LogWarning($"Invalid numeral entity type key [{key}]");
                     }
                 }
             }

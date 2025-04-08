@@ -60,13 +60,13 @@ namespace CraftSharp
             {
                 var items = Json.ParseJson(File.ReadAllText(itemsPath, Encoding.UTF8));
 
-                foreach (var item in items.Properties)
+                foreach (var (key, itemDef) in items.Properties)
                 {
-                    if (int.TryParse(item.Value.Properties["protocol_id"].StringValue, out int numId))
+                    if (int.TryParse(itemDef.Properties["protocol_id"].StringValue, out int numId))
                     {
-                        var itemId = ResourceLocation.FromString(item.Key);
+                        var itemId = ResourceLocation.FromString(key);
 
-                        var rarity = item.Value.Properties["rarity"].StringValue switch
+                        var rarity = itemDef.Properties["rarity"].StringValue switch
                         {
                             "common"   => ItemRarity.Common,
                             "uncommon" => ItemRarity.Uncommon,
@@ -76,7 +76,7 @@ namespace CraftSharp
                             _          => ItemRarity.Common
                         };
 
-                        var actionType = item.Value.Properties["action_type"].StringValue switch
+                        var actionType = itemDef.Properties["action_type"].StringValue switch
                         {
                             "none"             => ItemActionType.None,
 
@@ -132,15 +132,15 @@ namespace CraftSharp
                             "throwable_item"   => ItemActionType.ThrowableItem,
                             "mob_bucket"       => ItemActionType.MobBucket,                            
 
-                            _                  => throw new InvalidDataException($"Item action type {item.Value.Properties["action_type"].StringValue} is not defined!")
+                            _                  => throw new InvalidDataException($"Item action type {itemDef.Properties["action_type"].StringValue} is not defined!")
                         };
 
-                        var stackLimit = int.Parse(item.Value.Properties["stack_limit"].StringValue);
-                        var edible = bool.Parse(item.Value.Properties["edible"].StringValue);
+                        var stackLimit = int.Parse(itemDef.Properties["stack_limit"].StringValue);
+                        var edible = bool.Parse(itemDef.Properties["edible"].StringValue);
 
                         ResourceLocation? itemBlockId = null;
 
-                        if (item.Value.Properties.TryGetValue("block", out Json.JSONData blockId))
+                        if (itemDef.Properties.TryGetValue("block", out Json.JSONData blockId))
                         {
                             itemBlockId = ResourceLocation.FromString(blockId.StringValue);
                         }
@@ -149,14 +149,14 @@ namespace CraftSharp
 
                         if (edible) // Set food settings
                         {
-                            newItem.AlwaysEdible = bool.Parse(item.Value.Properties["always_edible"].StringValue);
-                            newItem.FastFood = bool.Parse(item.Value.Properties["fast_food"].StringValue);
+                            newItem.AlwaysEdible = bool.Parse(itemDef.Properties["always_edible"].StringValue);
+                            newItem.FastFood = bool.Parse(itemDef.Properties["fast_food"].StringValue);
                         }
 
                         if (actionType == ItemActionType.Axe || actionType == ItemActionType.Pickaxe || actionType == ItemActionType.Shovel ||
                             actionType == ItemActionType.Hoe || actionType == ItemActionType.Sword)
                         {
-                            newItem.TierType = item.Value.Properties["tier"].StringValue switch
+                            newItem.TierType = itemDef.Properties["tier"].StringValue switch
                             {
                                 "wood"      => TierType.Wood,
                                 "stone"     => TierType.Stone,
@@ -165,7 +165,7 @@ namespace CraftSharp
                                 "netherite" => TierType.Netherite,
                                 "gold"      => TierType.Gold,
 
-                                _           => throw new InvalidDataException($"Item tier {item.Value.Properties["tier"].StringValue} is not defined!")
+                                _           => throw new InvalidDataException($"Item tier {itemDef.Properties["tier"].StringValue} is not defined!")
                             };
                         }
 

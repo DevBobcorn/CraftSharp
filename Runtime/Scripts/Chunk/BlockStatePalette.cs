@@ -238,25 +238,25 @@ namespace CraftSharp
             {
                 var blocks = Json.ParseJson(File.ReadAllText(blocksPath, Encoding.UTF8));
 
-                foreach (var block in blocks.Properties)
+                foreach (var (key, blockDef) in blocks.Properties)
                 {
-                    ResourceLocation blockId = ResourceLocation.FromString(block.Key);
+                    ResourceLocation blockId = ResourceLocation.FromString(key);
                     int defaultStateId = int.MaxValue;
                     var states = new Dictionary<int, BlockState>();
 
                     // Properties shared by all state of this block
-                    float blastResistance = float.Parse(block.Value.Properties["blast_resistance"]
+                    float blastResistance = float.Parse(blockDef.Properties["blast_resistance"]
                             .StringValue, CultureInfo.InvariantCulture);
-                    float friction = float.Parse(block.Value.Properties["friction"]
+                    float friction = float.Parse(blockDef.Properties["friction"]
                             .StringValue, CultureInfo.InvariantCulture);
-                    float jumpFactor = float.Parse(block.Value.Properties["jump_factor"]
+                    float jumpFactor = float.Parse(blockDef.Properties["jump_factor"]
                             .StringValue, CultureInfo.InvariantCulture);
-                    float speedFactor = float.Parse(block.Value.Properties["speed_factor"]
+                    float speedFactor = float.Parse(blockDef.Properties["speed_factor"]
                             .StringValue, CultureInfo.InvariantCulture);
 
                     bool noSolidMesh = BlockState.NO_SOLID_MESH_IDS.Contains(blockId);
 
-                    foreach (Json.JSONData state in block.Value.Properties["states"].DataArray)
+                    foreach (Json.JSONData state in blockDef.Properties["states"].DataArray)
                     {
                         int stateId = int.Parse(state.Properties["id"].StringValue);
 
@@ -272,9 +272,9 @@ namespace CraftSharp
 
                         if (state.Properties.TryGetValue("properties", out var stateProperty))
                         {
-                            foreach (var prop in stateProperty.Properties)
+                            foreach (var (propKey, value) in stateProperty.Properties)
                             {
-                                props.Add(prop.Key, prop.Value.StringValue);
+                                props.Add(propKey, value.StringValue);
                             }
                         }
 
@@ -347,7 +347,7 @@ namespace CraftSharp
 
                 if (colorRules.Properties.TryGetValue("dynamic", out var rulesProperty))
                 {
-                    foreach (var (ruleName, value) in rulesProperty.Properties)
+                    foreach (var (ruleName, ruleValue) in rulesProperty.Properties)
                     {
                         Func<World, BlockLoc, BlockState, float3> ruleFunc = ruleName switch
                         {
@@ -360,7 +360,7 @@ namespace CraftSharp
                             _          => (_, _, _) => float3.zero
                         };
 
-                        foreach (var blockId in value.DataArray
+                        foreach (var blockId in ruleValue.DataArray
                                      .Select(block => ResourceLocation.FromString(block.StringValue)))
                         {
                             if (TryGetAllNumIds(blockId, out int[] stateIds))
@@ -379,10 +379,10 @@ namespace CraftSharp
 
                 if (colorRules.Properties.TryGetValue("fixed", out var colorRulesProperty))
                 {
-                    foreach (var fixedRule in colorRulesProperty.Properties)
+                    foreach (var (key, ruleValue) in colorRulesProperty.Properties)
                     {
-                        var blockId = ResourceLocation.FromString(fixedRule.Key);
-                        var fixedColor = VectorUtil.Json2Float3(fixedRule.Value) / 255F;
+                        var blockId = ResourceLocation.FromString(key);
+                        var fixedColor = VectorUtil.Json2Float3(ruleValue) / 255F;
                         float3 ruleFunc(World world, BlockLoc loc, BlockState state) => fixedColor;
 
                         if (TryGetAllNumIds(blockId, out int[] stateIds))
@@ -405,11 +405,11 @@ namespace CraftSharp
 
                 var restBlockIds = groupIdToGroup.Keys.ToHashSet();
 
-                foreach (var pair in renderTypes.Properties)
+                foreach (var (key, renderTypeValue) in renderTypes.Properties)
                 {
-                    var blockId = ResourceLocation.FromString(pair.Key);
+                    var blockId = ResourceLocation.FromString(key);
 
-                    var renderTypeStr = pair.Value.StringValue.ToLower();
+                    var renderTypeStr = renderTypeValue.StringValue.ToLower();
                     var offsetTypeStr = string.Empty;
 
                     if (renderTypeStr.Contains('+'))

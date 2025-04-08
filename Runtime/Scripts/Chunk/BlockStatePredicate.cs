@@ -43,9 +43,9 @@ namespace CraftSharp
                 return EMPTY;
             
             var conditions = new Dictionary<string, string>();
-            foreach (var src in data.Properties)
+            foreach (var (key, value) in data.Properties)
             {
-                conditions.Add(src.Key, src.Value.StringValue);
+                conditions.Add(key, value.StringValue);
             }
             return new BlockStatePredicate(conditions);
         }
