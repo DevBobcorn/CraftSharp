@@ -139,13 +139,27 @@ namespace CraftSharp
                         var edible = bool.Parse(itemDef.Properties["edible"].StringValue);
 
                         ResourceLocation? itemBlockId = null;
-
-                        if (itemDef.Properties.TryGetValue("block", out Json.JSONData blockId))
+                        if (itemDef.Properties.TryGetValue("block", out var val))
                         {
-                            itemBlockId = ResourceLocation.FromString(blockId.StringValue);
+                            itemBlockId = ResourceLocation.FromString(val.StringValue);
+                        }
+                        
+                        EquipmentSlot equipmentSlot = EquipmentSlot.Mainhand;
+                        if (itemDef.Properties.TryGetValue("equipment_slot", out val))
+                        {
+                            equipmentSlot = val.StringValue switch
+                            {
+                                "head" => EquipmentSlot.Head,
+                                "chest" => EquipmentSlot.Chest,
+                                "legs" => EquipmentSlot.Legs,
+                                "feet" => EquipmentSlot.Feet,
+                                "mainhand" => EquipmentSlot.Mainhand,
+                                "offhand" => EquipmentSlot.Offhand,
+                                _ => throw new InvalidDataException($"Equipment slot {val.StringValue} is not defined!")
+                            };
                         }
 
-                        Item newItem = new(itemId, stackLimit, rarity, actionType, edible, itemBlockId);
+                        Item newItem = new(itemId, stackLimit, rarity, actionType, edible, itemBlockId, equipmentSlot);
 
                         if (edible) // Set food settings
                         {
