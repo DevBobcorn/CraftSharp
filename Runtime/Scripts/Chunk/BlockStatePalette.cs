@@ -345,9 +345,9 @@ namespace CraftSharp
                 // Load block color rules...
                 Json.JSONData colorRules = Json.ParseJson(File.ReadAllText(colorsPath, Encoding.UTF8));
 
-                if (colorRules.Properties.TryGetValue("dynamic", out var rulesProperty))
+                if (colorRules.Properties.TryGetValue("dynamic", out var dynamicRulesProperty))
                 {
-                    foreach (var (ruleName, ruleValue) in rulesProperty.Properties)
+                    foreach (var (ruleName, ruleValue) in dynamicRulesProperty.Properties)
                     {
                         Func<World, BlockLoc, BlockState, float3> ruleFunc = ruleName switch
                         {
@@ -377,9 +377,9 @@ namespace CraftSharp
                     }
                 }
 
-                if (colorRules.Properties.TryGetValue("fixed", out var colorRulesProperty))
+                if (colorRules.Properties.TryGetValue("fixed", out var fixedRulesProperty))
                 {
-                    foreach (var (key, ruleValue) in colorRulesProperty.Properties)
+                    foreach (var (key, ruleValue) in fixedRulesProperty.Properties)
                     {
                         var blockId = ResourceLocation.FromString(key);
                         var fixedColor = VectorUtil.Json2Float3(ruleValue) / 255F;

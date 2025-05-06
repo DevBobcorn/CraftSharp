@@ -66,74 +66,9 @@ namespace CraftSharp
                     {
                         var itemId = ResourceLocation.FromString(key);
 
-                        var rarity = itemDef.Properties["rarity"].StringValue switch
-                        {
-                            "common"   => ItemRarity.Common,
-                            "uncommon" => ItemRarity.Uncommon,
-                            "rare"     => ItemRarity.Rare,
-                            "epic"     => ItemRarity.Epic,
+                        var rarity = ItemRarityHelper.GetItemRarity(itemDef.Properties["rarity"].StringValue);
 
-                            _          => ItemRarity.Common
-                        };
-
-                        var actionType = itemDef.Properties["action_type"].StringValue switch
-                        {
-                            "none"             => ItemActionType.None,
-
-                            "block"            => ItemActionType.Block,
-                            "lighter"          => ItemActionType.Lighter,
-                            "solid_bucket"     => ItemActionType.SolidBucket,
-                            "fluid_bucket"     => ItemActionType.FluidBucket,
-                            
-                            "sword"            => ItemActionType.Sword,
-                            "bow"              => ItemActionType.Bow,
-                            "crossbow"         => ItemActionType.Crossbow,
-                            "trident"          => ItemActionType.Trident,
-                            "shield"           => ItemActionType.Shield,
-                            "drinkable_bottle" => ItemActionType.DrinkableBottle,
-                            "drinkable_bucket" => ItemActionType.DrinkableBucket,
-                            "food_on_a_stick"  => ItemActionType.FoodOnAStick,
-                            "empty_map"        => ItemActionType.EmptyMap,
-                            "writable_book"    => ItemActionType.WritableBook,
-                            "written_book"     => ItemActionType.WrittenBook,
-                            "fishing_rod"      => ItemActionType.FishingRod,
-                            "knowledge_book"   => ItemActionType.KnowledgeBook,
-                            "spyglass"         => ItemActionType.Spyglass,
-                            "bundle"           => ItemActionType.Bundle,
-                            "instrument"       => ItemActionType.Instrument,
-
-                            "shears"           => ItemActionType.Shears,
-                            "axe"              => ItemActionType.Axe,
-                            "pickaxe"          => ItemActionType.Pickaxe,
-                            "shovel"           => ItemActionType.Shovel,
-                            "hoe"              => ItemActionType.Hoe,
-                            "bone_meal"        => ItemActionType.BoneMeal,
-                            "record"           => ItemActionType.Record,
-                            "empty_bottle"     => ItemActionType.EmptyBottle,
-                            "empty_bucket"     => ItemActionType.EmptyBucket,
-                            "debug_stick"      => ItemActionType.DebugStick,
-                            "honeycomb"        => ItemActionType.Honeycomb,
-                            "brush"            => ItemActionType.Brush,
-
-                            "lead"             => ItemActionType.Lead,
-                            "name_tag"         => ItemActionType.NameTag,
-
-                            "splash_potion"    => ItemActionType.SplashPotion,
-                            "lingering_potion" => ItemActionType.LingeringPotion,
-                            "spawn_egg"        => ItemActionType.SpawnEgg,
-                            "firework_rocket"  => ItemActionType.FireworkRocket,
-                            "hanging_entity"   => ItemActionType.HangingEntity,
-                            "armor_stand"      => ItemActionType.ArmorStand,
-                            "boat"             => ItemActionType.Boat,
-                            "minecart"         => ItemActionType.Minecart,
-                            "end_crystal"      => ItemActionType.EndCrystal,
-                            "eye_of_ender"     => ItemActionType.EyeOfEnder,
-                            "ender_pearl"      => ItemActionType.EnderPearl,
-                            "throwable_item"   => ItemActionType.ThrowableItem,
-                            "mob_bucket"       => ItemActionType.MobBucket,                            
-
-                            _                  => throw new InvalidDataException($"Item action type {itemDef.Properties["action_type"].StringValue} is not defined!")
-                        };
+                        var actionType = ItemActionTypeHelper.GetItemActionType(itemDef.Properties["action_type"].StringValue);
 
                         var stackLimit = int.Parse(itemDef.Properties["stack_limit"].StringValue);
                         var edible = bool.Parse(itemDef.Properties["edible"].StringValue);
@@ -147,16 +82,7 @@ namespace CraftSharp
                         EquipmentSlot equipmentSlot = EquipmentSlot.Mainhand;
                         if (itemDef.Properties.TryGetValue("equipment_slot", out val))
                         {
-                            equipmentSlot = val.StringValue switch
-                            {
-                                "head" => EquipmentSlot.Head,
-                                "chest" => EquipmentSlot.Chest,
-                                "legs" => EquipmentSlot.Legs,
-                                "feet" => EquipmentSlot.Feet,
-                                "mainhand" => EquipmentSlot.Mainhand,
-                                "offhand" => EquipmentSlot.Offhand,
-                                _ => throw new InvalidDataException($"Equipment slot {val.StringValue} is not defined!")
-                            };
+                            equipmentSlot = EquipmentSlotHelper.GetEquipmentSlot(val.StringValue);
                         }
                         
                         var maxDurability = itemDef.Properties.TryGetValue("max_durability", out val) ? int.Parse(val.StringValue) : 0;
@@ -172,17 +98,7 @@ namespace CraftSharp
                         if (actionType == ItemActionType.Axe || actionType == ItemActionType.Pickaxe || actionType == ItemActionType.Shovel ||
                             actionType == ItemActionType.Hoe || actionType == ItemActionType.Sword)
                         {
-                            newItem.TierType = itemDef.Properties["tier"].StringValue switch
-                            {
-                                "wood"      => TierType.Wood,
-                                "stone"     => TierType.Stone,
-                                "iron"      => TierType.Iron,
-                                "diamond"   => TierType.Diamond,
-                                "netherite" => TierType.Netherite,
-                                "gold"      => TierType.Gold,
-
-                                _           => throw new InvalidDataException($"Item tier {itemDef.Properties["tier"].StringValue} is not defined!")
-                            };
+                            newItem.TierType = TierTypeHelper.GetTierType(itemDef.Properties["tier"].StringValue);
                         }
 
                         AddEntry(itemId, numId, newItem);
@@ -196,9 +112,9 @@ namespace CraftSharp
                 // Load item color rules...
                 Json.JSONData colorRules = Json.ParseJson(File.ReadAllText(colorsPath, Encoding.UTF8));
 
-                if (colorRules.Properties.ContainsKey("fixed"))
+                if (colorRules.Properties.TryGetValue("fixed", out var fixedRulesProperty))
                 {
-                    foreach (var fixedRule in colorRules.Properties["fixed"].Properties)
+                    foreach (var fixedRule in fixedRulesProperty.Properties)
                     {
                         var itemId = ResourceLocation.FromString(fixedRule.Key);
 
@@ -212,16 +128,12 @@ namespace CraftSharp
                                 Debug.LogWarning($"Failed to apply fixed color rules to {itemId} ({numId})!");
                             }
                         }
-                        else
-                        {
-                            //Debug.LogWarning($"Applying fixed color rules to undefined item {itemId}!");
-                        }
                     }
                 }
 
-                if (colorRules.Properties.ContainsKey("fixed_multicolor"))
+                if (colorRules.Properties.TryGetValue("fixed_multicolor", out fixedRulesProperty))
                 {
-                    foreach (var fixedRule in colorRules.Properties["fixed_multicolor"].Properties)
+                    foreach (var fixedRule in fixedRulesProperty.Properties)
                     {
                         var itemId = ResourceLocation.FromString(fixedRule.Key);
 
@@ -239,10 +151,6 @@ namespace CraftSharp
                             {
                                 Debug.LogWarning($"Failed to apply fixed multi-color rules to {itemId} ({numId})!");
                             }
-                        }
-                        else
-                        {
-                            //Debug.LogWarning($"Applying fixed multi-color rules to undefined item {itemId}!");
                         }
                     }
                 }

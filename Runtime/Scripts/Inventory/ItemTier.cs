@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 
 namespace CraftSharp
 {
@@ -10,6 +11,24 @@ namespace CraftSharp
         Diamond,
         Netherite,
         Gold
+    }
+
+    public static class TierTypeHelper
+    {
+        public static TierType GetTierType(string tierTypeName)
+        {
+            return tierTypeName switch
+            {
+                "wood" => TierType.Wood,
+                "stone" => TierType.Stone,
+                "iron" => TierType.Iron,
+                "diamond" => TierType.Diamond,
+                "netherite" => TierType.Netherite,
+                "gold" => TierType.Gold,
+
+                _ => throw new InvalidDataException($"Item tier {tierTypeName} is not defined!")
+            };
+        }
     }
 
     public record ItemTier(

@@ -6,9 +6,9 @@ namespace CraftSharp
 {
     public class BlockStatePredicate
     {
-        public static readonly BlockStatePredicate EMPTY = new BlockStatePredicate(new Dictionary<string, string>());
+        public static readonly BlockStatePredicate EMPTY = new(new());
 
-        private readonly Dictionary<string, string> conditions = new Dictionary<string, string>();
+        private readonly Dictionary<string, string> conditions;
 
         public BlockStatePredicate(Dictionary<string, string> conditions)
         {
@@ -17,16 +17,16 @@ namespace CraftSharp
 
         public static BlockStatePredicate FromString(string source)
         {
-            if (source == string.Empty || source == "normal")
+            if (source is "" or "normal")
                 return EMPTY;
             
             var conditions = new Dictionary<string, string>();
-            string[] srcs = source.Split(',');
+            var srcs = source.Split(',');
             foreach (var src in srcs)
             {
                 if (src.Contains('='))
                 {
-                    string[] keyVal = src.Split('=', 2);
+                    var keyVal = src.Split('=', 2);
                     conditions.Add(keyVal[0], keyVal[1]);
                 }
                 else
@@ -52,17 +52,17 @@ namespace CraftSharp
 
         public bool Check(BlockState state)
         {
-            foreach (var condition in conditions)
+            foreach (var (key, value) in conditions)
             {
                 // Check if the key exists...
-                if (!state.Properties.ContainsKey(condition.Key))
+                if (!state.Properties.ContainsKey(key))
                     return false;
                 
                 // Multiple allowed values are supported, separated with symbol '|'
-                string[] allowedValues = condition.Value.Split('|');
+                var allowedValues = value.Split('|');
 
                 // Check if the value matches..
-                if (!allowedValues.Contains(state.Properties[condition.Key]))
+                if (!allowedValues.Contains(state.Properties[key]))
                     return false;
 
             }
