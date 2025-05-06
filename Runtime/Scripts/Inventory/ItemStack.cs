@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Text;
 
 namespace CraftSharp
@@ -12,7 +11,7 @@ namespace CraftSharp
         /// <summary>
         /// Item Type
         /// </summary>
-        public Item ItemType;
+        public readonly Item ItemType;
 
         /// <summary>
         /// Item Count
@@ -23,7 +22,7 @@ namespace CraftSharp
         /// <summary>
         /// Item Metadata
         /// </summary>
-        public Dictionary<string, object>? NBT;
+        public readonly Dictionary<string, object>? NBT;
 
         /// <summary>
         /// Create an item with ItemType, Count and Metadata
@@ -33,9 +32,9 @@ namespace CraftSharp
         /// <param name="nbt">Item Metadata</param>
         public ItemStack(Item itemType, int count, Dictionary<string, object>? nbt = null)
         {
-            this.ItemType = itemType;
-            this.Count = count;
-            this.NBT = nbt;
+            ItemType = itemType;
+            Count = count;
+            NBT = nbt;
         }
         #nullable disable
 
@@ -43,13 +42,7 @@ namespace CraftSharp
         /// Check if the item slot is empty
         /// </summary>
         /// <returns>TRUE if the item is empty</returns>
-        public bool IsEmpty
-        {
-            get
-            {
-                return ItemType.ItemId == Item.AIR_ID || Count == 0;
-            }
-        }
+        public bool IsEmpty => ItemType.ItemId == Item.AIR_ID || Count == 0;
 
         /// <summary>
         /// Retrieve item display name from NBT properties. NULL if no display name is defined.
@@ -58,12 +51,12 @@ namespace CraftSharp
         {
             get
             {
-                if (NBT != null && NBT.ContainsKey("display"))
+                if (NBT != null && NBT.TryGetValue("display", out var displayValue))
                 {
-                    if (NBT["display"] is Dictionary<string, object> displayProperties && displayProperties.ContainsKey("Name"))
+                    if (displayValue is Dictionary<string, object> displayProperties && displayProperties.ContainsKey("Name"))
                     {
                         string displayName = displayProperties["Name"] as string;
-                        if (!String.IsNullOrEmpty(displayName))
+                        if (!string.IsNullOrEmpty(displayName))
                             return displayProperties["Name"].ToString();
                     }
                 }
@@ -78,11 +71,11 @@ namespace CraftSharp
         {
             get
             {
-                if (NBT != null && NBT.ContainsKey("display"))
+                if (NBT != null && NBT.TryGetValue("display", out var displayValue))
                 {
-                    if (NBT["display"] is Dictionary<string, object> displayProperties && displayProperties.ContainsKey("Lore"))
+                    if (displayValue is Dictionary<string, object> displayProperties && displayProperties.TryGetValue("Lore", out var loreValue))
                     {
-                        return displayProperties["Lore"] as object[];
+                        return loreValue as object[];
                     }
                 }
                 return null;
@@ -96,12 +89,11 @@ namespace CraftSharp
         {
             get
             {
-                if (NBT != null && NBT.ContainsKey("Damage"))
+                if (NBT != null && NBT.TryGetValue("Damage", out var damageValue))
                 {
-                    object damage = NBT["Damage"];
-                    if (damage != null)
+                    if (damageValue != null)
                     {
-                        return int.Parse(damage.ToString());
+                        return int.Parse(damageValue.ToString());
                     }
                 }
                 return 0;
@@ -120,7 +112,7 @@ namespace CraftSharp
             int damage = Damage;
             if (damage != 0)
             {
-                sb.AppendFormat(" | Damage: {1}", damage);
+                sb.AppendFormat(" | Damage: {0}", damage);
             }
             return sb.ToString();
         }

@@ -158,8 +158,10 @@ namespace CraftSharp
                                 _ => throw new InvalidDataException($"Equipment slot {val.StringValue} is not defined!")
                             };
                         }
+                        
+                        var maxDurability = itemDef.Properties.TryGetValue("max_durability", out val) ? int.Parse(val.StringValue) : 0;
 
-                        Item newItem = new(itemId, stackLimit, rarity, actionType, edible, itemBlockId, equipmentSlot);
+                        Item newItem = new(itemId, stackLimit, rarity, actionType, edible, itemBlockId, equipmentSlot, maxDurability);
 
                         if (edible) // Set food settings
                         {
