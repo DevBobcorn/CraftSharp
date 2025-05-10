@@ -78,6 +78,33 @@ namespace CraftSharp
             return false;
         }
 
+        /// <summary>
+        /// Get numId by object, or invalid numId if not found
+        /// </summary>
+        public int GetNumIdByObject(T obj)
+        {
+            if (obj is not null && objectToNumId.TryGetValue(obj, out int numId))
+            {
+                return numId;
+            }
+
+            return UNKNOWN_NUM_ID;
+        }
+
+        /// <summary>
+        /// Try get numId by object, or invalid numId if not found
+        /// </summary>
+        public bool TryGetNumIdByObject(T obj, out int numId)
+        {
+            if (obj is not null && objectToNumId.TryGetValue(obj, out numId))
+            {
+                return true;
+            }
+
+            numId = UNKNOWN_NUM_ID;
+            return false;
+        }
+
         public void FreezeEntries()
         {
             EntriesFrozen = true;

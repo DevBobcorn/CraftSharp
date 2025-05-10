@@ -88,19 +88,6 @@ namespace CraftSharp
             return UNKNOWN_ID;
         }
 
-        /// <summary>
-        /// Get numId by object, or invalid id if not found
-        /// </summary>
-        public int GetNumIdByObject(T obj)
-        {
-            if (obj is not null && objectToNumId.TryGetValue(obj, out int numId))
-            {
-                return numId;
-            }
-
-            return UNKNOWN_NUM_ID;
-        }
-
         public ResourceLocation GetIdByNumId(int numId)
         {
             return numIdToId.GetValueOrDefault(numId, UNKNOWN_ID);
