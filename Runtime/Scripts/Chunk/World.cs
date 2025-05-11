@@ -757,7 +757,7 @@ namespace CraftSharp
                                     if (resX is > 0 and <= Chunk.SIZE && resY is > 0 and <= Chunk.SIZE && resZ is > 0 and <= Chunk.SIZE)
                                     {
                                         // No padding for block color
-                                        color[resX - 1, resY - 1, resZ - 1] = BlockStatePalette.INSTANCE.GetBlockColor(bloc.StateId, this, blocLoc, bloc.State);
+                                        color[resX - 1, resY - 1, resZ - 1] = BlockStatePalette.INSTANCE.GetBlockColor(bloc.StateId, this, blocLoc);
                                     }
                                 }
                             }

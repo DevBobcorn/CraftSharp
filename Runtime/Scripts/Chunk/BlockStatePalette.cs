@@ -159,10 +159,10 @@ namespace CraftSharp
 
         private static readonly float3 ORIGINAL_BLOCK_COLOR = new(1F);
 
-        public float3 GetBlockColor(int stateId, World world, BlockLoc loc, BlockState state)
+        public float3 GetBlockColor(int stateId, World world, BlockLoc loc)
         {
             if (blockColorRules.TryGetValue(stateId, out var rule))
-                return rule.Invoke(world, loc, state);
+                return rule.Invoke(world, loc, GetByNumId(stateId));
             return ORIGINAL_BLOCK_COLOR;
         }
 
@@ -202,6 +202,21 @@ namespace CraftSharp
             }
 
             return (sourceId, source);
+        }
+
+        public (int, BlockState) GetBlockStateWithProperties(ResourceLocation blockId, Dictionary<string, string> props)
+        {
+            var predicate = new BlockStatePredicate(props);
+
+            foreach (var stateId in GetAllNumIds(blockId)) // For each blockstate of this block
+            {
+                if (predicate.Check(numIdToObject[stateId]))
+                {
+                    return (stateId, numIdToObject[stateId]);
+                }
+            }
+
+            return (GetDefaultNumId(blockId), GetDefault(blockId));
         }
 
         protected override void ClearEntries()
