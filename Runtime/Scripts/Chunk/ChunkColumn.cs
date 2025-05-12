@@ -61,17 +61,17 @@ namespace CraftSharp
         /// <summary>
         /// Get or set the specified chunk
         /// </summary>
-        /// <param name="chunkY">Chunk Y</param>
+        /// <param name="chunkYIndex">Chunk Y Index</param>
         /// <returns>chunk at the given location</returns>
-        public Chunk? this[int chunkY]
+        public Chunk? this[int chunkYIndex]
         {
             get
             {
-                return chunks[chunkY];
+                return chunks[chunkYIndex];
             }
             set
             {
-                chunks[chunkY] = value;
+                chunks[chunkYIndex] = value;
             }
         }
 

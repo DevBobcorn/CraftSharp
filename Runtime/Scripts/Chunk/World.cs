@@ -508,14 +508,14 @@ namespace CraftSharp
         /// Store chunk at the specified location
         /// </summary>
         /// <param name="chunkX">ChunkColumn X</param>
-        /// <param name="chunkY">ChunkColumn Y</param>
+        /// <param name="chunkYIndex">ChunkColumn Y Index</param>
         /// <param name="chunkZ">ChunkColumn Z</param>
         /// <param name="chunkColumnSize">ChunkColumn size</param>
         /// <param name="chunk">Chunk data</param>
-        public void StoreChunk(int chunkX, int chunkY, int chunkZ, int chunkColumnSize, Chunk? chunk)
+        public void StoreChunk(int chunkX, int chunkYIndex, int chunkZ, int chunkColumnSize, Chunk? chunk)
         {
             ChunkColumn chunkColumn = columns.GetOrAdd(new(chunkX, chunkZ), (_) => new(chunkColumnSize));
-            chunkColumn[chunkY] = chunk;
+            chunkColumn[chunkYIndex] = chunk;
         }
 
         /// <summary>
@@ -715,7 +715,8 @@ namespace CraftSharp
         public ChunkBuildData GetChunkBuildData(int chunkX, int chunkZ, int chunkYIndex)
         {
             var result = new ChunkBuildData();
-            var blocs = result.Blocks = new Block[Chunk.PADDED, Chunk.PADDED, Chunk.PADDED];
+            var blocs = result.BlockStates = new BlockState[Chunk.PADDED, Chunk.PADDED, Chunk.PADDED];
+            var stids = result.BlockStateIds = new int[Chunk.PADDED, Chunk.PADDED, Chunk.PADDED];
             var light = result.Light = new byte[Chunk.PADDED, Chunk.PADDED, Chunk.PADDED];
             var color = result.Color = new float3[Chunk.SIZE, Chunk.SIZE, Chunk.SIZE];
             
@@ -751,7 +752,8 @@ namespace CraftSharp
                                     var blocLoc = new BlockLoc(blocX, blocY, blocZ);
 
                                     var bloc = chunkColumn.GetBlock(blocLoc);
-                                    blocs[resX, resY, resZ] = bloc;
+                                    blocs[resX, resY, resZ] = bloc.State;
+                                    stids[resX, resY, resZ] = bloc.StateId;
                                     light[resX, resY, resZ] = chunkColumn.GetBlockLight(blocLoc);
                                     
                                     if (resX is > 0 and <= Chunk.SIZE && resY is > 0 and <= Chunk.SIZE && resZ is > 0 and <= Chunk.SIZE)
@@ -765,6 +767,8 @@ namespace CraftSharp
                     }
                     else // Chunk column is empty
                     {
+                        var air = BlockStatePalette.INSTANCE.GetByNumId(0);
+
                         // Go through all valid xz locations within this chunk column
                         for (int blocX = math.max(minX, cx << 4); blocX < math.min(maxX, (cx + 1) << 4); blocX++)
                         {
@@ -777,7 +781,8 @@ namespace CraftSharp
                                 {
                                     int resY = blocY - minY;
 
-                                    blocs[resX, resY, resZ] = AIR_INSTANCE;
+                                    blocs[resX, resY, resZ] = air;
+                                    stids[resX, resY, resZ] = 0;
                                     light[resX, resY, resZ] = 0;
                                 }
                             }

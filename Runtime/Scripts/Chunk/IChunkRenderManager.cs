@@ -10,7 +10,10 @@ namespace CraftSharp
         /// <summary>
         /// Set block at the specified location, invoked from network thread
         /// </summary>
-        public void SetBlock(BlockLoc blockLoc, Block block);
+        /// <param name="blockLoc">Location to set block to</param>
+        /// <param name="block">Block to set</param>
+        /// <param name="doImmediateBuild">Whether to immediately rebuild chunk mesh</param>
+        public void SetBlock(BlockLoc blockLoc, Block block, bool doImmediateBuild = false);
 
         /// <summary>
         /// Get block at the specified location
