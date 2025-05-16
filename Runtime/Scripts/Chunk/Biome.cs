@@ -58,7 +58,7 @@ namespace CraftSharp
             WaterFogColor = GetFloat3Color(waterFog);
             WaterFogColorInt = waterFog;
 
-            string colorText(int color)
+            static string colorText(int color)
             {
                 var colorCode = $"{color:x}".PadLeft(6, '0');
                 return $"<color=#{colorCode}>{colorCode}</color>";

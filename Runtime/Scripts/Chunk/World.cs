@@ -373,15 +373,15 @@ namespace CraftSharp
             float temperature = 0F, downfall = 0F;
             Precipitation precipitation = Precipitation.None;
 
-            if (biomeDef.TryGetValue("downfall", out var value))
-                downfall = (float) value;
+            if (biomeDef.TryGetValue("downfall", out var val))
+                downfall = (float) val;
                             
-            if (biomeDef.TryGetValue("temperature", out var value1))
-                temperature = (float) value1;
+            if (biomeDef.TryGetValue("temperature", out val))
+                temperature = (float) val;
             
-            if (biomeDef.ContainsKey("precipitation"))
+            if (biomeDef.TryGetValue("precipitation", out val))
             {
-                precipitation = ((string) biomeDef["precipitation"]).ToLower() switch
+                precipitation = ((string) val).ToLower() switch
                 {
                     "rain" => Precipitation.Rain,
                     "snow" => Precipitation.Snow,
@@ -394,9 +394,9 @@ namespace CraftSharp
                     Debug.LogWarning($"Unexpected precipitation type: {biomeDef["precipitation"]}");
             }
 
-            if (biomeDef.TryGetValue("effects", out var value2))
+            if (biomeDef.TryGetValue("effects", out val))
             {
-                var effects = (Dictionary<string, object>)value2;
+                var effects = (Dictionary<string, object>) val;
 
                 if (effects.TryGetValue("sky_color", out var effect))
                     sky = (int) effect;
@@ -416,8 +416,8 @@ namespace CraftSharp
                     foliage = (color.r << 16) | (color.g << 8) | color.b;
                 }
                 
-                if (effects.TryGetValue("grass_color", out var effect2))
-                    grass = (int) effect2;
+                if (effects.TryGetValue("grass_color", out val))
+                    grass = (int) val;
                 else // Read grass color from color map. Same as above
                 {
                     var color = (GrassColormapPixels.Length == 0) ? (Color32) Color.magenta :
@@ -425,14 +425,14 @@ namespace CraftSharp
                     grass = (color.r << 16) | (color.g << 8) | color.b;
                 }
                 
-                if (effects.TryGetValue("fog_color", out var effect3))
-                    fog = (int) effect3;
+                if (effects.TryGetValue("fog_color", out val))
+                    fog = (int) val;
                 
-                if (effects.TryGetValue("water_color", out var effect4))
-                    water = (int) effect4;
+                if (effects.TryGetValue("water_color", out val))
+                    water = (int) val;
                 
-                if (effects.TryGetValue("water_fog_color", out var effect5))
-                    waterFog = (int) effect5;
+                if (effects.TryGetValue("water_fog_color", out val))
+                    waterFog = (int) val;
             }
 
             Biome biome = new(biomeId, sky, foliage, grass, water, fog, waterFog)
