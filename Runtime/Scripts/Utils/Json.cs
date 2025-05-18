@@ -246,10 +246,12 @@ namespace CraftSharp
                 object[] array                  => Array2Json(array),
                 // User-defined json serialization
                 IJSONSerializable objValue      => objValue.ToJson(),
-                // String value, wrap with quoatation marks
+                // String value, wrap with quotation marks
                 string strValue                 => $"\"{strValue}\"",
                 // Boolean value, should be lowercase 'true' or 'false'
                 bool boolValue                  => boolValue ? "true" : "false",
+                // Null value, should be lowercase 'null'
+                null                            => "null",
                 // Other types, just convert to string
                 _                               => obj.ToString()
             };
