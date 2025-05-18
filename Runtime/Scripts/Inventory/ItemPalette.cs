@@ -15,7 +15,7 @@ namespace CraftSharp
         protected override Item UnknownObject => Item.UNKNOWN;
 
         private readonly Dictionary<ResourceLocation, Func<ItemStack, float3[]>> itemColorRules = new();
-
+        private readonly Dictionary<ResourceLocation, ResourceLocation> blockIdToBlockItemId = new();
 
         public bool IsTintable(ResourceLocation identifier)
         {
@@ -24,15 +24,24 @@ namespace CraftSharp
 
         public Func<ItemStack, float3[]> GetTintRule(ResourceLocation identifier)
         {
-            if (itemColorRules.ContainsKey(identifier))
-                return itemColorRules[identifier];
-            return null;
+            return itemColorRules.GetValueOrDefault(identifier);
+        }
+        
+        public ResourceLocation GetItemIdForBlock(ResourceLocation blockId)
+        {
+            return blockIdToBlockItemId.GetValueOrDefault(blockId, ResourceLocation.INVALID);
+        }
+        
+        public Item GetItemForBlock(ResourceLocation blockId)
+        {
+            return GetById(blockIdToBlockItemId.GetValueOrDefault(blockId, ResourceLocation.INVALID));
         }
 
         protected override void ClearEntries()
         {
             base.ClearEntries();
             itemColorRules.Clear();
+            blockIdToBlockItemId.Clear();
         }
 
         /// <summary>
@@ -77,6 +86,7 @@ namespace CraftSharp
                         if (itemDef.Properties.TryGetValue("block", out var val))
                         {
                             itemBlockId = ResourceLocation.FromString(val.StringValue);
+                            blockIdToBlockItemId.Add(itemBlockId.Value, itemId);
                         }
                         
                         EquipmentSlot equipmentSlot = EquipmentSlot.Mainhand;

@@ -65,6 +65,11 @@ namespace CraftSharp
         }
         
         /// <summary>
+        /// Check item enchanted status name from NBT properties.
+        /// </summary>
+        public bool IsEnchanted => NBT != null && (NBT.ContainsKey("Enchantments") || NBT.ContainsKey("StoredEnchantments"));
+
+        /// <summary>
         /// Retrieve item lores from NBT properties. Returns null if no lores is defined.
         /// </summary>
         public object[] Lores
