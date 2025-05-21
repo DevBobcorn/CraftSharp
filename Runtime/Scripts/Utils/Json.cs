@@ -27,15 +27,16 @@ namespace CraftSharp
         public class JSONData : IJSONSerializable
         {
             public enum DataType { Object, Array, String };
-            private DataType type;
-            public DataType Type { get { return type; } }
-            public Dictionary<string, JSONData> Properties;
-            public List<JSONData> DataArray;
+
+            public DataType Type { get; }
+
+            public readonly Dictionary<string, JSONData> Properties;
+            public readonly List<JSONData> DataArray;
             public string StringValue;
 
             public JSONData(DataType datatype)
             {
-                type = datatype;
+                Type = datatype;
                 Properties = new Dictionary<string, JSONData>();
                 DataArray = new List<JSONData>();
                 StringValue = string.Empty;
@@ -43,13 +44,12 @@ namespace CraftSharp
 
             public string ToJson() // Serialize back to json string
             {
-                return type switch
+                return Type switch
                 {
                     DataType.Object => "{" + string.Join(",", Properties.Select(x => $"\"{x.Key}\":{Object2Json(x.Value)}")) + "}",
-                    DataType.Array  => "[" + string.Join(",", DataArray.Select(x => Object2Json(x))) + "]",
-                    DataType.String => StringValue,
+                    DataType.Array  => "[" + string.Join(",", DataArray.Select(Object2Json)) + "]",
 
-                    _               => StringValue,
+                    _               => $"\"{StringValue}\"",
                 };
             }
         }
@@ -57,96 +57,96 @@ namespace CraftSharp
         /// <summary>
         /// Parse a JSON string to build a JSON object
         /// </summary>
-        /// <param name="toparse">String to parse</param>
-        /// <param name="cursorpos">Cursor start (set to 0 for function init)</param>
-        private static JSONData String2Data(string toparse, ref int cursorpos)
+        /// <param name="toParse">String to parse</param>
+        /// <param name="cursorPos">Cursor start (set to 0 for function init)</param>
+        private static JSONData String2Data(string toParse, ref int cursorPos)
         {
             try
             {
                 JSONData data;
-                SkipSpaces(toparse, ref cursorpos);
-                switch (toparse[cursorpos])
+                SkipSpaces(toParse, ref cursorPos);
+                switch (toParse[cursorPos])
                 {
                     //Object
                     case '{':
                         data = new JSONData(JSONData.DataType.Object);
-                        cursorpos++;
-                        SkipSpaces(toparse, ref cursorpos);
-                        while (toparse[cursorpos] != '}')
+                        cursorPos++;
+                        SkipSpaces(toParse, ref cursorPos);
+                        while (toParse[cursorPos] != '}')
                         {
-                            if (toparse[cursorpos] == '"')
+                            if (toParse[cursorPos] == '"')
                             {
-                                JSONData propertyname = String2Data(toparse, ref cursorpos);
-                                if (toparse[cursorpos] == ':') { cursorpos++; } else { /* parse error ? */ }
-                                JSONData propertyData = String2Data(toparse, ref cursorpos);
+                                JSONData propertyname = String2Data(toParse, ref cursorPos);
+                                if (toParse[cursorPos] == ':') { cursorPos++; } else { /* parse error ? */ }
+                                JSONData propertyData = String2Data(toParse, ref cursorPos);
                                 data.Properties[propertyname.StringValue] = propertyData;
                             }
-                            else cursorpos++;
+                            else cursorPos++;
                         }
-                        cursorpos++;
+                        cursorPos++;
                         break;
 
                     //Array
                     case '[':
                         data = new JSONData(JSONData.DataType.Array);
-                        cursorpos++;
-                        SkipSpaces(toparse, ref cursorpos);
-                        while (toparse[cursorpos] != ']')
+                        cursorPos++;
+                        SkipSpaces(toParse, ref cursorPos);
+                        while (toParse[cursorPos] != ']')
                         {
-                            if (toparse[cursorpos] == ',') { cursorpos++; }
-                            JSONData arrayItem = String2Data(toparse, ref cursorpos);
+                            if (toParse[cursorPos] == ',') { cursorPos++; }
+                            JSONData arrayItem = String2Data(toParse, ref cursorPos);
                             data.DataArray.Add(arrayItem);
                         }
-                        cursorpos++;
+                        cursorPos++;
                         break;
 
                     //String
                     case '"':
                         data = new JSONData(JSONData.DataType.String);
-                        cursorpos++;
-                        while (toparse[cursorpos] != '"')
+                        cursorPos++;
+                        while (toParse[cursorPos] != '"')
                         {
-                            if (toparse[cursorpos] == '\\')
+                            if (toParse[cursorPos] == '\\')
                             {
                                 try //Unicode character \u0123
                                 {
-                                    if (toparse[cursorpos + 1] == 'u'
-                                        && IsHex(toparse[cursorpos + 2])
-                                        && IsHex(toparse[cursorpos + 3])
-                                        && IsHex(toparse[cursorpos + 4])
-                                        && IsHex(toparse[cursorpos + 5]))
+                                    if (toParse[cursorPos + 1] == 'u'
+                                        && IsHex(toParse[cursorPos + 2])
+                                        && IsHex(toParse[cursorPos + 3])
+                                        && IsHex(toParse[cursorPos + 4])
+                                        && IsHex(toParse[cursorPos + 5]))
                                     {
                                         //"abc\u0123abc" => "0123" => 0123 => Unicode char n°0123 => Add char to string
-                                        data.StringValue += char.ConvertFromUtf32(int.Parse(toparse.Substring(cursorpos + 2, 4), System.Globalization.NumberStyles.HexNumber));
-                                        cursorpos += 6; continue;
+                                        data.StringValue += char.ConvertFromUtf32(int.Parse(toParse.Substring(cursorPos + 2, 4), System.Globalization.NumberStyles.HexNumber));
+                                        cursorPos += 6; continue;
                                     }
-                                    else if (toparse[cursorpos + 1] == 'n')
+                                    else if (toParse[cursorPos + 1] == 'n')
                                     {
                                         data.StringValue += '\n';
-                                        cursorpos += 2;
+                                        cursorPos += 2;
                                         continue;
                                     }
-                                    else if (toparse[cursorpos + 1] == 'r')
+                                    else if (toParse[cursorPos + 1] == 'r')
                                     {
                                         data.StringValue += '\r';
-                                        cursorpos += 2;
+                                        cursorPos += 2;
                                         continue;
                                     }
-                                    else if (toparse[cursorpos + 1] == 't')
+                                    else if (toParse[cursorPos + 1] == 't')
                                     {
                                         data.StringValue += '\t';
-                                        cursorpos += 2;
+                                        cursorPos += 2;
                                         continue;
                                     }
-                                    else cursorpos++; //Normal character escapement \"
+                                    else cursorPos++; //Normal character escapement \"
                                 }
-                                catch (IndexOutOfRangeException) { cursorpos++; } // \u01<end of string>
-                                catch (ArgumentOutOfRangeException) { cursorpos++; } // Unicode index 0123 was invalid
+                                catch (IndexOutOfRangeException) { cursorPos++; } // \u01<end of string>
+                                catch (ArgumentOutOfRangeException) { cursorPos++; } // Unicode index 0123 was invalid
                             }
-                            data.StringValue += toparse[cursorpos];
-                            cursorpos++;
+                            data.StringValue += toParse[cursorPos];
+                            cursorPos++;
                         }
-                        cursorpos++;
+                        cursorPos++;
                         break;
 
                     //Number
@@ -155,11 +155,11 @@ namespace CraftSharp
                         StringBuilder sb = new StringBuilder();
                         // 'e' or 'E' can appear in the middle in a number as the mark for
                         // scientific notation, but they're not supposed to be at the start
-                        while ((toparse[cursorpos] >= '0' && toparse[cursorpos] <= '9') || toparse[cursorpos] == 'e' || toparse[cursorpos] == 'E' ||
-                                toparse[cursorpos] == '.' || toparse[cursorpos] == '-' || toparse[cursorpos] == '+')
+                        while ((toParse[cursorPos] >= '0' && toParse[cursorPos] <= '9') || toParse[cursorPos] == 'e' || toParse[cursorPos] == 'E' ||
+                                toParse[cursorPos] == '.' || toParse[cursorPos] == '-' || toParse[cursorPos] == '+')
                         {
-                            sb.Append(toparse[cursorpos]);
-                            cursorpos++;
+                            sb.Append(toParse[cursorPos]);
+                            cursorPos++;
                         }
                         data.StringValue = sb.ToString();
                         break;
@@ -167,37 +167,37 @@ namespace CraftSharp
                     //Boolean : true
                     case 't':
                         data = new JSONData(JSONData.DataType.String);
-                        cursorpos++;
-                        if (toparse[cursorpos] == 'r') { cursorpos++; }
-                        if (toparse[cursorpos] == 'u') { cursorpos++; }
-                        if (toparse[cursorpos] == 'e') { cursorpos++; data.StringValue = "true"; }
+                        cursorPos++;
+                        if (toParse[cursorPos] == 'r') { cursorPos++; }
+                        if (toParse[cursorPos] == 'u') { cursorPos++; }
+                        if (toParse[cursorPos] == 'e') { cursorPos++; data.StringValue = "true"; }
                         break;
 
                     //Boolean : false
                     case 'f':
                         data = new JSONData(JSONData.DataType.String);
-                        cursorpos++;
-                        if (toparse[cursorpos] == 'a') { cursorpos++; }
-                        if (toparse[cursorpos] == 'l') { cursorpos++; }
-                        if (toparse[cursorpos] == 's') { cursorpos++; }
-                        if (toparse[cursorpos] == 'e') { cursorpos++; data.StringValue = "false"; }
+                        cursorPos++;
+                        if (toParse[cursorPos] == 'a') { cursorPos++; }
+                        if (toParse[cursorPos] == 'l') { cursorPos++; }
+                        if (toParse[cursorPos] == 's') { cursorPos++; }
+                        if (toParse[cursorPos] == 'e') { cursorPos++; data.StringValue = "false"; }
                         break;
 
                     //Null field
                     case 'n':
                         data = new JSONData(JSONData.DataType.String);
-                        cursorpos++;
-                        if (toparse[cursorpos] == 'u') { cursorpos++; }
-                        if (toparse[cursorpos] == 'l') { cursorpos++; }
-                        if (toparse[cursorpos] == 'l') { cursorpos++; data.StringValue = "null"; }
+                        cursorPos++;
+                        if (toParse[cursorPos] == 'u') { cursorPos++; }
+                        if (toParse[cursorPos] == 'l') { cursorPos++; }
+                        if (toParse[cursorPos] == 'l') { cursorPos++; data.StringValue = "null"; }
                         break;
 
                     //Unknown data
                     default:
-                        cursorpos++;
-                        return String2Data(toparse, ref cursorpos);
+                        cursorPos++;
+                        return String2Data(toParse, ref cursorPos);
                 }
-                SkipSpaces(toparse, ref cursorpos);
+                SkipSpaces(toParse, ref cursorPos);
                 return data;
             }
             catch (IndexOutOfRangeException)
@@ -222,12 +222,12 @@ namespace CraftSharp
 
         private static string List2Json(List<object> list)
         {
-            return "[" + string.Join(",", list.Select(x => Object2Json(x)) ) + "]";
+            return "[" + string.Join(",", list.Select(Object2Json) ) + "]";
         }
 
         private static string Array2Json(object[] array)
         {
-            return "[" + string.Join(",", array.Select(x => Object2Json(x)) ) + "]";
+            return "[" + string.Join(",", array.Select(Object2Json) ) + "]";
         }
 
         /// <summary>
@@ -253,8 +253,56 @@ namespace CraftSharp
                 // Null value, should be lowercase 'null'
                 null                            => "null",
                 // Other types, just convert to string
-                _                               => obj.ToString()
+                _                               => $"\"{obj}\""
             };
+        }
+        
+        private static JSONData Dictionary2JSONData(Dictionary<string, object> dict)
+        {
+            var jsonData = new JSONData(JSONData.DataType.Object);
+    
+            foreach (var kvp in dict)
+            {
+                jsonData.Properties[kvp.Key] = Object2JSONData(kvp.Value);
+            }
+    
+            return jsonData;
+        }
+
+        public static JSONData Object2JSONData(object value)
+        {
+            if (value == null)
+            {
+                return new JSONData(JSONData.DataType.String) { StringValue = "null" };
+            }
+    
+            switch (value)
+            {
+                case Dictionary<string, object> nestedDict:
+                    return Dictionary2JSONData(nestedDict);
+            
+                case List<object> list:
+                    var listData = new JSONData(JSONData.DataType.Array);
+                    foreach (var item in list)
+                    {
+                        listData.DataArray.Add(Object2JSONData(item));
+                    }
+                    return listData;
+                
+                case Array array:
+                    var arrayData = new JSONData(JSONData.DataType.Array);
+                    foreach (var item in array)
+                    {
+                        arrayData.DataArray.Add(Object2JSONData(item));
+                    }
+                    return arrayData;
+            
+                case string s:
+                    return new JSONData(JSONData.DataType.String) { StringValue = s };
+            
+                default: // Handle numbers, booleans, etc.
+                    return new JSONData(JSONData.DataType.String) { StringValue = value.ToString() };
+            }
         }
 
         /// <summary>
@@ -262,20 +310,20 @@ namespace CraftSharp
         /// </summary>
         /// <param name="c">Char to test</param>
         /// <returns>True if hexadecimal</returns>
-        private static bool IsHex(char c) { return ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f')); }
+        private static bool IsHex(char c) { return c is >= '0' and <= '9' or >= 'A' and <= 'F' or >= 'a' and <= 'f'; }
 
         /// <summary>
         /// Advance the cursor to skip white spaces and line breaks
         /// </summary>
-        /// <param name="toparse">String to parse</param>
-        /// <param name="cursorpos">Cursor position to update</param>
-        private static void SkipSpaces(string toparse, ref int cursorpos)
+        /// <param name="toParse">String to parse</param>
+        /// <param name="cursorPos">Cursor position to update</param>
+        private static void SkipSpaces(string toParse, ref int cursorPos)
         {
-            while (cursorpos < toparse.Length
-                    && (char.IsWhiteSpace(toparse[cursorpos])
-                    || toparse[cursorpos] == '\r'
-                    || toparse[cursorpos] == '\n'))
-                cursorpos++;
+            while (cursorPos < toParse.Length
+                    && (char.IsWhiteSpace(toParse[cursorPos])
+                    || toParse[cursorPos] == '\r'
+                    || toParse[cursorPos] == '\n'))
+                cursorPos++;
         }
     }
 }
