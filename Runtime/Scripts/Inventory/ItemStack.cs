@@ -104,6 +104,19 @@ namespace CraftSharp
                 return 0;
             }
         }
+        
+        public static ItemStack FromJson(Json.JSONData data)
+        {
+            var typeId = data.Properties.TryGetValue("id", out var val) || data.Properties.TryGetValue("item_id", out val) ?
+                ResourceLocation.FromString(val.StringValue) : ResourceLocation.INVALID;
+            
+            var count = data.Properties.TryGetValue("count", out val) || data.Properties.TryGetValue("Count", out val) ?
+                int.Parse(val.StringValue) : 1; // Count is 1 by default
+            
+            // TODO: Parse NBTs and components
+
+            return new ItemStack(ItemPalette.INSTANCE.GetById(typeId), count);
+        }
 
         public override string ToString()
         {
