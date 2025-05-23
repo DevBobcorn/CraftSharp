@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace CraftSharp
@@ -25,6 +27,28 @@ namespace CraftSharp
                     sb.Append(c);
                 }
             }
+            return sb.ToString();
+        }
+
+        public static string ToRomanNumbers(int num)
+        {
+            if (num < 0) return "???";
+
+            var sb = new StringBuilder();
+            var romanNumbers = new Dictionary<string, int>
+            {
+                {"M", 1000}, {"CM", 900}, {"D", 500}, {"CD", 400},
+                {"C", 100},  {"XC", 90},  {"L", 50},  {"XL", 40},
+                {"X", 10},   {"IX", 9},   {"V", 5},   {"IV", 4},
+                {"I", 1}
+            };
+
+            foreach (var pair in romanNumbers)
+            {
+                sb.Append(string.Join(string.Empty, Enumerable.Repeat(pair.Key, num / pair.Value)));
+                num %= pair.Value;
+            }
+
             return sb.ToString();
         }
     }
