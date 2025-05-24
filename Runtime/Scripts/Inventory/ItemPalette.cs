@@ -86,16 +86,7 @@ namespace CraftSharp
                     return new[] { ColorConvert.GetFloat3((int) value) };
                 }
                 
-                // Custom effects overrides
-                if (itemStack.NBT.TryGetValue("CustomPotionEffects ", out value) || itemStack.NBT.TryGetValue("custom_potion_effects", out value))
-                {
-                    var effectList = (object[]) value;
-
-                    return new[] { GetEffectsColor(effectList.Select(
-                        x => ResourceLocation.FromString( (string) ((Dictionary<string, object>)x) ["id"] ) ).ToArray()) };
-                }
-                
-                // Default effects for potion
+                // Default effects for potion (Custom effects doesn't affect potion color)
                 if (itemStack.NBT.TryGetValue("Potion", out value))
                 {
                     var potionId = ResourceLocation.FromString((string) value);
