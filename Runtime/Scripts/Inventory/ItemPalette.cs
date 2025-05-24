@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using Unity.Mathematics;
 using UnityEngine;
@@ -42,6 +43,69 @@ namespace CraftSharp
             base.ClearEntries();
             itemColorRules.Clear();
             blockIdToBlockItemId.Clear();
+        }
+
+        private static float3 GetEffectsColor(ResourceLocation[] effectIds)
+        {
+            int effectCount = effectIds.Length;
+            if (effectCount == 0)
+            {
+                return ColorConvert.GetFloat3(0x385DC6); // Water bottle, blue
+            }
+            int rSum = 0, gSum = 0, bSum = 0;
+            var palette = MobEffectPalette.INSTANCE;
+
+            foreach (var effectId in effectIds)
+            {
+                var effect = palette.GetById(effectId);
+                rSum += (effect.Color & 0xFF0000) >> 16;
+                gSum += (effect.Color & 0xFF00) >> 8;
+                bSum +=  effect.Color & 0xFF;
+
+                effectCount++;
+            }
+            
+            int finalColor =
+                (Mathf.RoundToInt(rSum / (float) effectCount) << 16) |
+                (Mathf.RoundToInt(gSum / (float) effectCount) << 8) |
+                 Mathf.RoundToInt(bSum / (float) effectCount);
+            
+            return ColorConvert.GetFloat3(finalColor);
+        }
+        
+        private static float3[] GetPotionColor(ItemStack itemStack)
+        {
+            if (itemStack.NBT is not null)
+            {
+                // Check potion NBTs https://minecraft.wiki/w/Item_format/Before_1.20.5#Potion_Effects
+                Debug.Log(Json.Object2Json(itemStack.NBT));
+                
+                // Potion color override
+                if (itemStack.NBT.TryGetValue("CustomPotionColor", out var value))
+                {
+                    return new[] { ColorConvert.GetFloat3((int) value) };
+                }
+                
+                // Custom effects overrides
+                if (itemStack.NBT.TryGetValue("CustomPotionEffects ", out value) || itemStack.NBT.TryGetValue("custom_potion_effects", out value))
+                {
+                    var effectList = (object[]) value;
+
+                    return new[] { GetEffectsColor(effectList.Select(
+                        x => ResourceLocation.FromString( (string) ((Dictionary<string, object>)x) ["id"] ) ).ToArray()) };
+                }
+                
+                // Default effects for potion
+                if (itemStack.NBT.TryGetValue("Potion", out value))
+                {
+                    var potionId = ResourceLocation.FromString((string) value);
+                    var potion = PotionPalette.INSTANCE.GetById(potionId);
+
+                    return new[] { GetEffectsColor(potion.Effects.Select(x => x.EffectId).ToArray()) };
+                }
+            }
+
+            return new[] { ColorConvert.GetFloat3(0xFF00FF) }; // Uncraftable potion, magenta
         }
 
         /// <summary>
@@ -105,8 +169,7 @@ namespace CraftSharp
                             newItem.FastFood = bool.Parse(itemDef.Properties["fast_food"].StringValue);
                         }
 
-                        if (actionType == ItemActionType.Axe || actionType == ItemActionType.Pickaxe || actionType == ItemActionType.Shovel ||
-                            actionType == ItemActionType.Hoe || actionType == ItemActionType.Sword)
+                        if (actionType is ItemActionType.Axe or ItemActionType.Pickaxe or ItemActionType.Shovel or ItemActionType.Hoe or ItemActionType.Sword)
                         {
                             newItem.TierType = TierTypeHelper.GetTierType(itemDef.Properties["tier"].StringValue);
                         }
@@ -121,6 +184,28 @@ namespace CraftSharp
 
                 // Load item color rules...
                 Json.JSONData colorRules = Json.ParseJson(File.ReadAllText(colorsPath, Encoding.UTF8));
+                
+                if (colorRules.Properties.TryGetValue("dynamic", out var dynamicRulesProperty))
+                {
+                    foreach (var (ruleName, ruleValue) in dynamicRulesProperty.Properties)
+                    {
+                        Func<ItemStack, float3[]> ruleFunc = ruleName switch
+                        {
+                            "potion"  => GetPotionColor,
+
+                            _         => _ => new[] { float3.zero }
+                        };
+
+                        foreach (var itemId in ruleValue.DataArray
+                                     .Select(item => ResourceLocation.FromString(item.StringValue)))
+                        {
+                            if (!itemColorRules.TryAdd(itemId, ruleFunc))
+                            {
+                                Debug.LogWarning($"Failed to apply dynamic color rules to {itemId}!");
+                            }
+                        }
+                    }
+                }
 
                 if (colorRules.Properties.TryGetValue("fixed", out var fixedRulesProperty))
                 {
@@ -128,16 +213,16 @@ namespace CraftSharp
                     {
                         var itemId = ResourceLocation.FromString(fixedRule.Key);
 
-                        if (idToNumId.TryGetValue(itemId, out int numId))
-                        {
-                            var fixedColor = VectorUtil.Json2Float3(fixedRule.Value) / 255F;
-                            float3[] ruleFunc(ItemStack itemStack) => new float3[] { fixedColor };
+                        var fixedColor = VectorUtil.Json2Float3(fixedRule.Value) / 255F;
 
-                            if (!itemColorRules.TryAdd(itemId, ruleFunc))
-                            {
-                                Debug.LogWarning($"Failed to apply fixed color rules to {itemId} ({numId})!");
-                            }
+                        if (!itemColorRules.TryAdd(itemId, ruleFunc))
+                        {
+                            Debug.LogWarning($"Failed to apply fixed color rules to {itemId}!");
                         }
+
+                        continue;
+
+                        float3[] ruleFunc(ItemStack itemStack) => new[] { fixedColor };
                     }
                 }
 
@@ -147,21 +232,20 @@ namespace CraftSharp
                     {
                         var itemId = ResourceLocation.FromString(fixedRule.Key);
 
-                        if (idToNumId.TryGetValue(itemId, out int numId))
+                        var colorList = fixedRule.Value.DataArray.ToArray();
+                        var fixedColors = new float3[colorList.Length];
+
+                        for (int c = 0;c < colorList.Length;c++)
+                            fixedColors[c] = VectorUtil.Json2Float3(colorList[c]) / 255F;
+
+                        if (!itemColorRules.TryAdd(itemId, ruleFunc))
                         {
-                            var colorList = fixedRule.Value.DataArray.ToArray();
-                            var fixedColors = new float3[colorList.Length];
-
-                            for (int c = 0;c < colorList.Length;c++)
-                                fixedColors[c] = VectorUtil.Json2Float3(colorList[c]) / 255F;
-
-                            float3[] ruleFunc(ItemStack itemStack) => fixedColors;
-
-                            if (!itemColorRules.TryAdd(itemId, ruleFunc))
-                            {
-                                Debug.LogWarning($"Failed to apply fixed multi-color rules to {itemId} ({numId})!");
-                            }
+                            Debug.LogWarning($"Failed to apply fixed multi-color rules to {itemId}!");
                         }
+
+                        continue;
+
+                        float3[] ruleFunc(ItemStack itemStack) => fixedColors;
                     }
                 }
             }

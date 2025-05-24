@@ -19,12 +19,14 @@ namespace CraftSharp
         public ResourceLocation MobEffectId { get; }
 
         public readonly MobEffectCategory Category;
+        public readonly int Color;
         private readonly string colorText;
 
         public MobEffect(ResourceLocation id, MobEffectCategory category, int color)
         {
             MobEffectId = id;
             Category = category;
+            Color = color;
 
             var colorCode = $"{color:x}".PadLeft(6, '0');
             colorText = $"<color=#{colorCode}>{colorCode}</color>";

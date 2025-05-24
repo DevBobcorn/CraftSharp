@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using UnityEngine;
@@ -58,18 +57,17 @@ namespace CraftSharp
                             };
                         }
                         
-
                         AddEntry(mobEffectId, numId, new MobEffect(mobEffectId, category, color));
                     }
                     else
                     {
-                        Debug.LogWarning($"Invalid numeral block entity type key [{key}]");
+                        Debug.LogWarning($"Invalid numeral mob effect key [{key}]");
                     }
                 }
             }
             catch (Exception e)
             {
-                Debug.LogError($"Error loading block entity types: {e.Message}");
+                Debug.LogError($"Error loading mob effects: {e.Message}");
                 flag.Failed = true;
             }
             finally
