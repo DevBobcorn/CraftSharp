@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 using UnityEngine;
 
@@ -51,13 +52,19 @@ namespace CraftSharp
                             {
                                 "beneficial" => MobEffectCategory.Beneficial,
                                 "harmful" => MobEffectCategory.Harmful,
-                                "neutral" => MobEffectCategory.Neutral,
-
-                                _      => MobEffectCategory.Neutral
+                                _         => MobEffectCategory.Neutral
                             };
                         }
                         
-                        AddEntry(mobEffectId, numId, new MobEffect(mobEffectId, category, color));
+                        var instant = mobEffectDef.Properties.TryGetValue("instant", out val) && bool.Parse(val.StringValue); // False by default
+                        
+                        MobAttributeModifier[] modifiers;
+                        if (mobEffectDef.Properties.TryGetValue("modifiers", out val) && val.DataArray.Count > 0)
+                            modifiers = val.DataArray.Select(MobAttributeModifier.FromJson).ToArray();
+                        else
+                            modifiers = Array.Empty<MobAttributeModifier>();
+                        
+                        AddEntry(mobEffectId, numId, new MobEffect(mobEffectId, category, color, instant, modifiers));
                     }
                     else
                     {

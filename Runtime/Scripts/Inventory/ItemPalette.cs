@@ -78,8 +78,7 @@ namespace CraftSharp
             if (itemStack.NBT is not null)
             {
                 // Check potion NBTs https://minecraft.wiki/w/Item_format/Before_1.20.5#Potion_Effects
-                Debug.Log(Json.Object2Json(itemStack.NBT));
-                
+
                 // Potion color override
                 if (itemStack.NBT.TryGetValue("CustomPotionColor", out var value))
                 {
