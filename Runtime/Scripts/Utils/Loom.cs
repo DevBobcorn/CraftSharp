@@ -12,9 +12,9 @@ namespace CraftSharp
     /// </summary>
     public class Loom : MonoBehaviour
     {
+        private const float MAX_FRAMETIME = 0.01F;
         public static int maxThreads = 8;
-        static int numThreads;
-        const float MAX_FRAMETIME = 0.01F;
+        private static int numThreads;
         private float _currentFrameStart = 0F;
 
         private static Loom _current;
@@ -27,7 +27,7 @@ namespace CraftSharp
             }
         }
 
-        static bool initialized;
+        private static bool initialized;
 
         public static void Initialize()
         {
@@ -45,10 +45,25 @@ namespace CraftSharp
 
         private readonly List<Action> _actions = new();
         private readonly Queue<Action> _minorActions = new();
-        public struct DelayedQueueItem
+        public struct DelayedQueueItem : IEquatable<DelayedQueueItem>
         {
             public float time;
             public Action action;
+
+            public bool Equals(DelayedQueueItem other)
+            {
+                return time.Equals(other.time) && Equals(action, other.action);
+            }
+
+            public override bool Equals(object obj)
+            {
+                return obj is DelayedQueueItem other && Equals(other);
+            }
+
+            public override int GetHashCode()
+            {
+                return HashCode.Combine(time, action);
+            }
         }
         private readonly List<DelayedQueueItem> _delayed = new();
 
@@ -63,7 +78,7 @@ namespace CraftSharp
         {
             if (time != 0)
             {
-                if (Current != null)
+                if (Current)
                 {
                     lock (Current._delayed)
                     {
@@ -73,7 +88,7 @@ namespace CraftSharp
             }
             else
             {
-                if (Current != null)
+                if (Current)
                 {
                     lock (Current._actions)
                     {
@@ -85,7 +100,7 @@ namespace CraftSharp
 
         public static void QueueOnMainThreadMinor(Action action)
         {
-            if (Current != null)
+            if (Current)
             {
                 lock (Current._minorActions)
                 {
@@ -114,6 +129,7 @@ namespace CraftSharp
             }
             catch
             {
+                // ignored
             }
             finally
             {
@@ -122,7 +138,7 @@ namespace CraftSharp
 
         }
 
-        void OnDisable()
+        private void OnDisable()
         {
             if (_current == this)
             {
@@ -133,7 +149,7 @@ namespace CraftSharp
 
         private readonly List<Action> _currentActions = new();
 
-        void Update()
+        private void Update()
         {
             // Update time since frame start, note that script execution order of this
             // script should be set to a negative value to prioritize its execution
@@ -162,7 +178,7 @@ namespace CraftSharp
             }
         }
 
-        void LateUpdate()
+        private void LateUpdate()
         {
             if (_minorActions.Count > 0)
             {

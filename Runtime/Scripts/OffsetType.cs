@@ -4,5 +4,6 @@ namespace CraftSharp
         NONE,
         XZ,
         XYZ,
+        XZ_BoundingBox
     }
 }

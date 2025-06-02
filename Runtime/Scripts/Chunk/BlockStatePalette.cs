@@ -455,6 +455,7 @@ namespace CraftSharp
                         {
                             "xz"            => OffsetType.XZ,
                             "xyz"           => OffsetType.XYZ,
+                            "xzb"           => OffsetType.XZ_BoundingBox,
 
                             _               => OffsetType.NONE
                         };

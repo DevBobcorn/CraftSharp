@@ -6,7 +6,7 @@ namespace CraftSharp
 {
     public record BlockShape
     {
-        public static BlockShape EMPTY = new(new BlockShapeAABB[] { });
+        public static readonly BlockShape EMPTY = new(new BlockShapeAABB[] { });
 
         public readonly BlockShapeAABB[] AABBs;
 
@@ -18,7 +18,7 @@ namespace CraftSharp
 
     public record BlockShapeAABB
     {
-        public static BlockShapeAABB EMPTY = new(0, 0, 0, 0, 0, 0);
+        public static readonly BlockShapeAABB EMPTY = new(0, 0, 0, 0, 0, 0);
 
         public readonly float MinX;
         public readonly float MinY;
@@ -58,7 +58,12 @@ namespace CraftSharp
             }
         }
 
-        public BlockShapeAABB(float minX, float minY, float minZ, float maxX, float maxY, float maxZ)
+        public BlockShapeAABB WithOffset(float x, float y, float z)
+        {
+            return new BlockShapeAABB(MinX + x, MinY + y, MinZ + z, MaxX + x, MaxY + y, MaxZ + z);
+        }
+
+        private BlockShapeAABB(float minX, float minY, float minZ, float maxX, float maxY, float maxZ)
         {
             MinX = minX;
             MinY = minY;

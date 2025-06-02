@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace CraftSharp
 {
-    // Unity has a different coodinate system than Minecraft,
+    // Unity has a different coordinate system than Minecraft,
     // therefore we need to convert them in some occasions...
     // See https://minecraft.fandom.com/wiki/Coordinates
     public static class CoordConvert
@@ -38,6 +38,11 @@ namespace CraftSharp
         }
 
         public static Location Unity2MC(Vector3Int originOffset, Vector3 vec)
+        {
+            return new(vec.z + (originOffset.z << 9), vec.y + (originOffset.y << 9), vec.x + (originOffset.x << 9));
+        }
+        
+        public static BlockLoc Unity2MC(Vector3Int originOffset, Vector3Int vec)
         {
             return new(vec.z + (originOffset.z << 9), vec.y + (originOffset.y << 9), vec.x + (originOffset.x << 9));
         }

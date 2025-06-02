@@ -16,8 +16,8 @@ namespace CraftSharp
         /// </summary>
         public static JSONData ParseJson(string json)
         {
-            int cursorpos = 0;
-            return String2Data(json, ref cursorpos);
+            int cursorPos = 0;
+            return String2Data(json, ref cursorPos);
         }
 
         /// <summary>
