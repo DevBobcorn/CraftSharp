@@ -310,27 +310,27 @@ namespace CraftSharp
                             fluidStateId = ResourceLocation.FromString(fluidState.StringValue);
                         }
 
-                        BlockShape shape, collisionShape;
+                        BlockShape shape;
 
                         if (state.Properties.TryGetValue("aabbs", out var aabbList))
                         {
-                            var aabbs = (aabbList.DataArray).Select(x => BlockShapeAABB.FromString(x.StringValue)).ToArray();
-                            shape = new BlockShape(aabbs);
+                            var aabbs = aabbList.DataArray
+                                .Select(x => BlockShapeAABB.FromString(x.StringValue)).ToHashSet();
 
                             if (state.Properties.TryGetValue("collision_aabbs", out var colAabbList))
                             {
-                                var colAabbs = (colAabbList.DataArray).Select(x => BlockShapeAABB.FromString(x.StringValue)).ToArray();
-                                collisionShape = new BlockShape(colAabbs);
+                                var colAabbs = colAabbList.DataArray
+                                    .Select(x => BlockShapeAABB.FromString(x.StringValue)).ToHashSet();
+                                shape = new BlockShape(aabbs, colAabbs);
                             }
                             else
                             {
-                                collisionShape = shape;
+                                shape = new BlockShape(aabbs);
                             }
                         }
                         else
                         {
                             shape = BlockShape.EMPTY;
-                            collisionShape = BlockShape.EMPTY;
                         }
 
                         states[stateId] = new BlockState(blockId, blastResistance, hardness, noSolidMesh, fullFaces,
@@ -340,8 +340,7 @@ namespace CraftSharp
                             Friction = friction,
                             JumpFactor = jumpFactor,
                             SpeedFactor = speedFactor,
-                            Shape = shape,
-                            CollisionShape = collisionShape,
+                            Shape = shape
                         };
                     }
             

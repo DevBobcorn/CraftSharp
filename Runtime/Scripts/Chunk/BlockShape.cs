@@ -1,4 +1,6 @@
-﻿using System;
+﻿#nullable enable
+using System;
+using System.Collections.Generic;
 using System.Globalization;
 using UnityEngine;
 
@@ -6,19 +8,33 @@ namespace CraftSharp
 {
     public record BlockShape
     {
-        public static readonly BlockShape EMPTY = new(new BlockShapeAABB[] { });
+        public static readonly BlockShape EMPTY = new(new HashSet<BlockShapeAABB>(), null);
 
-        public readonly BlockShapeAABB[] AABBs;
+        public readonly HashSet<BlockShapeAABB> AABBs;
+        public readonly HashSet<BlockShapeAABB>? ColliderAABBs;
 
-        public BlockShape(BlockShapeAABB[] aabbs)
+        public BlockShape(HashSet<BlockShapeAABB> aabbs, HashSet<BlockShapeAABB>? colAabbs = null)
         {
             AABBs = aabbs;
+            ColliderAABBs = colAabbs;
+        }
+
+        public virtual bool Equals(BlockShape? other)
+        {
+            if (other is null) return false;
+            if (ReferenceEquals(this, other)) return true;
+            return AABBs.Equals(other.AABBs) && Equals(ColliderAABBs, other.ColliderAABBs);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(AABBs, ColliderAABBs);
         }
     }
 
-    public record BlockShapeAABB
+    public readonly struct BlockShapeAABB : IEquatable<BlockShapeAABB>
     {
-        public static readonly BlockShapeAABB EMPTY = new(0, 0, 0, 0, 0, 0);
+        private static readonly BlockShapeAABB EMPTY = new(0, 0, 0, 0, 0, 0);
 
         public readonly float MinX;
         public readonly float MinY;
@@ -71,6 +87,21 @@ namespace CraftSharp
             MaxX = maxX;
             MaxY = maxY;
             MaxZ = maxZ;
+        }
+
+        public bool Equals(BlockShapeAABB other)
+        {
+            return MinX.Equals(other.MinX) && MinY.Equals(other.MinY) && MinZ.Equals(other.MinZ) && MaxX.Equals(other.MaxX) && MaxY.Equals(other.MaxY) && MaxZ.Equals(other.MaxZ);
+        }
+
+        public override bool Equals(object? obj)
+        {
+            return obj is BlockShapeAABB other && Equals(other);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(MinX, MinY, MinZ, MaxX, MaxY, MaxZ);
         }
     }
 }

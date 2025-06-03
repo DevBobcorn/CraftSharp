@@ -38,11 +38,10 @@ namespace CraftSharp
         public readonly bool NoOcclusion;
 
         public BlockShape Shape;
-        public BlockShape CollisionShape;
 
         // A block can have full collider box even if it doesn't collide with player,
         // in this case the collider is used for raycast detection. (e.g. Tall Grass)
-        public bool FullShape;
+        public readonly bool FullShape;
         public bool MeshFaceOcclusionSolid => FullShape && !NoOcclusion;
         public bool AmbientOcclusionSolid => FullShape && !NoCollision;
 
@@ -55,30 +54,30 @@ namespace CraftSharp
         public float JumpFactor;
         public float SpeedFactor;
 
-        public byte LightBlockageLevel = 0;
-        public byte LightEmissionLevel = 0;
+        public readonly byte LightBlockageLevel = 0;
+        public readonly byte LightEmissionLevel = 0;
 
         public BlockState(ResourceLocation blockId, float blastResistance, float hardness, bool noSolidMesh,
                 int fullFaceMask, bool noCollision, bool noOcclusion, byte lightBlockage, byte lightEmission,
                 ResourceLocation? fluidStateId, Dictionary<string, string> props)
         {
-            this.BlockId = blockId;
+            BlockId = blockId;
 
-            this.BlastResistance = blastResistance;
-            this.Hardness = hardness;
-            this.NoSolidMesh = noSolidMesh;
+            BlastResistance = blastResistance;
+            Hardness = hardness;
+            NoSolidMesh = noSolidMesh;
 
-            this.FullFaceMask = fullFaceMask;
-            this.NoCollision = noCollision;
-            this.NoOcclusion = noOcclusion;
+            FullFaceMask = fullFaceMask;
+            NoCollision = noCollision;
+            NoOcclusion = noOcclusion;
             FullShape = (FullFaceMask & 0b111111) == 0b111111; // All lowest 6 bits are set
 
-            this.LightBlockageLevel = lightBlockage;
-            this.LightEmissionLevel = lightEmission;
+            LightBlockageLevel = lightBlockage;
+            LightEmissionLevel = lightEmission;
 
-            this.FluidStateId = fluidStateId;
+            FluidStateId = fluidStateId;
 
-            this.Properties = props;
+            Properties = props;
         }
 
         public override string ToString()
@@ -94,7 +93,7 @@ namespace CraftSharp
 
                 return $"{BlockId}[{propsText}]";
             }
-            else return BlockId.ToString();
+            return BlockId.ToString();
         }
     }
 }
