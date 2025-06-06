@@ -9,7 +9,8 @@ namespace CraftSharp
         Legs,
         Feet,
         Mainhand,
-        Offhand
+        Offhand,
+        Body // Used for llamas, etc.
     }
 
     public static class EquipmentSlotHelper
@@ -24,6 +25,7 @@ namespace CraftSharp
                 "feet" => EquipmentSlot.Feet,
                 "mainhand" => EquipmentSlot.Mainhand,
                 "offhand" => EquipmentSlot.Offhand,
+                "body" => EquipmentSlot.Body,
                 _ => throw new InvalidDataException($"Equipment slot {slotName} is not defined!")
             };
         }
