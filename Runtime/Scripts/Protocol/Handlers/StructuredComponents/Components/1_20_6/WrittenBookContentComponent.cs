@@ -7,7 +7,7 @@ using CraftSharp.Protocol.Message;
 
 namespace CraftSharp.Protocol.Handlers.StructuredComponents.Components._1_20_6
 {
-    public record WrittenBlookContentComponent : StructuredComponent
+    public record WrittenBookContentComponent : StructuredComponent
     {
         public string RawTitle { get; set; } = null!;
         public bool HasFilteredTitle { get; set; }
@@ -18,7 +18,7 @@ namespace CraftSharp.Protocol.Handlers.StructuredComponents.Components._1_20_6
         public List<BookPage> Pages { get; set; } = new();
         public bool Resolved { get; set; }
 
-        public WrittenBlookContentComponent(ItemPalette itemPalette, SubComponentRegistry subComponentRegistry) 
+        public WrittenBookContentComponent(ItemPalette itemPalette, SubComponentRegistry subComponentRegistry) 
             : base(itemPalette, subComponentRegistry)
         {
             

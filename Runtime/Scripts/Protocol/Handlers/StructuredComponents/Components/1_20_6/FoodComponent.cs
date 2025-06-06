@@ -6,7 +6,7 @@ using CraftSharp.Protocol.Handlers.StructuredComponents.Core;
 
 namespace CraftSharp.Protocol.Handlers.StructuredComponents.Components._1_20_6
 {
-    public record FoodComponentComponent : StructuredComponent
+    public record FoodComponent : StructuredComponent
     {
         public int Nutrition { get; set; }
         public bool Saturation { get; set; }
@@ -15,7 +15,7 @@ namespace CraftSharp.Protocol.Handlers.StructuredComponents.Components._1_20_6
         public int NumberOfEffects { get; set; }
         public List<EffectSubComponent> Effects { get; set; } = new();
 
-        public FoodComponentComponent(ItemPalette itemPalette, SubComponentRegistry subComponentRegistry) 
+        public FoodComponent(ItemPalette itemPalette, SubComponentRegistry subComponentRegistry) 
             : base(itemPalette, subComponentRegistry)
         {
 

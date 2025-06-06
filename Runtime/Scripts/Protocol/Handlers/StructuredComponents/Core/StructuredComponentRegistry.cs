@@ -29,14 +29,27 @@ namespace CraftSharp.Protocol.Handlers.StructuredComponents.Core
             if (TryGetByNumId(numId, out var type))
             {
                 var component =
-                    Activator.CreateInstance(type, dataTypes, itemPalette, subComponentRegistry) as StructuredComponent 
+                    Activator.CreateInstance(type, itemPalette, subComponentRegistry) as StructuredComponent 
                     ?? throw new InvalidOperationException($"Could not instantiate a parser for a structured component type {numId}");
                 
                 component.Parse(dataTypes, data);
                 return component;
             }
-
             throw new Exception($"No parser found for component with num Id {numId}");
+        }
+        
+        public StructuredComponent ParseComponentFromJson(ResourceLocation id, Json.JSONData data)
+        {
+            if (TryGetById(id, out var type))
+            {
+                var component =
+                    Activator.CreateInstance(type, itemPalette, subComponentRegistry) as StructuredComponent 
+                    ?? throw new InvalidOperationException($"Could not instantiate a parser for a structured component type {id}");
+                
+                component.ParseFromJson(dataTypes, data);
+                return component;
+            }
+            throw new Exception($"No parser found for component with Id {id}");
         }
     }
 }

@@ -54,7 +54,7 @@ namespace CraftSharp
         /// <summary>
         /// Load translation file for current language
         /// </summary>
-        private static void LoadTranslationsFile(string language)
+        public static void LoadTranslationsFile(string language)
         {
             string path = string.Empty, defaultTexts;
             try {

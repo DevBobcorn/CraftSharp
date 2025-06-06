@@ -7,7 +7,7 @@ using CraftSharp.Protocol.Handlers.StructuredComponents.Core;
 
 namespace CraftSharp.Protocol.Handlers.StructuredComponents.Components._1_21
 {
-    public record JukeBoxPlayableComponent : StructuredComponent
+    public record JukeboxPlayableComponent : StructuredComponent
     {
         public bool DirectMode { get; set; }
         public string? SongName { get; set; }
@@ -18,7 +18,7 @@ namespace CraftSharp.Protocol.Handlers.StructuredComponents.Components._1_21
         public int? Output { get; set; }
         public bool ShowTooltip { get; set; }
 
-        public JukeBoxPlayableComponent(ItemPalette itemPalette, SubComponentRegistry subComponentRegistry) 
+        public JukeboxPlayableComponent(ItemPalette itemPalette, SubComponentRegistry subComponentRegistry) 
             : base(itemPalette, subComponentRegistry)
         {
             

@@ -5,12 +5,12 @@ using CraftSharp.Protocol.Handlers.StructuredComponents.Core;
 
 namespace CraftSharp.Protocol.Handlers.StructuredComponents.Components._1_20_6
 {
-    public record WritableBlookContentComponent : StructuredComponent
+    public record WritableBookContentComponent : StructuredComponent
     {
         public int NumberOfPages { get; set; }
         public List<BookPage> Pages { get; set; } = new();
 
-        public WritableBlookContentComponent(ItemPalette itemPalette, SubComponentRegistry subComponentRegistry) 
+        public WritableBookContentComponent(ItemPalette itemPalette, SubComponentRegistry subComponentRegistry) 
             : base(itemPalette, subComponentRegistry)
         {
             

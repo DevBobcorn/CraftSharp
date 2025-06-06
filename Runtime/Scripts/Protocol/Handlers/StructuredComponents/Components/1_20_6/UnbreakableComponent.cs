@@ -3,11 +3,11 @@ using CraftSharp.Protocol.Handlers.StructuredComponents.Core;
 
 namespace CraftSharp.Protocol.Handlers.StructuredComponents.Components._1_20_6
 {
-    public record UnbreakableComponent1206 : StructuredComponent
+    public record UnbreakableComponent : StructuredComponent
     {
         public bool Unbreakable { get; set; }
 
-        public UnbreakableComponent1206(ItemPalette itemPalette, SubComponentRegistry subComponentRegistry) 
+        public UnbreakableComponent(ItemPalette itemPalette, SubComponentRegistry subComponentRegistry) 
             : base(itemPalette, subComponentRegistry)
         {
             

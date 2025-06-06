@@ -6,6 +6,8 @@ using System.Text;
 using Unity.Mathematics;
 using UnityEngine;
 
+using CraftSharp.Protocol.Handlers.StructuredComponents.Core;
+
 namespace CraftSharp
 {
     public class ItemPalette : IdentifierPalette<Item>
@@ -17,6 +19,8 @@ namespace CraftSharp
 
         private readonly Dictionary<ResourceLocation, Func<ItemStack, float3[]>> itemColorRules = new();
         private readonly Dictionary<ResourceLocation, ResourceLocation> blockIdToBlockItemId = new();
+
+        public StructuredComponentRegistry ComponentRegistry;
 
         public bool IsTintable(ResourceLocation identifier)
         {
@@ -101,9 +105,10 @@ namespace CraftSharp
         /// <summary>
         /// Load item data from external files.
         /// </summary>
+        /// <param name="componentRegistry">Component registry</param>
         /// <param name="dataVersion">Item data version</param>
         /// <param name="flag">Data load flag</param>
-        public void PrepareData(string dataVersion, DataLoadFlag flag)
+        public void PrepareData(StructuredComponentRegistry componentRegistry, string dataVersion, DataLoadFlag flag)
         {
             // Clear loaded stuff...
             ClearEntries();
@@ -119,6 +124,8 @@ namespace CraftSharp
                 return;
             }
 
+            ComponentRegistry = componentRegistry;
+
             try
             {
                 var items = Json.ParseJson(File.ReadAllText(itemsPath, Encoding.UTF8));
@@ -128,13 +135,7 @@ namespace CraftSharp
                     if (int.TryParse(itemDef.Properties["protocol_id"].StringValue, out int numId))
                     {
                         var itemId = ResourceLocation.FromString(key);
-
-                        var rarity = ItemRarityHelper.GetItemRarity(itemDef.Properties["rarity"].StringValue);
-
                         var actionType = ItemActionTypeHelper.GetItemActionType(itemDef.Properties["action_type"].StringValue);
-
-                        var stackLimit = int.Parse(itemDef.Properties["stack_limit"].StringValue);
-                        var edible = bool.Parse(itemDef.Properties["edible"].StringValue);
 
                         ResourceLocation? itemBlockId = null;
                         if (itemDef.Properties.TryGetValue("block", out var val))
@@ -149,15 +150,19 @@ namespace CraftSharp
                             equipmentSlot = EquipmentSlotHelper.GetEquipmentSlot(val.StringValue);
                         }
                         
-                        var maxDurability = itemDef.Properties.TryGetValue("max_durability", out val) ? int.Parse(val.StringValue) : 0;
-
-                        Item newItem = new(itemId, stackLimit, rarity, actionType, edible, itemBlockId, equipmentSlot, maxDurability);
-
-                        if (edible) // Set food settings
+                        var defaultComponents = new Dictionary<ResourceLocation, StructuredComponent>();
+                        if (itemDef.Properties.TryGetValue("default_components", out val))
                         {
-                            newItem.AlwaysEdible = bool.Parse(itemDef.Properties["always_edible"].StringValue);
-                            newItem.FastFood = bool.Parse(itemDef.Properties["fast_food"].StringValue);
+                            foreach (var (id, compData) in val.Properties)
+                            {
+                                var compId = ResourceLocation.FromString(id);
+                                var comp = componentRegistry.ParseComponentFromJson(compId, compData);
+                                
+                                defaultComponents.Add(compId, comp);
+                            }
                         }
+                        
+                        Item newItem = new(itemId, actionType, itemBlockId, equipmentSlot, defaultComponents);
 
                         if (actionType is ItemActionType.Axe or ItemActionType.Pickaxe or ItemActionType.Shovel or ItemActionType.Hoe or ItemActionType.Sword)
                         {

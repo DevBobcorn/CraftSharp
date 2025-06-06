@@ -32,11 +32,11 @@ namespace CraftSharp.Protocol.Handlers.StructuredComponents.Core
             if(!_subComponentParsers.TryGetValue(id, out var subComponentParserType)) 
                 throw new Exception($"Sub component {name} not registered!");
 
-            var instance=  Activator.CreateInstance(subComponentParserType, dataTypes, this) as SubComponent ??
+            var instance= Activator.CreateInstance(subComponentParserType, this) as SubComponent ??
                 throw new InvalidOperationException($"Could not create instance of a sub component parser type: {subComponentParserType.Name}");
             
             var parseMethod = instance.GetType().GetMethod("Parse", BindingFlags.Instance | BindingFlags.NonPublic) ?? throw new InvalidOperationException($"Sub component parser type {subComponentParserType.Name} does not have a Parse method.");
-            parseMethod.Invoke(instance, new object[] { data });
+            parseMethod.Invoke(instance, new object[] { data, dataTypes });
             return instance;
         }
     }

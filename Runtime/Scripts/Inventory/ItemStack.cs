@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Text;
+using CraftSharp.Protocol.Handlers.StructuredComponents.Components._1_20_6;
+using CraftSharp.Protocol.Handlers.StructuredComponents.Core;
 
 namespace CraftSharp
 {
@@ -8,6 +10,8 @@ namespace CraftSharp
     /// </summary>
     public class ItemStack
     {
+        public const int DEFAULT_STACK_LIMIT = 64;
+        
         /// <summary>
         /// Item Type
         /// </summary>
@@ -18,11 +22,58 @@ namespace CraftSharp
         /// </summary>
         public int Count;
 
+        public int StackLimit
+        {
+            get
+            {
+                if (Components.TryGetValue(StructuredComponentIds.MAX_STACK_SIZE_ID, out var comp) &&
+                    comp is MaxStackSizeComponent maxStackSizeComp)
+                {
+                    return maxStackSizeComp.MaxStackSize;
+                }
+                return DEFAULT_STACK_LIMIT;
+            }
+        }
+        
+        public int MaxDurability
+        {
+            get
+            {
+                if (Components.TryGetValue(StructuredComponentIds.MAX_DAMAGE_ID, out var comp) &&
+                    comp is MaxDamageComponent maxDamageComp)
+                {
+                    return maxDamageComp.MaxDamage;
+                }
+                return 0; // Item cannot take damage
+            }
+        }
+        
+        public ItemRarity Rarity
+        {
+            get
+            {
+                if (Components.TryGetValue(StructuredComponentIds.RARITY_ID, out var comp) &&
+                    comp is RarityComponent rarityComp)
+                {
+                    return rarityComp.Rarity;
+                }
+                return ItemRarity.Common;
+            }
+        }
+        
+        public bool IsStackable => StackLimit > 1;
+        public bool IsDepletable => MaxDurability > 0;
+
         #nullable enable
         /// <summary>
         /// Item Metadata
         /// </summary>
         public readonly Dictionary<string, object>? NBT;
+
+        /// <summary>
+        /// Item Components
+        /// </summary>
+        public readonly Dictionary<ResourceLocation, StructuredComponent> Components = new();
 
         /// <summary>
         /// Create an item with ItemType, Count and Metadata
@@ -35,6 +86,12 @@ namespace CraftSharp
             ItemType = itemType;
             Count = count;
             NBT = nbt;
+
+            // Apply default components of this item type
+            foreach (var defaultComponent in itemType.DefaultComponents)
+            {
+                Components.Add(defaultComponent.Key, defaultComponent.Value);
+            }
         }
         #nullable disable
 

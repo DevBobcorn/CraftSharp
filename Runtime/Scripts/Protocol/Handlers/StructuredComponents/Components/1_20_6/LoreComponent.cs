@@ -4,12 +4,12 @@ using CraftSharp.Protocol.Message;
 
 namespace CraftSharp.Protocol.Handlers.StructuredComponents.Components._1_20_6
 {
-    public record LoreNameComponent1206 : StructuredComponent
+    public record LoreComponent : StructuredComponent
     {
         public int NumberOfLines { get; set; }
         public List<string> Lines { get; set; } = new();
 
-        public LoreNameComponent1206(ItemPalette itemPalette, SubComponentRegistry subComponentRegistry) 
+        public LoreComponent(ItemPalette itemPalette, SubComponentRegistry subComponentRegistry) 
             : base(itemPalette, subComponentRegistry)
         {
 

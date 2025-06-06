@@ -3,11 +3,11 @@ using CraftSharp.Protocol.Handlers.StructuredComponents.Core;
 
 namespace CraftSharp.Protocol.Handlers.StructuredComponents.Components._1_20_6
 {
-    public record OmniousBottleAmplifierComponent : StructuredComponent
+    public record OminousBottleAmplifierComponent : StructuredComponent
     {
         public int Amplifier { get; set; }
 
-        public OmniousBottleAmplifierComponent(ItemPalette itemPalette, SubComponentRegistry subComponentRegistry) 
+        public OminousBottleAmplifierComponent(ItemPalette itemPalette, SubComponentRegistry subComponentRegistry) 
             : base(itemPalette, subComponentRegistry)
         {
 

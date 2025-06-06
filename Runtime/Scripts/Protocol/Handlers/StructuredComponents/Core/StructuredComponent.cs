@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace CraftSharp.Protocol.Handlers.StructuredComponents.Core
 {
@@ -14,6 +15,12 @@ namespace CraftSharp.Protocol.Handlers.StructuredComponents.Core
         }
         
         public abstract void Parse(IMinecraftDataTypes dataTypes, Queue<byte> data);
+        
         public abstract Queue<byte> Serialize(IMinecraftDataTypes dataTypes);
+
+        public virtual void ParseFromJson(IMinecraftDataTypes dataTypes, Json.JSONData data)
+        {
+            Debug.LogWarning($"Json parser is not defined for {GetType()}!");
+        }
     }
 }
