@@ -19,7 +19,7 @@ namespace CraftSharp.Protocol.Handlers.StructuredComponents.Components.Subcompon
             
         }
         
-        protected override void Parse(IMinecraftDataTypes dataTypes, Queue<byte> data)
+        public override void Parse(IMinecraftDataTypes dataTypes, Queue<byte> data)
         {
             Name = DataTypes.ReadNextString(data);
             IsExactMatch = DataTypes.ReadNextBool(data);

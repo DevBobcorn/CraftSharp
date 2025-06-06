@@ -24,5 +24,10 @@ namespace CraftSharp.Protocol.Handlers.StructuredComponents.Components._1_20_6
             data.AddRange(DataTypes.GetVarInt((int)Rarity));
             return new Queue<byte>(data);
         }
+        
+        public override void ParseFromJson(IMinecraftDataTypes dataTypes, Json.JSONData data)
+        {
+            Rarity = ItemRarityHelper.GetItemRarity(data.StringValue);
+        }
     }
 }

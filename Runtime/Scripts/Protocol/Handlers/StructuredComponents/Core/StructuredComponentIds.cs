@@ -24,6 +24,7 @@ namespace CraftSharp.Protocol.Handlers.StructuredComponents.Core
         public static readonly ResourceLocation CONSUMABLE_ID                  = new("consumable");
         public static readonly ResourceLocation CONTAINER_ID                   = new("container");
         public static readonly ResourceLocation CONTAINER_LOOT_ID              = new("container_loot");
+        public static readonly ResourceLocation CREATIVE_SLOT_LOCK_ID          = new("creative_slot_lock"); // Used internally only
         public static readonly ResourceLocation CUSTOM_DATA_ID                 = new("custom_data");
         public static readonly ResourceLocation CUSTOM_MODEL_DATA_ID           = new("custom_model_data");
         public static readonly ResourceLocation CUSTOM_NAME_ID                 = new("custom_name");
@@ -43,6 +44,7 @@ namespace CraftSharp.Protocol.Handlers.StructuredComponents.Core
         public static readonly ResourceLocation FOOD_ID                        = new("food");
         public static readonly ResourceLocation GLIDER_ID                      = new("glider");
         public static readonly ResourceLocation HIDE_TOOLTIP_ID                = new("hide_tooltip"); // Removed in 1.21.5 in favor of tooltip_display
+        public static readonly ResourceLocation HIDE_ADDITIONAL_TOOLTIP_ID     = new("hide_additional_tooltip"); // Removed in 1.21.5 in favor of tooltip_display
         public static readonly ResourceLocation INSTRUMENT_ID                  = new("instrument");
         public static readonly ResourceLocation INTANGIBLE_PROJECTILE_ID       = new("intangible_projectile");
         public static readonly ResourceLocation ITEM_MODEL_ID                  = new("item_model");
@@ -54,6 +56,7 @@ namespace CraftSharp.Protocol.Handlers.StructuredComponents.Core
         public static readonly ResourceLocation MAP_COLOR_ID                   = new("map_color");
         public static readonly ResourceLocation MAP_DECORATIONS_ID             = new("map_decorations");
         public static readonly ResourceLocation MAP_ID_ID                      = new("map_id");
+        public static readonly ResourceLocation MAP_POST_PROCESSING_ID            = new("map_post_processing"); // Used internally only
         public static readonly ResourceLocation MAX_DAMAGE_ID                  = new("max_damage");
         public static readonly ResourceLocation MAX_STACK_SIZE_ID              = new("max_stack_size");
         public static readonly ResourceLocation NOTE_BLOCK_SOUND_ID            = new("note_block_sound");

@@ -19,9 +19,9 @@ namespace CraftSharp.Protocol.Handlers.StructuredComponents.Core
             this.subComponentRegistry = subComponentRegistry;
         }
         
-        protected void RegisterComponent<T>(int numId, string name)
+        protected void RegisterComponent<T>(int numId, ResourceLocation id)
         {
-            AddEntry(ResourceLocation.FromString(name), numId, typeof (T));
+            AddEntry(id, numId, typeof (T));
         }
 
         public StructuredComponent ParseComponent(int numId, Queue<byte> data)

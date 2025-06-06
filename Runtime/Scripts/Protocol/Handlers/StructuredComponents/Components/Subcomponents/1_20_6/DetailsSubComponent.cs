@@ -21,7 +21,7 @@ namespace CraftSharp.Protocol.Handlers.StructuredComponents.Components.Subcompon
             
         }
         
-        protected override void Parse(IMinecraftDataTypes dataTypes, Queue<byte> data)
+        public override void Parse(IMinecraftDataTypes dataTypes, Queue<byte> data)
         {
             Amplifier = DataTypes.ReadNextVarInt(data);
             Duration = DataTypes.ReadNextVarInt(data);
@@ -30,7 +30,7 @@ namespace CraftSharp.Protocol.Handlers.StructuredComponents.Components.Subcompon
             ShowIcon = DataTypes.ReadNextBool(data);
             HasHiddenEffects = DataTypes.ReadNextBool(data);
             
-            if(HasHiddenEffects)
+            if (HasHiddenEffects)
                 Detail = (DetailsSubComponent)SubComponentRegistry.ParseSubComponent(SubComponents.Details, data);
         }
 

@@ -24,5 +24,10 @@ namespace CraftSharp.Protocol.Handlers.StructuredComponents.Components._1_20_6
             data.AddRange(DataTypes.GetVarInt(MaxDamage));
             return new Queue<byte>(data);
         }
+        
+        public override void ParseFromJson(IMinecraftDataTypes dataTypes, Json.JSONData data)
+        {
+            MaxDamage = int.Parse(data.StringValue);
+        }
     }
 }

@@ -18,7 +18,7 @@ namespace CraftSharp.Protocol.Handlers.StructuredComponents.Components.Subcompon
             
         }
         
-        protected override void Parse(IMinecraftDataTypes dataTypes, Queue<byte> data)
+        public override void Parse(IMinecraftDataTypes dataTypes, Queue<byte> data)
         {
             Blocks = (BlockSetSubcomponent)SubComponentRegistry.ParseSubComponent(SubComponents.BlockSet, data);
             HasSpeed = DataTypes.ReadNextBool(data);

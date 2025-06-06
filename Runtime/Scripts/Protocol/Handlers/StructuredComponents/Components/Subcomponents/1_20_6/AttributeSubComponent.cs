@@ -20,7 +20,7 @@ namespace CraftSharp.Protocol.Handlers.StructuredComponents.Components.Subcompon
             
         }
         
-        protected override void Parse(IMinecraftDataTypes dataTypes, Queue<byte> data)
+        public override void Parse(IMinecraftDataTypes dataTypes, Queue<byte> data)
         {
             TypeId = DataTypes.ReadNextVarInt(data);
             UUID = DataTypes.ReadNextUUID(data);
