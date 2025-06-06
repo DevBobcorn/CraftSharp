@@ -3,7 +3,7 @@ namespace CraftSharp
     /// <summary>
     /// See 
     /// </summary>
-    public enum EntityMetaDataType
+    public enum EntityMetadataType
     {
         Byte,
         Short,      // 1.8 only

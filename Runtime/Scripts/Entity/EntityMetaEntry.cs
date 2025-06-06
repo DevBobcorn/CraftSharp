@@ -4,9 +4,9 @@ namespace CraftSharp
     {
         public string Name { get; }
 
-        public EntityMetaDataType DataType { get; }
+        public EntityMetadataType DataType { get; }
 
-        public EntityMetaEntry(string name, EntityMetaDataType type)
+        public EntityMetaEntry(string name, EntityMetadataType type)
         {
             Name = name;
             DataType = type;

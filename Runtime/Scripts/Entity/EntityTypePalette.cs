@@ -71,7 +71,7 @@ namespace CraftSharp
                         var metaEntries = entityDef.Properties["metadata"].Properties.
                                 ToDictionary(x => int.Parse(x.Key),
                                         x => new EntityMetaEntry(x.Value.Properties["name"].StringValue,
-                                            EntityMetaDataTypeUtil.FromSerializedTypeName(
+                                            EntityMetadataTypeUtil.FromSerializedTypeName(
                                                 x.Value.Properties["data_type"].StringValue)));
 
                         bool c = metaEntries.Values.Any(x => x.Name is "data_item" or "data_item_stack");
