@@ -117,90 +117,100 @@ namespace CraftSharp
         /// </summary>
         public DimensionType()
         {
-            this.Id = new ResourceLocation("overworld");
+            Id = new ResourceLocation("overworld");
 
-            this.minY = -64;
-            this.height = 384;
-            this.maxY = this.minY + this.height - 1;
-            this.logicalHeight = 384;
+            minY = -64;
+            height = 384;
+            maxY = minY + height - 1;
+            logicalHeight = 384;
         }
 
         /// <summary>
         /// Create from the "Dimension Codec" NBT Tag Compound
         /// </summary>
-        /// <param name="name">Dimension name</param>
+        /// <param name="id">Dimension id</param>
         /// <param name="nbt">The dimension type (NBT Tag Compound)</param>
         public DimensionType(ResourceLocation id, Dictionary<string, object> nbt)
         {
-            if (id == null)
-                throw new ArgumentNullException("id");
             if (nbt == null)
-                throw new ArgumentNullException("nbt Data");
+                throw new ArgumentNullException(nameof (nbt));
 
-            this.Id = id;
+            Id = id;
 
-            if (nbt.ContainsKey("piglin_safe"))
-                this.piglinSafe = 1 == (byte)nbt["piglin_safe"];
-            if (nbt.ContainsKey("monster_spawn_light_level"))
+            if (nbt.TryGetValue("piglin_safe", out var value))
+                piglinSafe = 1 == (byte) value;
+            
+            if (nbt.TryGetValue("monster_spawn_light_level", out value))
             {
                 try
                 {
-                    var monsterSpawnLightLevelObj = nbt["monster_spawn_light_level"];
-                    if (monsterSpawnLightLevelObj.GetType() == typeof(int))
-                        this.monsterSpawnMinLightLevel = this.monsterSpawnMaxLightLevel = (int)monsterSpawnLightLevelObj;
+                    if (value is int lightLevel)
+                        monsterSpawnMinLightLevel = monsterSpawnMaxLightLevel = lightLevel;
                     else
                     {
-                        var inclusive = (Dictionary<string, object>)(((Dictionary<string, object>)monsterSpawnLightLevelObj)["value"]);
-                        this.monsterSpawnMinLightLevel = (int)inclusive["min_inclusive"];
-                        this.monsterSpawnMaxLightLevel = (int)inclusive["max_inclusive"];
+                        var inclusive = (Dictionary<string, object>)(((Dictionary<string, object>)value)["value"]);
+                        monsterSpawnMinLightLevel = (int)inclusive["min_inclusive"];
+                        monsterSpawnMaxLightLevel = (int)inclusive["max_inclusive"];
                     }
 
                 }
                 catch (KeyNotFoundException) { }
             }
-            if (nbt.ContainsKey("monster_spawn_block_light_limit"))
-                this.monsterSpawnBlockLightLimit = (int)nbt["monster_spawn_block_light_limit"];
-            if (nbt.ContainsKey("natural"))
-                this.natural = 1 == (byte)nbt["natural"];
-            if (nbt.ContainsKey("ambient_light"))
-                this.ambientLight = (float)nbt["ambient_light"];
-            if (nbt.ContainsKey("fixed_time"))
-                this.fixedTime = (long)nbt["fixed_time"];
-            if (nbt.ContainsKey("infiniburn"))
-                this.infiniburn = (string)nbt["infiniburn"];
-            if (nbt.ContainsKey("respawn_anchor_works"))
-                this.respawnAnchorWorks = 1 == (byte)nbt["respawn_anchor_works"];
-            if (nbt.ContainsKey("has_skylight"))
-                this.hasSkylight = 1 == (byte)nbt["has_skylight"];
-            if (nbt.ContainsKey("bed_works"))
-                this.bedWorks = 1 == (byte)nbt["bed_works"];
-            if (nbt.ContainsKey("effects"))
-                this.effects = (string)nbt["effects"];
-            if (nbt.ContainsKey("has_raids"))
-                this.hasRaids = 1 == (byte)nbt["has_raids"];
-            if (nbt.ContainsKey("min_y"))
-            {
-                this.minY = (int)nbt["min_y"];
-            }
-            if (nbt.ContainsKey("height"))
-                this.height = (int)nbt["height"];
+            if (nbt.TryGetValue("monster_spawn_block_light_limit", out value))
+                monsterSpawnBlockLightLimit = (int) value;
+            
+            if (nbt.TryGetValue("natural", out value))
+                natural = 1 == (byte) value;
+            
+            if (nbt.TryGetValue("ambient_light", out value))
+                ambientLight = (float) value;
+            
+            if (nbt.TryGetValue("fixed_time", out value))
+                fixedTime = (long) value;
+            
+            if (nbt.TryGetValue("infiniburn", out value))
+                infiniburn = (string) value;
+            
+            if (nbt.TryGetValue("respawn_anchor_works", out value))
+                respawnAnchorWorks = 1 == (byte) value;
+            
+            if (nbt.TryGetValue("has_skylight", out value))
+                hasSkylight = 1 == (byte) value;
+            
+            if (nbt.TryGetValue("bed_works", out value))
+                bedWorks = 1 == (byte) value;
+            
+            if (nbt.TryGetValue("effects", out value))
+                effects = (string) value;
+            
+            if (nbt.TryGetValue("has_raids", out value))
+                hasRaids = 1 == (byte) value;
+            
+            if (nbt.TryGetValue("min_y", out value))
+                minY = (int) value;
+            
+            if (nbt.TryGetValue("height", out value))
+                height = (int) value;
+            
             if (nbt.ContainsKey("min_y") && nbt.ContainsKey("height"))
-                this.maxY = this.minY + this.height - 1;
-            if (nbt.ContainsKey("logical_height"))
-                this.logicalHeight = (int)nbt["logical_height"];
-            if (nbt.ContainsKey("coordinate_scale"))
+                maxY = minY + height - 1;
+            
+            if (nbt.TryGetValue("logical_height", out value))
+                logicalHeight = (int) value;
+            
+            if (nbt.TryGetValue("coordinate_scale", out value))
             {
-                var coordinateScaleObj = nbt["coordinate_scale"];
-                if (coordinateScaleObj.GetType() == typeof(float))
-                    this.coordinateScale = (float)coordinateScaleObj;
+                if (value is float scale)
+                    coordinateScale = scale;
                 else
-                    this.coordinateScale = (double)coordinateScaleObj;
+                    coordinateScale = (double) value;
             }
-            if (nbt.ContainsKey("ultrawarm"))
-                this.ultrawarm = 1 == (byte)nbt["ultrawarm"];
-            if (nbt.ContainsKey("has_ceiling"))
-                this.hasCeiling = 1 == (byte)nbt["has_ceiling"];
+            if (nbt.TryGetValue("ultrawarm", out value))
+                ultrawarm = 1 == (byte) value;
+            
+            if (nbt.TryGetValue("has_ceiling", out value))
+                hasCeiling = 1 == (byte) value;
+            
         }
-
     }
 }

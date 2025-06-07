@@ -106,16 +106,16 @@ namespace CraftSharp
                 OVERWORLD_ID, 0,
                 new Dictionary<string, object>
                 {
-                    { "piglin_safe", (byte)0 },
-                    { "natural", 1 },
-                    { "ambient_light", 0.0 },
+                    { "piglin_safe", (byte) 0 },
+                    { "natural", (byte) 1 },
+                    { "ambient_light", 0.0F },
                     { "monster_spawn_block_light_limit", 0 },
                     { "infiniburn", "#minecraft:infiniburn_overworld" },
-                    { "respawn_anchor_works", 0 },
-                    { "has_skylight", 1 },
-                    { "bed_works", 1 },
+                    { "respawn_anchor_works", (byte) 0 },
+                    { "has_skylight", (byte) 1 },
+                    { "bed_works", (byte) 1 },
                     { "effects", "minecraft:overworld" },
-                    { "has_raids", 1 },
+                    { "has_raids", (byte) 1 },
                     { "logical_height", 384 },
                     { "coordinate_scale", 1.0 },
                     { "monster_spawn_light_level", new Dictionary<string, object>
@@ -126,8 +126,8 @@ namespace CraftSharp
                         }
                     },
                     { "min_y", -64 },
-                    { "ultrawarm", 0 },
-                    { "has_ceiling", 0 },
+                    { "ultrawarm", (byte) 0 },
+                    { "has_ceiling", (byte) 0 },
                     { "height", 384 }
                 }
             ),
@@ -136,16 +136,16 @@ namespace CraftSharp
                 OVERWORLD_CAVES_ID, 1,
                 new Dictionary<string, object>
                 {
-                    { "piglin_safe", (byte)0 },
-                    { "natural", 1 },
-                    { "ambient_light", 0.0 },
+                    { "piglin_safe", (byte) 0 },
+                    { "natural", (byte) 1 },
+                    { "ambient_light", 0.0F },
                     { "monster_spawn_block_light_limit", 0 },
                     { "infiniburn", "#minecraft:infiniburn_overworld" },
-                    { "respawn_anchor_works", 0 },
-                    { "has_skylight", 1 },
-                    { "bed_works", 1 },
+                    { "respawn_anchor_works", (byte) 0 },
+                    { "has_skylight", (byte) 1 },
+                    { "bed_works", (byte) 1 },
                     { "effects", "minecraft:overworld" },
-                    { "has_raids", 1 },
+                    { "has_raids", (byte) 1 },
                     { "logical_height", 384 },
                     { "coordinate_scale", 1.0 },
                     { "monster_spawn_light_level", new Dictionary<string, object>
@@ -156,8 +156,8 @@ namespace CraftSharp
                         }
                     },
                     { "min_y", -64 },
-                    { "ultrawarm", 0 },
-                    { "has_ceiling", 1 },
+                    { "ultrawarm", (byte) 0 },
+                    { "has_ceiling", (byte) 1 },
                     { "height", 384 }
                 }
             ),
@@ -167,16 +167,16 @@ namespace CraftSharp
                 new Dictionary<string, object>
                 {
                     { "piglin_safe", (byte)0 },
-                    { "natural", 0 },
-                    { "ambient_light", 0.0 },
+                    { "natural", (byte) 0 },
+                    { "ambient_light", 0.0F },
                     { "monster_spawn_block_light_limit", 0 },
                     { "infiniburn", "#minecraft:infiniburn_end" },
-                    { "respawn_anchor_works", 0 },
-                    { "has_skylight", 0 },
-                    { "bed_works", 0 },
+                    { "respawn_anchor_works", (byte) 0 },
+                    { "has_skylight", (byte) 0 },
+                    { "bed_works", (byte) 0 },
                     { "effects", "minecraft:the_end" },
-                    { "fixed_time", 6000 },
-                    { "has_raids", 1 },
+                    { "fixed_time", 6000L },
+                    { "has_raids", (byte) 1 },
                     { "logical_height", 256 },
                     { "coordinate_scale", 1.0 },
                     { "monster_spawn_light_level", new Dictionary<string, object>
@@ -187,8 +187,8 @@ namespace CraftSharp
                         }
                     },
                     { "min_y", 0 },
-                    { "ultrawarm", 0 },
-                    { "has_ceiling", 0 },
+                    { "ultrawarm", (byte) 0 },
+                    { "has_ceiling", (byte) 0 },
                     { "height", 256 }
                 }
             ),
@@ -198,22 +198,22 @@ namespace CraftSharp
                 new Dictionary<string, object>
                 {
                     { "piglin_safe", (byte)1 },
-                    { "natural", 0 },
-                    { "ambient_light", 0.1 },
+                    { "natural", (byte)0 },
+                    { "ambient_light", 0.1F },
                     { "monster_spawn_block_light_limit", 15 },
                     { "infiniburn", "#minecraft:infiniburn_nether" },
-                    { "respawn_anchor_works", 1 },
-                    { "has_skylight", 0 },
-                    { "bed_works", 0 },
+                    { "respawn_anchor_works", (byte) 1 },
+                    { "has_skylight", (byte) 0 },
+                    { "bed_works", (byte) 0 },
                     { "effects", "minecraft:the_nether" },
-                    { "fixed_time", 18000 },
-                    { "has_raids", 0 },
+                    { "fixed_time", 18000L },
+                    { "has_raids", (byte) 0 },
                     { "logical_height", 128 },
                     { "coordinate_scale", 8.0 },
                     { "monster_spawn_light_level", 7 },
                     { "min_y", 0 },
-                    { "ultrawarm", 1 },
-                    { "has_ceiling", 1 },
+                    { "ultrawarm", (byte) 1 },
+                    { "has_ceiling", (byte) 1 },
                     { "height", 256 }
                 }
             ),
@@ -239,22 +239,40 @@ namespace CraftSharp
         /// Candidate num id is used when the dimension type is not previously
         /// registered yet, and this dimension type is not builtin.
         /// </summary>
-        public static void StoreOneDimensionType(ResourceLocation dimensionTypeId, int candidatedNumId, Dictionary<string, object> dimensionTypeDef)
+        public static void StoreOneDimensionType(ResourceLocation dimensionTypeId, int candidateNumId, Dictionary<string, object>? dimensionTypeDef)
         {
             if (DimensionTypeRegistry.CheckId(dimensionTypeId)) // Update existing entry with same id
             {
-                DimensionTypeRegistry.UpdateById(dimensionTypeId, new DimensionType(dimensionTypeId, dimensionTypeDef));
+                if (dimensionTypeDef != null)
+                {
+                    DimensionTypeRegistry.UpdateById(dimensionTypeId, new DimensionType(dimensionTypeId, dimensionTypeDef));
+                }
+                else if (BUILTIN_DIMENSION_TYPE_NUM_IDS.TryGetValue(dimensionTypeId, out int numId))
+                {
+                    Debug.LogWarning($"Received dimension type NBT is null, using builtin data");
+                    DimensionTypeRegistry.UpdateById(dimensionTypeId, new DimensionType(dimensionTypeId, BUILTIN_DIMENSION_TYPES[numId].obj));
+                }
 
                 Debug.Log($"Updated dimension type [{DimensionTypeRegistry.GetNumIdById(dimensionTypeId)}] {dimensionTypeId}");
             }
             else // Add a new entry with given id
             {
-                if (BUILTIN_DIMENSION_TYPE_NUM_IDS.TryGetValue(dimensionTypeId, out int numId))
+                bool isBuiltin = BUILTIN_DIMENSION_TYPE_NUM_IDS.TryGetValue(dimensionTypeId, out int numId);
+                
+                if (isBuiltin)
                 {
-                    candidatedNumId = numId; // Use builtin num id if this dimension type is builtin type
+                    candidateNumId = numId; // Use builtin num id if this dimension type is builtin type
                 }
 
-                DimensionTypeRegistry.Register(dimensionTypeId, candidatedNumId, new DimensionType(dimensionTypeId, dimensionTypeDef));
+                if (dimensionTypeDef != null)
+                {
+                    DimensionTypeRegistry.Register(dimensionTypeId, candidateNumId, new DimensionType(dimensionTypeId, dimensionTypeDef));
+                }
+                else if (isBuiltin)
+                {
+                    Debug.LogWarning($"Received dimension type NBT is null, using builtin data");
+                    DimensionTypeRegistry.Register(dimensionTypeId, candidateNumId, new DimensionType(dimensionTypeId, BUILTIN_DIMENSION_TYPES[numId].obj));
+                }
 
                 Debug.Log($"Registered dimension type [{DimensionTypeRegistry.GetNumIdById(dimensionTypeId)}] {dimensionTypeId}");
             }
