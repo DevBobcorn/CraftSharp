@@ -12,7 +12,7 @@ namespace CraftSharp
         /// <summary>
         /// The id of the dimension type (for example, "minecraft:overworld").
         /// </summary>
-        public readonly ResourceLocation Id;
+        public readonly ResourceLocation DimensionTypeId;
 
         /// <summary>
         /// Whether piglins shake and transform to zombified piglins.
@@ -117,7 +117,7 @@ namespace CraftSharp
         /// </summary>
         public DimensionType()
         {
-            Id = new ResourceLocation("overworld");
+            DimensionTypeId = new ResourceLocation("overworld");
 
             minY = -64;
             height = 384;
@@ -128,14 +128,14 @@ namespace CraftSharp
         /// <summary>
         /// Create from the "Dimension Codec" NBT Tag Compound
         /// </summary>
-        /// <param name="id">Dimension id</param>
+        /// <param name="dimensionTypeId">Dimension type id</param>
         /// <param name="nbt">The dimension type (NBT Tag Compound)</param>
-        public DimensionType(ResourceLocation id, Dictionary<string, object> nbt)
+        public DimensionType(ResourceLocation dimensionTypeId, Dictionary<string, object> nbt)
         {
             if (nbt == null)
                 throw new ArgumentNullException(nameof (nbt));
 
-            Id = id;
+            DimensionTypeId = dimensionTypeId;
 
             if (nbt.TryGetValue("piglin_safe", out var value))
                 piglinSafe = 1 == (byte) value;

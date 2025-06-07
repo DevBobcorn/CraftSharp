@@ -96,8 +96,6 @@ namespace CraftSharp
 
         /// <summary>
         /// Builtin dimension type definitions
-        /// <br/>
-        /// TODO: Move this to a JSON file.
         /// </summary>
         private static readonly (ResourceLocation id, int numId, Dictionary<string, object> obj)[] BUILTIN_DIMENSION_TYPES =
         {
@@ -218,7 +216,7 @@ namespace CraftSharp
                 }
             ),
         };
-
+        
         /// <summary>
         /// Storage of all dimensional type data - 1.19.1 and above
         /// </summary>
@@ -226,8 +224,7 @@ namespace CraftSharp
         {
             foreach (var (dimensionId, numId, dimensionDef) in dimensionTypeList)
             {
-                Dictionary<string, object> dimensionType = (Dictionary<string, object>) dimensionDef!;
-                StoreOneDimensionType(dimensionId, numId, dimensionType);
+                StoreOneDimensionType(dimensionId, numId, (Dictionary<string, object>?) dimensionDef);
             }
 
             DimensionTypesInitialized = true;
@@ -243,7 +240,7 @@ namespace CraftSharp
         {
             if (DimensionTypeRegistry.CheckId(dimensionTypeId)) // Update existing entry with same id
             {
-                if (dimensionTypeDef != null)
+                if (dimensionTypeDef is not null)
                 {
                     DimensionTypeRegistry.UpdateById(dimensionTypeId, new DimensionType(dimensionTypeId, dimensionTypeDef));
                 }
@@ -261,16 +258,16 @@ namespace CraftSharp
                 
                 if (isBuiltin)
                 {
-                    candidateNumId = numId; // Use builtin num id if this dimension type is builtin type
+                    candidateNumId = numId; // Use builtin num id if this dimension type is builtin
                 }
 
-                if (dimensionTypeDef != null)
+                if (dimensionTypeDef is not null)
                 {
                     DimensionTypeRegistry.Register(dimensionTypeId, candidateNumId, new DimensionType(dimensionTypeId, dimensionTypeDef));
                 }
                 else if (isBuiltin)
                 {
-                    Debug.LogWarning($"Received dimension type NBT is null, using builtin data");
+                    Debug.LogWarning("Received dimension type NBT is null, using builtin data");
                     DimensionTypeRegistry.Register(dimensionTypeId, candidateNumId, new DimensionType(dimensionTypeId, BUILTIN_DIMENSION_TYPES[numId].obj));
                 }
 
@@ -372,9 +369,9 @@ namespace CraftSharp
                 Debug.LogWarning("Biome colormap is not available. Color lookup will not be performed.");
             }
 
-            foreach (var (id, numId, obj) in biomeList)
+            foreach (var (biomeId, numId, obj) in biomeList)
             {
-                StoreOneBiome(id, numId, ((Dictionary<string, object>) obj!)!);
+                StoreOneBiome(biomeId, numId, (Dictionary<string, object>?) obj);
             }
 
             BiomesInitialized = true;
@@ -383,84 +380,43 @@ namespace CraftSharp
         /// <summary>
         /// Store one biome
         /// </summary>
-        private static void StoreOneBiome(ResourceLocation biomeId, int numId, Dictionary<string, object> biomeDef)
+        private static void StoreOneBiome(ResourceLocation biomeId, int candidateNumId, Dictionary<string, object>? biomeDef)
         {
-            //Debug.Log($"Biome registered:\n{Json.Dictionary2Json(biomeData)}");
-
-            int sky = 0, foliage = 0, grass = 0, water = 0, fog = 0, waterFog = 0;
-            float temperature = 0F, downfall = 0F;
-            Precipitation precipitation = Precipitation.None;
-
-            if (biomeDef.TryGetValue("downfall", out var val))
-                downfall = (float) val;
-                            
-            if (biomeDef.TryGetValue("temperature", out val))
-                temperature = (float) val;
-            
-            if (biomeDef.TryGetValue("precipitation", out val))
+            if (BiomeRegistry.CheckId(biomeId)) // Update existing entry with same id
             {
-                precipitation = ((string) val).ToLower() switch
+                if (biomeDef is not null)
                 {
-                    "rain" => Precipitation.Rain,
-                    "snow" => Precipitation.Snow,
-                    "none" => Precipitation.None,
-
-                    _      => Precipitation.Unknown
-                };
-
-                if (precipitation == Precipitation.Unknown)
-                    Debug.LogWarning($"Unexpected precipitation type: {biomeDef["precipitation"]}");
-            }
-
-            if (biomeDef.TryGetValue("effects", out val))
-            {
-                var effects = (Dictionary<string, object>) val;
-
-                if (effects.TryGetValue("sky_color", out var effect))
-                    sky = (int) effect;
-                
-                var adjustedTemp = Mathf.Clamp01(temperature);
-                var adjustedRain = Mathf.Clamp01(downfall) * adjustedTemp;
-
-                int sampleX = (int) ((1F - adjustedTemp) * ColormapSize);
-                int sampleY = (int) (adjustedRain * ColormapSize);
-
-                if (effects.TryGetValue("foliage_color", out var effect1))
-                    foliage = (int) effect1;
-                else // Read foliage color from color map. See https://minecraft.fandom.com/wiki/Color
-                {
-                    var color = (FoliageColormapPixels.Length == 0) ? (Color32) Color.magenta :
-                            FoliageColormapPixels[sampleY * ColormapSize + sampleX];
-                    foliage = (color.r << 16) | (color.g << 8) | color.b;
+                    BiomeRegistry.UpdateById(biomeId, new Biome(biomeId, biomeDef));
                 }
-                
-                if (effects.TryGetValue("grass_color", out val))
-                    grass = (int) val;
-                else // Read grass color from color map. Same as above
+                else if (BiomeData.BUILTIN_BIOME_NUM_IDS.TryGetValue(biomeId, out int numId))
                 {
-                    var color = (GrassColormapPixels.Length == 0) ? (Color32) Color.magenta :
-                            GrassColormapPixels[sampleY * ColormapSize + sampleX];
-                    grass = (color.r << 16) | (color.g << 8) | color.b;
+                    Debug.LogWarning($"Received biome NBT is null, using builtin data");
+                    BiomeRegistry.UpdateById(biomeId, new Biome(biomeId, BiomeData.BUILTIN_BIOMES[numId].obj));
                 }
-                
-                if (effects.TryGetValue("fog_color", out val))
-                    fog = (int) val;
-                
-                if (effects.TryGetValue("water_color", out val))
-                    water = (int) val;
-                
-                if (effects.TryGetValue("water_fog_color", out val))
-                    waterFog = (int) val;
+
+                Debug.Log($"Updated biome [{BiomeRegistry.GetNumIdById(biomeId)}] {biomeId}");
             }
-
-            Biome biome = new(biomeId, sky, foliage, grass, water, fog, waterFog)
+            else // Add a new entry with given id
             {
-                Temperature = temperature,
-                Downfall = downfall,
-                Precipitation = precipitation
-            };
+                bool isBuiltin = BiomeData.BUILTIN_BIOME_NUM_IDS.TryGetValue(biomeId, out int numId);
+                
+                if (isBuiltin)
+                {
+                    candidateNumId = numId; // Use builtin num id if this biome is builtin
+                }
 
-            BiomeRegistry.Register(biomeId, numId, biome);
+                if (biomeDef is not null)
+                {
+                    BiomeRegistry.Register(biomeId, candidateNumId, new Biome(biomeId, biomeDef));
+                }
+                else if (isBuiltin)
+                {
+                    Debug.LogWarning("Received biome NBT is null, using builtin data");
+                    BiomeRegistry.Register(biomeId, candidateNumId, new Biome(biomeId, BiomeData.BUILTIN_BIOMES[numId].obj));
+                }
+
+                Debug.Log($"Registered biome [{BiomeRegistry.GetNumIdById(biomeId)}] {biomeId}");
+            }
         }
 
         /// <summary>
