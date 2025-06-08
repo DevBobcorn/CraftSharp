@@ -5,9 +5,7 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 
-using CraftSharp.Protocol.Message;
-
-namespace CraftSharp.Protocol
+namespace CraftSharp.Protocol.Message
 {
     /// <summary>
     /// This class parses JSON chat data from MC 1.6+ and returns the appropriate string to be printed.

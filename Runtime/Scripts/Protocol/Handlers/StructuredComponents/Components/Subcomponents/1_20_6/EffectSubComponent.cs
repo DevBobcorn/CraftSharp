@@ -1,9 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using CraftSharp.Protocol.Handlers.StructuredComponents.Core;
 
-namespace CraftSharp.Protocol.Handlers.StructuredComponents.Components.Subcomponents._1_20_6
+namespace CraftSharp.Protocol.Handlers.StructuredComponents.Components.Subcomponents
 {
     public record EffectSubComponent : SubComponent
     {

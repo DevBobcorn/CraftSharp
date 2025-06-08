@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Text;
-using CraftSharp.Protocol.Handlers.StructuredComponents.Components._1_20_6;
+using CraftSharp.Protocol.Handlers.StructuredComponents.Components;
 using CraftSharp.Protocol.Handlers.StructuredComponents.Core;
 
 namespace CraftSharp

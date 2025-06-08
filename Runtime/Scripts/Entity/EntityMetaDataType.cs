@@ -52,8 +52,30 @@ namespace CraftSharp
         /// VarInt
         /// </summary>
         CatVariant,
+        /// <summary>
+        /// VarInt
+        /// </summary>
+        CowVariant, // Added in 1.21.5
+        /// <summary>
+        /// VarInt
+        /// </summary>
         WolfVariant, // Added in 1.20.5
+        /// <summary>
+        /// VarInt
+        /// </summary>
+        WolfSoundVariant, // Added in 1.21.5
+        /// <summary>
+        /// VarInt
+        /// </summary>
         FrogVariant,
+        /// <summary>
+        /// VarInt
+        /// </summary>
+        PigVariant, // Added in 1.21.5
+        /// <summary>
+        /// VarInt
+        /// </summary>
+        ChickenVariant, // Added in 1.21.5
         /// <summary>
         /// String + Position
         /// </summary>
@@ -70,7 +92,10 @@ namespace CraftSharp
         /// VarInt
         /// </summary>
         SnifferState,
-        ArmadilloState,
+        /// <summary>
+        /// VarInt
+        /// </summary>
+        ArmadilloState, // Added in 1.20.5
         /// <summary>
         /// Float x3
         /// </summary>

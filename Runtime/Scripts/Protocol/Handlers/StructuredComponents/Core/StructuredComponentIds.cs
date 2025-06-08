@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
-using CraftSharp.Protocol.Handlers.StructuredComponents.Components._1_20_6;
-using CraftSharp.Protocol.Handlers.StructuredComponents.Components._1_21;
+using CraftSharp.Protocol.Handlers.StructuredComponents.Components;
 
 namespace CraftSharp.Protocol.Handlers.StructuredComponents.Core
 {

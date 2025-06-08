@@ -1,7 +1,8 @@
 using System.Collections.Generic;
 using CraftSharp.Protocol.Handlers.StructuredComponents.Core;
+using CraftSharp.Protocol.Message;
 
-namespace CraftSharp.Protocol.Handlers.StructuredComponents.Components._1_20_6
+namespace CraftSharp.Protocol.Handlers.StructuredComponents.Components
 {
     public record ItemNameComponent : StructuredComponent
     {

@@ -3,8 +3,9 @@ using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using CraftSharp.Protocol;
 using UnityEngine;
+
+using CraftSharp.Protocol.Message;
 
 namespace CraftSharp
 {

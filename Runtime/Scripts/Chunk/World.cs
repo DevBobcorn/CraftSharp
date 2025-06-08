@@ -267,11 +267,11 @@ namespace CraftSharp
                 }
                 else if (isBuiltin)
                 {
-                    Debug.LogWarning("Received dimension type NBT is null, using builtin data");
+                    //Debug.LogWarning("Received dimension type NBT is null, using builtin data");
                     DimensionTypeRegistry.Register(dimensionTypeId, candidateNumId, new DimensionType(dimensionTypeId, BUILTIN_DIMENSION_TYPES[numId].obj));
                 }
 
-                Debug.Log($"Registered dimension type [{DimensionTypeRegistry.GetNumIdById(dimensionTypeId)}] {dimensionTypeId}");
+                //Debug.Log($"Registered dimension type [{DimensionTypeRegistry.GetNumIdById(dimensionTypeId)}] {dimensionTypeId}");
             }
         }
 
@@ -411,11 +411,11 @@ namespace CraftSharp
                 }
                 else if (isBuiltin)
                 {
-                    Debug.LogWarning("Received biome NBT is null, using builtin data");
+                    //Debug.LogWarning("Received biome NBT is null, using builtin data");
                     BiomeRegistry.Register(biomeId, candidateNumId, new Biome(biomeId, BiomeData.BUILTIN_BIOMES[numId].obj));
                 }
 
-                Debug.Log($"Registered biome [{BiomeRegistry.GetNumIdById(biomeId)}] {biomeId}");
+                //Debug.Log($"Registered biome [{BiomeRegistry.GetNumIdById(biomeId)}] {biomeId}");
             }
         }
 
