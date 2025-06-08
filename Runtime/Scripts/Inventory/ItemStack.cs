@@ -231,7 +231,10 @@ namespace CraftSharp
                         List<Enchantment> enchantments = new();
                         foreach (Dictionary<string, object> enchantment in (object[]) enchantmentsValue)
                         {
-                            // TODO: Fill in the data
+                            var level = (short) enchantment["lvl"];
+                            var id = ResourceLocation.FromString((string) enchantment["id"]);
+                            
+                            enchantments.Add(new Enchantment(id, level));
                         }
 
                         var enchantmentsComp = new EnchantmentsComponent(itemPalette, subComponentRegistry)

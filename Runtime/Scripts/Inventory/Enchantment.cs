@@ -2,9 +2,9 @@
 
 namespace CraftSharp.Inventory
 {
-    public record Enchantment(Enchantments Type, int Level)
+    public record Enchantment(ResourceLocation EnchantmentId, int Level)
     {
-        public Enchantments Type { get; } = Type;
+        public ResourceLocation EnchantmentId { get; } = EnchantmentId;
         public int Level { get; } = Level;
     }
 }

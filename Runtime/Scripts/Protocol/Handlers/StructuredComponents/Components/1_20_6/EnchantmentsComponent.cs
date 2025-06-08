@@ -21,7 +21,11 @@ namespace CraftSharp.Protocol.Handlers.StructuredComponents.Components
             NumberOfEnchantments = DataTypes.ReadNextVarInt(data);
 
             for (var i = 0; i < NumberOfEnchantments; i++)
-                Enchantments.Add(new Enchantment((Enchantments)DataTypes.ReadNextVarInt(data), DataTypes.ReadNextVarInt(data)));
+            {
+                var enchantmentTypeNumId = DataTypes.ReadNextVarInt(data);
+                var enchantmentTypeId = EnchantmentTypePalette.INSTANCE.GetIdByNumId(enchantmentTypeNumId);
+                Enchantments.Add(new Enchantment(enchantmentTypeId, DataTypes.ReadNextVarInt(data)));
+            }
 
             ShowTooltip = DataTypes.ReadNextBool(data);
         }
@@ -32,7 +36,8 @@ namespace CraftSharp.Protocol.Handlers.StructuredComponents.Components
             data.AddRange(DataTypes.GetVarInt(Enchantments.Count));
             foreach (var enchantment in Enchantments)
             {
-                data.AddRange(DataTypes.GetVarInt((int)enchantment.Type));
+                var enchantmentTypeNumId = EnchantmentTypePalette.INSTANCE.GetNumIdById(enchantment.EnchantmentId);
+                data.AddRange(DataTypes.GetVarInt(enchantmentTypeNumId));
                 data.AddRange(DataTypes.GetVarInt(enchantment.Level));
             }
             data.AddRange(DataTypes.GetBool(ShowTooltip));

@@ -2,9 +2,9 @@
 {
     public class EnchantmentData
     {
-        public Enchantments TopEnchantment { get; set; }
-        public Enchantments MiddleEnchantment { get; set; }
-        public Enchantments BottomEnchantment { get; set; }
+        public ResourceLocation TopEnchantment { get; set; }
+        public ResourceLocation MiddleEnchantment { get; set; }
+        public ResourceLocation BottomEnchantment { get; set; }
 
         // Seed for rendering Standard Galactic Language (symbols in the enchanting table) (Useful for poeple who use MCC for the protocol)
         public short Seed { get; set; }
