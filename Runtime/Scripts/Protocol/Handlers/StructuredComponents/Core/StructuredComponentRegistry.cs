@@ -7,16 +7,17 @@ namespace CraftSharp.Protocol.Handlers.StructuredComponents.Core
     {
         private readonly IMinecraftDataTypes dataTypes;
         private readonly ItemPalette itemPalette;
-        private readonly SubComponentRegistry subComponentRegistry;
+
+        public SubComponentRegistry SubComponentRegistry { get; }
 
         protected override string Name => "StructuredComponent Palette";
         protected override Type UnknownObject => typeof (StructuredComponent);
 
-        public StructuredComponentRegistry(IMinecraftDataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry)
+        protected StructuredComponentRegistry(IMinecraftDataTypes dataTypes, ItemPalette itemPalette, SubComponentRegistry subComponentRegistry)
         {
             this.dataTypes = dataTypes;
             this.itemPalette = itemPalette;
-            this.subComponentRegistry = subComponentRegistry;
+            SubComponentRegistry = subComponentRegistry;
         }
         
         protected void RegisterComponent<T>(int numId, ResourceLocation id)
@@ -29,7 +30,7 @@ namespace CraftSharp.Protocol.Handlers.StructuredComponents.Core
             if (TryGetByNumId(numId, out var type))
             {
                 var component =
-                    Activator.CreateInstance(type, itemPalette, subComponentRegistry) as StructuredComponent 
+                    Activator.CreateInstance(type, itemPalette, SubComponentRegistry) as StructuredComponent 
                     ?? throw new InvalidOperationException($"Could not instantiate a parser for a structured component type {numId}");
                 
                 component.Parse(dataTypes, data);
@@ -43,7 +44,7 @@ namespace CraftSharp.Protocol.Handlers.StructuredComponents.Core
             if (TryGetById(id, out var type))
             {
                 var component =
-                    Activator.CreateInstance(type, itemPalette, subComponentRegistry) as StructuredComponent 
+                    Activator.CreateInstance(type, itemPalette, SubComponentRegistry) as StructuredComponent 
                     ?? throw new InvalidOperationException($"Could not instantiate a parser for a structured component type {id}");
                 
                 component.ParseFromJson(dataTypes, data);
