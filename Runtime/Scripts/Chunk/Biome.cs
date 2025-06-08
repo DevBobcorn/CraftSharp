@@ -41,7 +41,7 @@ namespace CraftSharp
             return new(r, g, b);
         }
 
-        public ResourceLocation BiomeBiomeId { get; }
+        public ResourceLocation BiomeId { get; }
 
         private static string GetColorText(int color)
         {
@@ -51,7 +51,7 @@ namespace CraftSharp
         
         public Biome(ResourceLocation biomeId, int sky, int foliage, int grass, int water, int fog, int waterFog)
         {
-            BiomeBiomeId = biomeId;
+            BiomeId = biomeId;
 
             // Set biome colors
             SkyColor = GetFloat3Color(sky);
@@ -76,7 +76,7 @@ namespace CraftSharp
             if (nbt == null)
                 throw new ArgumentNullException(nameof (nbt));
             
-            BiomeBiomeId = biomeId;
+            BiomeId = biomeId;
             
             if (nbt.TryGetValue("downfall", out var val))
                 Downfall = (float) val;
@@ -166,9 +166,9 @@ namespace CraftSharp
         
         public string GetDescription()
         {
-            return $"{BiomeBiomeId}\nTemperature: {Temperature:0.00}\tDownfall: {Precipitation} {Downfall:0.00}\n{colorsText}";
+            return $"{BiomeId}\nTemperature: {Temperature:0.00}\tDownfall: {Precipitation} {Downfall:0.00}\n{colorsText}";
         }
 
-        public override string ToString() => BiomeBiomeId.ToString();
+        public override string ToString() => BiomeId.ToString();
     }
 }
