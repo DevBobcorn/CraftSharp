@@ -1,6 +1,8 @@
+#nullable enable
 using System;
 using System.Globalization;
 using System.IO;
+using CraftSharp.Protocol.Handlers.StructuredComponents.Components.Subcomponents;
 
 namespace CraftSharp
 {
@@ -13,33 +15,63 @@ namespace CraftSharp
             AddMultipliedTotal
         }
 
-        public readonly Guid UUID;
-        public readonly ResourceLocation ModifierId;
+        public Guid UUID; // Used in 1.20.5-1.21.3, replaced with ResourceLocation in 1.21.4
+        public ResourceLocation ModifierId; // Used 1.20.5-1.21.3, removed in 1.21.4
         public readonly ResourceLocation Attribute;
         public readonly Operations Operation;
         public readonly double Value;
 
-        public MobAttributeModifier(Guid uuid, ResourceLocation modifierId, ResourceLocation attribute, Operations operation, double value)
+        // Used 1.20.5-1.21.3
+        public MobAttributeModifier(Guid uuid, ResourceLocation attribute, Operations operation, double value)
         {
             UUID = uuid;
+            Attribute = attribute;
+            Operation = operation;
+            Value = value;
+        }
+        
+        // Used 1.21.4+
+        public MobAttributeModifier(ResourceLocation modifierId, ResourceLocation attribute, Operations operation, double value)
+        {
             ModifierId = modifierId;
             Attribute = attribute;
             Operation = operation;
             Value = value;
         }
         
-        public static MobAttributeModifier FromJson(Json.JSONData data)
+        public static MobAttributeModifier FromJson(Json.JSONData data, bool useResourceLocationForMobAttributeModifierId)
         {
-            var uuid = Guid.Parse(data.Properties["uuid"].StringValue);
-            var m_id = ResourceLocation.FromString(data.Properties["id"].StringValue);
             var attr = ResourceLocation.FromString(data.Properties["attribute"].StringValue);
             var op = GetOperation(data.Properties["operation"].StringValue);
             var value = double.Parse(data.Properties["value"].StringValue, CultureInfo.InvariantCulture.NumberFormat);
 
-            return new MobAttributeModifier(uuid, m_id, attr, op, value);
+            if (useResourceLocationForMobAttributeModifierId) // 1.21.4+
+            {
+                var modifierId = ResourceLocation.FromString(data.Properties["modifier_id"].StringValue);
+                
+                return new MobAttributeModifier(modifierId, attr, op, value);
+            }
+            else // 1.20.5-1.21.3
+            {
+                var uuid = Guid.Parse(data.Properties["uuid"].StringValue);
+                
+                return new MobAttributeModifier(uuid, attr, op, value);
+            }
         }
 
-        private static Operations GetOperation(string operationName)
+        public static MobAttributeModifier FromComponent(AttributeModifierSubComponent component)
+        {
+            if (component.UUID == Guid.Empty) // UUID is not used. 1.21.4+
+            {
+                return new MobAttributeModifier(component.ModifierId, component.MobAttributeId, component.Operation, component.Value);
+            }
+            else
+            {
+                return new MobAttributeModifier(component.UUID, component.MobAttributeId, component.Operation, component.Value);
+            }
+        }
+
+        public static Operations GetOperation(string operationName)
         {
             return operationName switch
             {

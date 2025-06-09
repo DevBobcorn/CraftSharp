@@ -7,11 +7,11 @@ namespace CraftSharp.Protocol.Handlers.StructuredComponents.Components
 {
     public record PotionContentsComponent : StructuredComponent
     {
-        public bool HasPotionId { get; set; }
+        public bool HasPotionId { get; set; } = false;
         public ResourceLocation PotionId { get; set; }
-        public bool HasCustomColor { get; set; }
+        public bool HasCustomColor { get; set; } = false;
         public int CustomColor { get; set; }
-        public int NumberOfCustomEffects { get; set; }
+        public int NumberOfCustomEffects { get; set; } = 0;
         public List<PotionEffectSubComponent> CustomEffects { get; set; } = new();
 
         public PotionContentsComponent(ItemPalette itemPalette, SubComponentRegistry subComponentRegistry) 

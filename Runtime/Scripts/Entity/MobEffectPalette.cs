@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text;
+using CraftSharp.Protocol;
 using UnityEngine;
 
 namespace CraftSharp
@@ -19,7 +20,7 @@ namespace CraftSharp
         /// </summary>
         /// <param name="dataVersion">Mob effect data version</param>
         /// <param name="flag">Data load flag</param>
-        public void PrepareData(string dataVersion, DataLoadFlag flag)
+        public void PrepareData(string dataVersion, DataLoadFlag flag, IMinecraftDataTypes dataTypes)
         {
             // Clear loaded stuff...
             ClearEntries();
@@ -60,7 +61,9 @@ namespace CraftSharp
                         
                         MobAttributeModifier[] modifiers;
                         if (mobEffectDef.Properties.TryGetValue("modifiers", out val) && val.DataArray.Count > 0)
-                            modifiers = val.DataArray.Select(MobAttributeModifier.FromJson).ToArray();
+                            modifiers = val.DataArray.Select(x =>
+                                MobAttributeModifier.FromJson(x, dataTypes.UseResourceLocationForMobAttributeModifierId))
+                                .ToArray();
                         else
                             modifiers = Array.Empty<MobAttributeModifier>();
                         

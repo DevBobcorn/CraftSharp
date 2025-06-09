@@ -160,7 +160,7 @@ namespace CraftSharp
                             {
                                 CustomName = displayName
                             };
-                            Components.Add(StructuredComponentIds.CUSTOM_NAME_ID, customNameComp);
+                            Components[StructuredComponentIds.CUSTOM_NAME_ID] = customNameComp;
                         }
                     }
                     
@@ -173,7 +173,7 @@ namespace CraftSharp
                             NumberOfLines = displayLore.Count,
                             Lines = displayLore
                         };
-                        Components.Add(StructuredComponentIds.LORE_ID, loreComp);
+                        Components[StructuredComponentIds.LORE_ID] = loreComp;
                     }
                 }
 
@@ -184,7 +184,7 @@ namespace CraftSharp
                     {
                         Damage = damage
                     };
-                    Components.Add(StructuredComponentIds.DAMAGE_ID, damageComp);
+                    Components[StructuredComponentIds.DAMAGE_ID] = damageComp;
                 }
 
                 if (NBT.TryGetValue("Enchantments", out var enchantmentsValue) ||
@@ -204,7 +204,7 @@ namespace CraftSharp
                         NumberOfEnchantments = enchantments.Count,
                         Enchantments = enchantments
                     };
-                    Components.Add(StructuredComponentIds.ENCHANTMENTS_ID, enchantmentsComp);
+                    Components[StructuredComponentIds.ENCHANTMENTS_ID] = enchantmentsComp;
                 }
 
                 if (NBT.TryGetValue("Potion", out var potionValue) && potionValue is not null)
@@ -233,7 +233,7 @@ namespace CraftSharp
                             x => GetPotionEffectSubComponentFromNBT((Dictionary<string, object>) x, subComponentRegistry)).ToList();
                     }
                     
-                    Components.Add(StructuredComponentIds.POTION_CONTENTS_ID, potionContentsComp);
+                    Components[StructuredComponentIds.POTION_CONTENTS_ID] = potionContentsComp;
                 }
             }
         }

@@ -22,7 +22,7 @@ namespace CraftSharp.Protocol.Handlers.StructuredComponents.Components
             NumberOfModifiers = DataTypes.ReadNextVarInt(data);
 
             for (var i = 0; i < NumberOfModifiers; i++)
-                Modifiers.Add((AttributeModifierSubComponent)SubComponentRegistry.ParseSubComponent(SubComponents.Attribute, data));
+                Modifiers.Add((AttributeModifierSubComponent) SubComponentRegistry.ParseSubComponent(SubComponents.Attribute, data));
 
             ShowInTooltip = DataTypes.ReadNextBool(data);
         }
@@ -32,14 +32,29 @@ namespace CraftSharp.Protocol.Handlers.StructuredComponents.Components
             var data = new List<byte>();
             data.AddRange(DataTypes.GetVarInt(NumberOfModifiers));
             
-            if(Modifiers.Count != NumberOfModifiers)
-                throw new ArgumentNullException($"Can not serialize a AttributeModifiersComponent when the Attributes count != NumberOfAttributes!");
+            if (Modifiers.Count != NumberOfModifiers)
+                throw new Exception("Attributes count != NumberOfAttributes!");
             
             foreach (var attribute in Modifiers)
                 data.AddRange(attribute.Serialize(dataTypes));
             
             data.AddRange(DataTypes.GetBool(ShowInTooltip));
             return new Queue<byte>(data);
+        }
+        
+        public override void ParseFromJson(IMinecraftDataTypes dataTypes, Json.JSONData data)
+        {
+            var modifiers = data.Properties["modifiers"].DataArray;
+
+            NumberOfModifiers = modifiers.Count;
+
+            foreach (var modifierData in modifiers)
+            {
+                Modifiers.Add((AttributeModifierSubComponent) SubComponentRegistry
+                    .ParseSubComponentFromJson(SubComponents.Attribute, modifierData));
+            }
+            
+            ShowInTooltip = bool.Parse(data.Properties["show_in_tooltip"].StringValue);
         }
     }
 }

@@ -7,6 +7,8 @@ namespace CraftSharp.Protocol
     public interface IMinecraftDataTypes
     {
         public bool UseAnonymousNBT { get; }
+        
+        public bool UseResourceLocationForMobAttributeModifierId { get; }
 
         #region Complex data readers
         

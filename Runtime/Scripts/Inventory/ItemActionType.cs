@@ -19,6 +19,7 @@ namespace CraftSharp
         Bow,
         Crossbow,
         Trident,
+        Mace,
         Shield,
         DrinkableBottle, // Potions / Honey bottle
         DrinkableBucket, // Milk bucket

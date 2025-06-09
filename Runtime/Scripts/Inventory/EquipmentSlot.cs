@@ -36,5 +36,23 @@ namespace CraftSharp
                 _ => throw new InvalidDataException($"Equipment slot {slotName} is not defined!")
             };
         }
+        
+        public static string GetEquipmentSlotName(this EquipmentSlot slot)
+        {
+            return slot switch
+            {
+                EquipmentSlot.Any      => "any",
+                EquipmentSlot.Mainhand => "mainhand",
+                EquipmentSlot.Offhand  => "offhand",
+                EquipmentSlot.Hand     => "hand",
+                EquipmentSlot.Feet     => "feet",
+                EquipmentSlot.Legs     => "legs",
+                EquipmentSlot.Chest    => "chest",
+                EquipmentSlot.Head     => "head",
+                EquipmentSlot.Armor    => "armor",
+                EquipmentSlot.Body     => "body",
+                _ => throw new InvalidDataException($"Name for equipment slot {slot} is not defined!")
+            };
+        }
     }
 }
