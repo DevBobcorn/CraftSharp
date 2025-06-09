@@ -5,16 +5,16 @@ using CraftSharp.Protocol.Handlers.StructuredComponents.Core;
 
 namespace CraftSharp.Protocol.Handlers.StructuredComponents.Components.Subcomponents
 {
-    public record AttributeSubComponent : SubComponent
+    public record AttributeModifierSubComponent : SubComponent
     {
         public int TypeId { get; set; }
         public Guid UUID { get; set; }
         public string? Name { get; set; }
         public double Value { get; set; }
-        public int Operation { get; set; }
-        public int Slot { get; set; }
+        public MobAttributeModifier.Operations Operation { get; set; }
+        public EquipmentSlot Slot { get; set; }
 
-        public AttributeSubComponent(SubComponentRegistry subComponentRegistry)
+        public AttributeModifierSubComponent(SubComponentRegistry subComponentRegistry)
             : base(subComponentRegistry)
         {
             
@@ -26,8 +26,8 @@ namespace CraftSharp.Protocol.Handlers.StructuredComponents.Components.Subcompon
             UUID = DataTypes.ReadNextUUID(data);
             Name = DataTypes.ReadNextString(data);
             Value = DataTypes.ReadNextDouble(data);
-            Operation = DataTypes.ReadNextVarInt(data);
-            Slot = DataTypes.ReadNextVarInt(data);
+            Operation = (MobAttributeModifier.Operations) DataTypes.ReadNextVarInt(data);
+            Slot = (EquipmentSlot) DataTypes.ReadNextVarInt(data);
         }
 
         public override Queue<byte> Serialize(IMinecraftDataTypes dataTypes)
@@ -37,12 +37,12 @@ namespace CraftSharp.Protocol.Handlers.StructuredComponents.Components.Subcompon
             data.AddRange(DataTypes.GetUUID(UUID));
             
             if (string.IsNullOrEmpty(Name?.Trim()))
-                throw new ArgumentNullException($"Can not serialize AttributeSubComponent due to Name being null or empty!");
+                throw new Exception("Name is null or empty!");
             
             data.AddRange(DataTypes.GetString(Name));
             data.AddRange(DataTypes.GetDouble(Value));
-            data.AddRange(DataTypes.GetVarInt(Operation));
-            data.AddRange(DataTypes.GetVarInt(Slot));
+            data.AddRange(DataTypes.GetVarInt((int) Operation));
+            data.AddRange(DataTypes.GetVarInt((int) Slot));
             return new Queue<byte>(data);
         }
     }

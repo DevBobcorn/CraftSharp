@@ -7,8 +7,8 @@ namespace CraftSharp.Protocol.Handlers.StructuredComponents.Components
 {
     public record AttributeModifiersComponent : StructuredComponent
     {
-        public int NumberOfAttributes { get; set; }
-        public List<AttributeSubComponent> Attributes { get; set; } = new();
+        public int NumberOfModifiers { get; set; }
+        public List<AttributeModifierSubComponent> Modifiers { get; set; } = new();
         public bool ShowInTooltip { get; set; }
 
         public AttributeModifiersComponent(ItemPalette itemPalette, SubComponentRegistry subComponentRegistry) 
@@ -19,10 +19,10 @@ namespace CraftSharp.Protocol.Handlers.StructuredComponents.Components
         
         public override void Parse(IMinecraftDataTypes dataTypes, Queue<byte> data)
         {
-            NumberOfAttributes = DataTypes.ReadNextVarInt(data);
+            NumberOfModifiers = DataTypes.ReadNextVarInt(data);
 
-            for (var i = 0; i < NumberOfAttributes; i++)
-                Attributes.Add((AttributeSubComponent)SubComponentRegistry.ParseSubComponent(SubComponents.Attribute, data));
+            for (var i = 0; i < NumberOfModifiers; i++)
+                Modifiers.Add((AttributeModifierSubComponent)SubComponentRegistry.ParseSubComponent(SubComponents.Attribute, data));
 
             ShowInTooltip = DataTypes.ReadNextBool(data);
         }
@@ -30,12 +30,12 @@ namespace CraftSharp.Protocol.Handlers.StructuredComponents.Components
         public override Queue<byte> Serialize(IMinecraftDataTypes dataTypes)
         {
             var data = new List<byte>();
-            data.AddRange(DataTypes.GetVarInt(NumberOfAttributes));
+            data.AddRange(DataTypes.GetVarInt(NumberOfModifiers));
             
-            if(Attributes.Count != NumberOfAttributes)
+            if(Modifiers.Count != NumberOfModifiers)
                 throw new ArgumentNullException($"Can not serialize a AttributeModifiersComponent when the Attributes count != NumberOfAttributes!");
             
-            foreach (var attribute in Attributes)
+            foreach (var attribute in Modifiers)
                 data.AddRange(attribute.Serialize(dataTypes));
             
             data.AddRange(DataTypes.GetBool(ShowInTooltip));

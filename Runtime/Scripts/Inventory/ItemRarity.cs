@@ -2,7 +2,7 @@ using System.IO;
 
 namespace CraftSharp
 {
-    public enum ItemRarity : int
+    public enum ItemRarity
     {
         Common = 0, // White
         Uncommon,   // Yellow

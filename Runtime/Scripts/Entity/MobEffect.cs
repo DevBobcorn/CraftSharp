@@ -38,11 +38,9 @@ namespace CraftSharp
             colorText = $"<color=#{colorCode}>{colorCode}</color>";
         }
 
-        public string GetDescription()
+        public override string ToString()
         {
-            return $"{MobEffectId}\nCategory: {Category}\t{colorText}";
+            return MobEffectId.ToString();
         }
-
-        public override string ToString() => MobEffectId.ToString();
     }
 }

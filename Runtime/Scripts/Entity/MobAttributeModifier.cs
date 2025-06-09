@@ -14,13 +14,15 @@ namespace CraftSharp
         }
 
         public readonly Guid UUID;
-        public readonly string Attribute;
+        public readonly ResourceLocation ModifierId;
+        public readonly ResourceLocation Attribute;
         public readonly Operations Operation;
-        public readonly float Value;
+        public readonly double Value;
 
-        public MobAttributeModifier(Guid uuid, string attribute, Operations operation, float value)
+        public MobAttributeModifier(Guid uuid, ResourceLocation modifierId, ResourceLocation attribute, Operations operation, double value)
         {
             UUID = uuid;
+            ModifierId = modifierId;
             Attribute = attribute;
             Operation = operation;
             Value = value;
@@ -29,14 +31,15 @@ namespace CraftSharp
         public static MobAttributeModifier FromJson(Json.JSONData data)
         {
             var uuid = Guid.Parse(data.Properties["uuid"].StringValue);
-            var attr = data.Properties["attribute"].StringValue;
+            var m_id = ResourceLocation.FromString(data.Properties["id"].StringValue);
+            var attr = ResourceLocation.FromString(data.Properties["attribute"].StringValue);
             var op = GetOperation(data.Properties["operation"].StringValue);
-            var value = float.Parse(data.Properties["value"].StringValue, CultureInfo.InvariantCulture.NumberFormat);
+            var value = double.Parse(data.Properties["value"].StringValue, CultureInfo.InvariantCulture.NumberFormat);
 
-            return new MobAttributeModifier(uuid, attr, op, value);
+            return new MobAttributeModifier(uuid, m_id, attr, op, value);
         }
-        
-        public static Operations GetOperation(string operationName)
+
+        private static Operations GetOperation(string operationName)
         {
             return operationName switch
             {
