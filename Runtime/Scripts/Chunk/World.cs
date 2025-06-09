@@ -246,7 +246,7 @@ namespace CraftSharp
                 }
                 else if (BUILTIN_DIMENSION_TYPE_NUM_IDS.TryGetValue(dimensionTypeId, out int numId))
                 {
-                    Debug.LogWarning($"Received dimension type NBT is null, using builtin data");
+                    Debug.LogWarning("Received dimension type NBT is null, using builtin data");
                     DimensionTypeRegistry.UpdateById(dimensionTypeId, new DimensionType(dimensionTypeId, BUILTIN_DIMENSION_TYPES[numId].obj));
                 }
 
@@ -388,31 +388,24 @@ namespace CraftSharp
                 {
                     BiomeRegistry.UpdateById(biomeId, new Biome(biomeId, biomeDef));
                 }
-                else if (BiomeData.BUILTIN_BIOME_NUM_IDS.TryGetValue(biomeId, out int numId))
+                else if (BiomeData.BUILTIN_BIOME_NUM_IDS_1_20_6.TryGetValue(biomeId, out int numId)) // 1.20.5+ Use builtin data
                 {
-                    Debug.LogWarning($"Received biome NBT is null, using builtin data");
-                    BiomeRegistry.UpdateById(biomeId, new Biome(biomeId, BiomeData.BUILTIN_BIOMES[numId].obj));
+                    Debug.LogWarning("Received biome NBT is null, using builtin data");
+                    BiomeRegistry.UpdateById(biomeId, new Biome(biomeId, BiomeData.BUILTIN_BIOMES_1_20_6[numId].obj));
                 }
 
                 Debug.Log($"Updated biome [{BiomeRegistry.GetNumIdById(biomeId)}] {biomeId}");
             }
             else // Add a new entry with given id
             {
-                bool isBuiltin = BiomeData.BUILTIN_BIOME_NUM_IDS.TryGetValue(biomeId, out int numId);
-                
-                if (isBuiltin)
-                {
-                    candidateNumId = numId; // Use builtin num id if this biome is builtin
-                }
-
                 if (biomeDef is not null)
                 {
                     BiomeRegistry.Register(biomeId, candidateNumId, new Biome(biomeId, biomeDef));
                 }
-                else if (isBuiltin)
+                else if (BiomeData.BUILTIN_BIOME_NUM_IDS_1_20_6.TryGetValue(biomeId, out int numId)) // 1.20.5+ Use builtin data
                 {
                     //Debug.LogWarning("Received biome NBT is null, using builtin data");
-                    BiomeRegistry.Register(biomeId, candidateNumId, new Biome(biomeId, BiomeData.BUILTIN_BIOMES[numId].obj));
+                    BiomeRegistry.Register(biomeId, candidateNumId, new Biome(biomeId, BiomeData.BUILTIN_BIOMES_1_20_6[numId].obj));
                 }
 
                 //Debug.Log($"Registered biome [{BiomeRegistry.GetNumIdById(biomeId)}] {biomeId}");

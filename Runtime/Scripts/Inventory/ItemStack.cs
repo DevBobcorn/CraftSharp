@@ -235,6 +235,24 @@ namespace CraftSharp
                     
                     Components[StructuredComponentIds.POTION_CONTENTS_ID] = potionContentsComp;
                 }
+
+                // Post processing for legacy NBT items (Doesn't affect NBT data)
+
+                if (IsEnchanted) // Enchantments increase the rarity of the item, from Common or Uncommon to Rare, or from Rare to Epic
+                {
+                    var oldRarity = Rarity;
+                    var newRarity = oldRarity switch
+                    {
+                        ItemRarity.Common or ItemRarity.Uncommon => ItemRarity.Rare,
+                        ItemRarity.Rare => ItemRarity.Epic,
+                        _ => oldRarity
+                    };
+
+                    Components[StructuredComponentIds.RARITY_ID] = new RarityComponent(itemPalette, subComponentRegistry)
+                    {
+                        Rarity = newRarity
+                    };
+                }
             }
         }
         

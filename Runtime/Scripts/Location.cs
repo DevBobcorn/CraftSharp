@@ -26,13 +26,7 @@ namespace CraftSharp
         /// <summary>
         /// Get location with zeroed coordinates
         /// </summary>
-        public static Location Zero
-        {
-            get
-            {
-                return new Location(0, 0, 0);
-            }
-        }
+        public static Location Zero => new(0, 0, 0);
 
         /// <summary>
         /// Create a new location

@@ -70,7 +70,7 @@ namespace CraftSharp
         public static readonly ResourceLocation WINDSWEPT_SAVANNA_ID           = new("windswept_savanna");
         public static readonly ResourceLocation WOODED_BADLANDS_ID             = new("wooded_badlands");
         
-        public static readonly Dictionary<ResourceLocation, int> BUILTIN_BIOME_NUM_IDS = new()
+        public static readonly Dictionary<ResourceLocation, int> BUILTIN_BIOME_NUM_IDS_1_20_6 = new()
         {
             [BADLANDS_ID]                  = 0,
             [BAMBOO_JUNGLE_ID]             = 1,
@@ -142,7 +142,7 @@ namespace CraftSharp
         /// <summary>
         /// Builtin biome definitions
         /// </summary>
-        public static readonly (ResourceLocation id, int numId, Dictionary<string, object> obj)[] BUILTIN_BIOMES =
+        public static readonly (ResourceLocation id, int numId, Dictionary<string, object> obj)[] BUILTIN_BIOMES_1_20_6 =
         {
             (BADLANDS_ID, 0, new Dictionary<string, object> {["effects"] = new Dictionary<string, object> {["fog_color"] = 12638463, ["foliage_color"] = 10387789, ["grass_color"] = 9470285, ["sky_color"] = 7254527, ["water_color"] = 4159204, ["water_fog_color"] = 329011, }, ["downfall"] = 0.0F, ["temperature"] = 2.0F, ["precipitation"] = "none"}),
             (BAMBOO_JUNGLE_ID, 1, new Dictionary<string, object> {["effects"] = new Dictionary<string, object> {["fog_color"] = 12638463, ["sky_color"] = 7842047, ["water_color"] = 4159204, ["water_fog_color"] = 329011, }, ["downfall"] = 0.9F, ["temperature"] = 0.95F, ["precipitation"] = "none"}),
