@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using CraftSharp.Protocol.Handlers.StructuredComponents.Components;
 using Unity.Mathematics;
 using UnityEngine;
 
@@ -79,20 +80,19 @@ namespace CraftSharp
         
         private static float3[] GetPotionColor(ItemStack itemStack)
         {
-            if (itemStack.NBT is not null)
+            if (itemStack.TryGetComponent<PotionContentsComponent>(
+                StructuredComponentIds.POTION_CONTENTS_ID, out var potionContentsComp))
             {
-                // Check potion NBTs https://minecraft.wiki/w/Item_format/Before_1.20.5#Potion_Effects
-
                 // Potion color override
-                if (itemStack.NBT.TryGetValue("CustomPotionColor", out var value))
+                if (potionContentsComp.HasCustomColor)
                 {
-                    return new[] { ColorConvert.GetFloat3((int) value) };
+                    return new[] { ColorConvert.GetFloat3(potionContentsComp.CustomColor) };
                 }
                 
                 // Default effects for potion (Custom effects doesn't affect potion color)
-                if (itemStack.NBT.TryGetValue("Potion", out value))
+                if (potionContentsComp.HasPotionId)
                 {
-                    var potionId = ResourceLocation.FromString((string) value);
+                    var potionId = potionContentsComp.PotionId;
                     var potion = PotionPalette.INSTANCE.GetById(potionId);
 
                     return new[] { GetEffectsColor(potion.Effects.Select(x => x.EffectId).ToArray()) };

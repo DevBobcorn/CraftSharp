@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using CraftSharp.Inventory;
 using CraftSharp.Protocol.Handlers.StructuredComponents.Components;
+using CraftSharp.Protocol.Handlers.StructuredComponents.Components.Subcomponents;
 using CraftSharp.Protocol.Handlers.StructuredComponents.Core;
 
 namespace CraftSharp
@@ -12,7 +14,7 @@ namespace CraftSharp
     /// </summary>
     public class ItemStack
     {
-        private const int DEFAULT_STACK_LIMIT = 64;
+        private const int DEFAULT_MAX_STACK_SIZE = 64;
         
         /// <summary>
         /// Item Type
@@ -24,50 +26,20 @@ namespace CraftSharp
         /// </summary>
         public int Count;
 
-        public int StackLimit
-        {
-            get
-            {
-                if (Components.TryGetValue(StructuredComponentIds.MAX_STACK_SIZE_ID, out var comp) &&
-                    comp is MaxStackSizeComponent maxStackSizeComp)
-                {
-                    return maxStackSizeComp.MaxStackSize;
-                }
-                return DEFAULT_STACK_LIMIT;
-            }
-        }
+        public int MaxStackSize => TryGetComponent<MaxStackSizeComponent>(
+            StructuredComponentIds.MAX_STACK_SIZE_ID, out var maxStackSizeComp) ? maxStackSizeComp.MaxStackSize : DEFAULT_MAX_STACK_SIZE;
         
         /// <summary>
         /// Retrieve item damage from components. Returns 0 if no damage is defined.
         /// </summary>
-        public int Damage
-        {
-            get
-            {
-                if (Components.TryGetValue(StructuredComponentIds.DAMAGE_ID, out var comp) &&
-                    comp is DamageComponent damageComp)
-                {
-                    return damageComp.Damage;
-                }
-                return 0; // Item did not take damage
-            }
-        }
+        public int Damage => TryGetComponent<DamageComponent>(
+            StructuredComponentIds.DAMAGE_ID, out var damageComp) ? damageComp.Damage : 0;
         
         /// <summary>
         /// Retrieve max damage from components. Returns 0 if no max damage is defined.
         /// </summary>
-        public int MaxDamage
-        {
-            get
-            {
-                if (Components.TryGetValue(StructuredComponentIds.MAX_DAMAGE_ID, out var comp) &&
-                    comp is MaxDamageComponent maxDamageComp)
-                {
-                    return maxDamageComp.MaxDamage;
-                }
-                return 0; // Item cannot take damage
-            }
-        }
+        public int MaxDamage => TryGetComponent<MaxDamageComponent>(
+            StructuredComponentIds.MAX_DAMAGE_ID, out var maxDamageComp) ? maxDamageComp.MaxDamage : 0;
         
         /// <summary>
         /// Retrieve rarity from components. Returns common if no rarity is defined.
@@ -98,6 +70,17 @@ namespace CraftSharp
         /// </summary>
         public readonly Dictionary<ResourceLocation, StructuredComponent> Components = new();
 
+        public bool TryGetComponent<T>(ResourceLocation typeId, [MaybeNullWhen(false)] out T tComp) where T : StructuredComponent
+        {
+            if (Components.TryGetValue(typeId, out var comp) && comp is T c)
+            {
+                tComp = c;
+                return true;
+            }
+            tComp = null;
+            return false;
+        }
+
         public void ApplyComponents(Dictionary<ResourceLocation, StructuredComponent> componentsToAdd,
             List<ResourceLocation> componentsToRemove)
         {
@@ -119,42 +102,28 @@ namespace CraftSharp
         public bool IsEmpty => ItemType.ItemId == Item.AIR_ID || Count == 0;
 
         /// <summary>
-        /// Retrieve item custom name from components. NULL if no custom name is defined.
+        /// Retrieve item custom name from components. Returns null if no custom name is defined.
         /// </summary>
-        public string? CustomName
-        {
-            get
-            {
-                if (Components.TryGetValue(StructuredComponentIds.CUSTOM_NAME_ID, out var comp) &&
-                    comp is CustomNameComponent customNameComp)
-                {
-                    return customNameComp.CustomName;
-                }
-                return null;
-            }
-        }
-        
+        public string? CustomName => TryGetComponent<CustomNameComponent>(
+            StructuredComponentIds.CUSTOM_NAME_ID, out var customNameComp) ? customNameComp.CustomName : null;
+
         /// <summary>
-        /// Retrieve item lores from components. Returns null if no lores is defined.
+        /// Retrieve item lores from components. Returns null if no lore is defined.
         /// </summary>
-        public List<string>? Lores
-        {
-            get
-            {
-                if (Components.TryGetValue(StructuredComponentIds.LORE_ID, out var comp) &&
-                    comp is LoreComponent loreComp)
-                {
-                    return loreComp.Lines;
-                }
-                return null;
-            }
-        }
+        public List<string>? Lores => TryGetComponent<LoreComponent>(
+            StructuredComponentIds.LORE_ID, out var loreComp) ? loreComp.Lines : null;
 
         /// <summary>
         /// Check if item is enchanted from components.
         /// </summary>
         public bool IsEnchanted => Components.ContainsKey(StructuredComponentIds.ENCHANTMENTS_ID);
 
+        /// <summary>
+        /// Retrieve item enchantments from components. Returns empty list if no enchantment is defined.
+        /// </summary>
+        public List<Enchantment> Enchantments => TryGetComponent<EnchantmentsComponent>(
+            StructuredComponentIds.ENCHANTMENTS_ID, out var enchantmentsComp) ? enchantmentsComp.Enchantments : new();
+        
         /// <summary>
         /// Create an item with ItemType, Count and Metadata
         /// </summary>
@@ -179,72 +148,115 @@ namespace CraftSharp
                 var itemPalette = ItemPalette.INSTANCE;
                 var subComponentRegistry = itemPalette.ComponentRegistry.SubComponentRegistry;
                 
-                if (NBT.TryGetValue("display", out var displayValue))
+                if (NBT.TryGetValue("display", out var displayValue) &&
+                    displayValue is Dictionary<string, object> displayProperties)
                 {
-                    if (displayValue is Dictionary<string, object> displayProperties)
+                    if (displayProperties.TryGetValue("Name", out var nameValue)) // Custom Name
                     {
-                        if (displayProperties.TryGetValue("Name", out var nameValue)) // Custom Name
+                        var displayName = (nameValue as string)!;
+                        if (!string.IsNullOrEmpty(displayName))
                         {
-                            var displayName = (nameValue as string)!;
-                            if (!string.IsNullOrEmpty(displayName))
+                            var customNameComp = new CustomNameComponent(itemPalette, subComponentRegistry)
                             {
-                                var customNameComp = new CustomNameComponent(itemPalette, subComponentRegistry)
-                                {
-                                    CustomName = displayName
-                                };
-                                Components.Add(StructuredComponentIds.CUSTOM_NAME_ID, customNameComp);
-                            }
-                        }
-                        
-                        if (displayProperties.TryGetValue("Lore", out var loreValue)) // Lore
-                        {
-                            var displayLore = (loreValue as object[])!
-                                .Select(x => x.ToString()).ToList();
-                            var loreComp = new LoreComponent(itemPalette, subComponentRegistry)
-                            {
-                                NumberOfLines = displayLore.Count,
-                                Lines = displayLore
+                                CustomName = displayName
                             };
-                            Components.Add(StructuredComponentIds.LORE_ID, loreComp);
+                            Components.Add(StructuredComponentIds.CUSTOM_NAME_ID, customNameComp);
                         }
+                    }
+                    
+                    if (displayProperties.TryGetValue("Lore", out var loreValue)) // Lore
+                    {
+                        var displayLore = (loreValue as object[])!
+                            .Select(x => x.ToString()).ToList();
+                        var loreComp = new LoreComponent(itemPalette, subComponentRegistry)
+                        {
+                            NumberOfLines = displayLore.Count,
+                            Lines = displayLore
+                        };
+                        Components.Add(StructuredComponentIds.LORE_ID, loreComp);
                     }
                 }
 
-                if (NBT.TryGetValue("Damage", out var damageValue))
+                if (NBT.TryGetValue("Damage", out var damageValue) && damageValue is not null)
                 {
-                    if (damageValue != null)
+                    var damage = int.Parse(damageValue.ToString());
+                    var damageComp = new DamageComponent(itemPalette, subComponentRegistry)
                     {
-                        var damage = int.Parse(damageValue.ToString());
-                        var damageComp = new DamageComponent(itemPalette, subComponentRegistry)
-                        {
-                            Damage = damage
-                        };
-                        Components.Add(StructuredComponentIds.DAMAGE_ID, damageComp);
-                    }
+                        Damage = damage
+                    };
+                    Components.Add(StructuredComponentIds.DAMAGE_ID, damageComp);
                 }
 
                 if (NBT.TryGetValue("Enchantments", out var enchantmentsValue) ||
-                    NBT.TryGetValue("StoredEnchantments", out enchantmentsValue))
+                    NBT.TryGetValue("StoredEnchantments", out enchantmentsValue) && enchantmentsValue is not null)
                 {
-                    if (enchantmentsValue != null)
+                    List<Enchantment> enchantments = new();
+                    foreach (Dictionary<string, object> enchantment in (object[]) enchantmentsValue)
                     {
-                        List<Enchantment> enchantments = new();
-                        foreach (Dictionary<string, object> enchantment in (object[]) enchantmentsValue)
-                        {
-                            var level = (short) enchantment["lvl"];
-                            var id = ResourceLocation.FromString((string) enchantment["id"]);
-                            
-                            enchantments.Add(new Enchantment(id, level));
-                        }
-
-                        var enchantmentsComp = new EnchantmentsComponent(itemPalette, subComponentRegistry)
-                        {
-                            Enchantments = enchantments
-                        };
-                        Components.Add(StructuredComponentIds.ENCHANTMENTS_ID, enchantmentsComp);
+                        var level = (short) enchantment["lvl"];
+                        var id = ResourceLocation.FromString((string) enchantment["id"]);
+                        
+                        enchantments.Add(new Enchantment(id, level));
                     }
+
+                    var enchantmentsComp = new EnchantmentsComponent(itemPalette, subComponentRegistry)
+                    {
+                        NumberOfEnchantments = enchantments.Count,
+                        Enchantments = enchantments
+                    };
+                    Components.Add(StructuredComponentIds.ENCHANTMENTS_ID, enchantmentsComp);
+                }
+
+                if (NBT.TryGetValue("Potion", out var potionValue) && potionValue is not null)
+                {
+                    var potionContentsComp = new PotionContentsComponent(itemPalette, subComponentRegistry)
+                    {
+                        HasPotionId = true,
+                        PotionId = ResourceLocation.FromString((string) potionValue)
+                    };
+                    
+                    // Check potion NBTs. https://minecraft.wiki/w/Item_format/Before_1.20.5#Potion_Effects
+                    // Potion color override
+                    if (NBT.TryGetValue("CustomPotionColor", out var value))
+                    {
+                        potionContentsComp.HasCustomColor = true;
+                        potionContentsComp.CustomColor = (int) value;
+                    }
+
+                    if (NBT.TryGetValue("CustomPotionEffects ", out value) ||
+                        NBT.TryGetValue("custom_potion_effects", out value))
+                    {
+                        var customEffectList = (object[]) value;
+
+                        potionContentsComp.NumberOfCustomEffects = customEffectList.Length;
+                        potionContentsComp.CustomEffects = customEffectList.Select(
+                            x => GetPotionEffectSubComponentFromNBT((Dictionary<string, object>) x, subComponentRegistry)).ToList();
+                    }
+                    
+                    Components.Add(StructuredComponentIds.POTION_CONTENTS_ID, potionContentsComp);
                 }
             }
+        }
+        
+        private static PotionEffectSubComponent GetPotionEffectSubComponentFromNBT(Dictionary<string, object> x, SubComponentRegistry subComponentRegistry)
+        {
+            var effectId = ResourceLocation.FromString((string) x["id"]);
+            int amplifier = x.TryGetValue("amplifier", out var value) ? (int) value : 0; // 0 (Level I) by default
+            int duration = x.TryGetValue("duration", out value) ? (int) value : 1; // 1 tick by default
+
+            return new PotionEffectSubComponent(subComponentRegistry)
+            {
+                EffectId = effectId,
+                Details = new DetailsSubComponent(subComponentRegistry)
+                {
+                    Amplifier = amplifier,
+                    Duration = duration,
+                    Ambient = false,
+                    ShowIcon = true,
+                    ShowParticles = true,
+                    HasHiddenEffects = false
+                }
+            };
         }
         #nullable disable
         

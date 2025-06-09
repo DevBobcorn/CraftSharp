@@ -12,6 +12,11 @@ namespace CraftSharp.Protocol.Handlers.StructuredComponents.Components.Subcompon
         public bool Ambient { get; set; }
         public bool ShowParticles { get; set; }
         public bool ShowIcon { get; set; }
+        /// <summary>
+        /// Used to store the state of the previous potion effect when a stronger one is applied. This guarantees
+        /// that the weaker one will persist, in case it lasts longer. 
+        /// See https://minecraft.wiki/w/Java_Edition_protocol/Slot_data#Potion_Effect
+        /// </summary>
         public bool HasHiddenEffects { get; set; }
         public DetailsSubComponent? Detail { get; set; }
 
@@ -31,7 +36,7 @@ namespace CraftSharp.Protocol.Handlers.StructuredComponents.Components.Subcompon
             HasHiddenEffects = DataTypes.ReadNextBool(data);
             
             if (HasHiddenEffects)
-                Detail = (DetailsSubComponent)SubComponentRegistry.ParseSubComponent(SubComponents.Details, data);
+                Detail = (DetailsSubComponent) SubComponentRegistry.ParseSubComponent(SubComponents.Details, data);
         }
 
         public override Queue<byte> Serialize(IMinecraftDataTypes dataTypes)
@@ -46,8 +51,8 @@ namespace CraftSharp.Protocol.Handlers.StructuredComponents.Components.Subcompon
 
             if (HasHiddenEffects)
             {
-                if(Detail is null)
-                    throw new ArgumentNullException($"Can not serialize a DetailSubComponent1206 when the Detail is empty but HasHiddenEffects is true!");
+                if (Detail is null)
+                    throw new Exception("Detail is empty but HasHiddenEffects is true!");
                     
                 data.AddRange(Detail.Serialize(dataTypes));
             }

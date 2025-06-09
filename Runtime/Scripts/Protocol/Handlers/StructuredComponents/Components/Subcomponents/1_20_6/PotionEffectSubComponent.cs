@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using CraftSharp.Protocol.Handlers.StructuredComponents.Core;
 
@@ -6,7 +5,7 @@ namespace CraftSharp.Protocol.Handlers.StructuredComponents.Components.Subcompon
 {
     public record PotionEffectSubComponent : SubComponent
     {
-        public int TypeId { get; set; }
+        public ResourceLocation EffectId { get; set; }
         public DetailsSubComponent Details { get; set; }
 
         public PotionEffectSubComponent(SubComponentRegistry subComponentRegistry)
@@ -17,14 +16,16 @@ namespace CraftSharp.Protocol.Handlers.StructuredComponents.Components.Subcompon
         
         public override void Parse(IMinecraftDataTypes dataTypes, Queue<byte> data)
         {
-            TypeId = DataTypes.ReadNextVarInt(data);
-            Details = (DetailsSubComponent)SubComponentRegistry.ParseSubComponent(SubComponents.Details, data);
+            var effectNumId = DataTypes.ReadNextVarInt(data);
+            EffectId = MobEffectPalette.INSTANCE.GetIdByNumId(effectNumId);
+            Details = (DetailsSubComponent) SubComponentRegistry.ParseSubComponent(SubComponents.Details, data);
         }
 
         public override Queue<byte> Serialize(IMinecraftDataTypes dataTypes)
         {
             var data = new List<byte>();
-            data.AddRange(DataTypes.GetVarInt(TypeId));
+            var effectNumId = MobEffectPalette.INSTANCE.GetNumIdById(EffectId);
+            data.AddRange(DataTypes.GetVarInt(effectNumId));
             data.AddRange(Details.Serialize(dataTypes));
             return new Queue<byte>(data);
         }

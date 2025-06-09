@@ -8,11 +8,11 @@ namespace CraftSharp.Protocol.Handlers.StructuredComponents.Components
     public record PotionContentsComponent : StructuredComponent
     {
         public bool HasPotionId { get; set; }
-        public int PotiononId { get; set; }
+        public ResourceLocation PotionId { get; set; }
         public bool HasCustomColor { get; set; }
         public int CustomColor { get; set; }
         public int NumberOfCustomEffects { get; set; }
-        public List<PotionEffectSubComponent> Effects { get; set; } = new();
+        public List<PotionEffectSubComponent> CustomEffects { get; set; } = new();
 
         public PotionContentsComponent(ItemPalette itemPalette, SubComponentRegistry subComponentRegistry) 
             : base(itemPalette, subComponentRegistry)
@@ -23,29 +23,36 @@ namespace CraftSharp.Protocol.Handlers.StructuredComponents.Components
         public override void Parse(IMinecraftDataTypes dataTypes, Queue<byte> data)
         {
             HasPotionId = DataTypes.ReadNextBool(data);
-            PotiononId = HasPotionId ? DataTypes.ReadNextVarInt(data) : 0; // TODO: Find from the registry
+            PotionId = HasPotionId ? PotionPalette.INSTANCE.GetIdByNumId(DataTypes.ReadNextVarInt(data)) : ResourceLocation.INVALID;
             HasCustomColor = DataTypes.ReadNextBool(data);
-            CustomColor = HasCustomColor ? DataTypes.ReadNextInt(data) : 0; // TODO: Find from the registry
+            CustomColor = HasCustomColor ? DataTypes.ReadNextInt(data) : 0;
             NumberOfCustomEffects = DataTypes.ReadNextVarInt(data);
             
             for(var i = 0; i < NumberOfCustomEffects; i++)
-                Effects.Add((PotionEffectSubComponent)SubComponentRegistry.ParseSubComponent(SubComponents.PotionEffect, data));
+                CustomEffects.Add((PotionEffectSubComponent) SubComponentRegistry.ParseSubComponent(SubComponents.PotionEffect, data));
         }
 
         public override Queue<byte> Serialize(IMinecraftDataTypes dataTypes)
         {
             var data = new List<byte>();
             data.AddRange(DataTypes.GetBool(HasPotionId));
-            data.AddRange(DataTypes.GetVarInt(PotiononId));
+            if (HasPotionId)
+            {
+                var potionNumId = PotionPalette.INSTANCE.GetNumIdById(PotionId);
+                data.AddRange(DataTypes.GetVarInt(potionNumId));
+            }
             data.AddRange(DataTypes.GetBool(HasCustomColor));
-            data.AddRange(DataTypes.GetInt(CustomColor));
+            if (HasCustomColor)
+            {
+                data.AddRange(DataTypes.GetInt(CustomColor));
+            }
 
             if (NumberOfCustomEffects > 0)
             {
-                if(Effects.Count != NumberOfCustomEffects)
-                    throw new ArgumentNullException($"Can not serialize PotionContentsComponentComponent1206 due to NumberOfCustomEffects being different from the count of elements in the Effects list!");
+                if (CustomEffects.Count != NumberOfCustomEffects)
+                    throw new Exception("NumberOfCustomEffects is different from the count of elements in the Effects list!");
                 
-                foreach(var effect in Effects)
+                foreach (var effect in CustomEffects)
                     data.AddRange(effect.Serialize(dataTypes));
             }
             

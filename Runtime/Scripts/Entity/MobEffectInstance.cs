@@ -1,3 +1,6 @@
+using CraftSharp.Protocol.Handlers.StructuredComponents.Components;
+using CraftSharp.Protocol.Handlers.StructuredComponents.Components.Subcomponents;
+
 namespace CraftSharp
 {
     public record MobEffectInstance(
@@ -27,6 +30,12 @@ namespace CraftSharp
             var showIcon = !data.Properties.TryGetValue("show_icon", out val) || bool.Parse(val.StringValue); // True by default
             
             return new(typeId, amplifier, duration, ambient, showParticles, showIcon);
+        }
+
+        public static MobEffectInstance FromComponent(PotionEffectSubComponent component)
+        {
+            return new(component.EffectId, component.Details.Amplifier, component.Details.Duration,
+                component.Details.Ambient, component.Details.ShowParticles, component.Details.ShowIcon);
         }
     }
 }

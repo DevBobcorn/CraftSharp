@@ -41,9 +41,11 @@ namespace CraftSharp
                 {
                     if (int.TryParse(enchantmentDef.Properties["protocol_id"].StringValue, out int numId))
                     {
-                        var enchantmentTypeId = ResourceLocation.FromString(key);
+                        var enchantmentTypeId =  ResourceLocation.FromString(key);
+                        var translationKey = enchantmentDef.Properties.TryGetValue("translation_key", out var val)
+                            ? val.StringValue : enchantmentTypeId.GetTranslationKey("enchantment");
 
-                        AddEntry(enchantmentTypeId, numId, new EnchantmentType(enchantmentTypeId));
+                        AddEntry(enchantmentTypeId, numId, new EnchantmentType(enchantmentTypeId, translationKey));
                     }
                     else
                     {
