@@ -70,6 +70,9 @@ namespace CraftSharp
         /// </summary>
         public readonly Dictionary<ResourceLocation, StructuredComponent> Components = new();
 
+        public Dictionary<int, byte[]>? ReceivedComponentsToAdd;
+        public HashSet<int>? ReceivedComponentsToRemove;
+
         public bool TryGetComponent<T>(ResourceLocation typeId, [MaybeNullWhen(false)] out T tComp) where T : StructuredComponent
         {
             if (Components.TryGetValue(typeId, out var comp) && comp is T c)
