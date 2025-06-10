@@ -84,6 +84,7 @@ namespace CraftSharp
                 "bow"              => ItemActionType.Bow,
                 "crossbow"         => ItemActionType.Crossbow,
                 "trident"          => ItemActionType.Trident,
+                "mace"             => ItemActionType.Mace,
                 "shield"           => ItemActionType.Shield,
                 "drinkable_bottle" => ItemActionType.DrinkableBottle,
                 "drinkable_bucket" => ItemActionType.DrinkableBucket,
