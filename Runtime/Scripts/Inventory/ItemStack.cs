@@ -128,7 +128,7 @@ namespace CraftSharp
             StructuredComponentIds.ENCHANTMENTS_ID, out var enchantmentsComp) ? enchantmentsComp.Enchantments : new();
         
         /// <summary>
-        /// Create an item with ItemType, Count and Metadata
+        /// Create an item stack with ItemType, Count and Metadata
         /// </summary>
         /// <param name="itemType">Type of the item</param>
         /// <param name="count">Item Count</param>
@@ -258,12 +258,23 @@ namespace CraftSharp
                 }
             }
         }
-        
+
+        /// <summary>
+        /// Create an item stack from an existing item stack
+        /// </summary>
+        /// <param name="itemStack">Source ItemStack</param>
+        /// <param name="count">Item Count</param>
+        public ItemStack(ItemStack itemStack, int count) : this(itemStack.ItemType, count, itemStack.NBT)
+        {
+            ReceivedComponentsToAdd = itemStack.ReceivedComponentsToAdd;
+            ReceivedComponentsToRemove = itemStack.ReceivedComponentsToRemove;
+        }
+
         private static PotionEffectSubComponent GetPotionEffectSubComponentFromNBT(Dictionary<string, object> x, SubComponentRegistry subComponentRegistry)
         {
-            var effectId = ResourceLocation.FromString((string) x["id"]);
-            int amplifier = x.TryGetValue("amplifier", out var value) ? (int) value : 0; // 0 (Level I) by default
-            int duration = x.TryGetValue("duration", out value) ? (int) value : 1; // 1 tick by default
+            var effectId = ResourceLocation.FromString((string)x["id"]);
+            int amplifier = x.TryGetValue("amplifier", out var value) ? (int)value : 0; // 0 (Level I) by default
+            int duration = x.TryGetValue("duration", out value) ? (int)value : 1; // 1 tick by default
 
             return new PotionEffectSubComponent(subComponentRegistry)
             {

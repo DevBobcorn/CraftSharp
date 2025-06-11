@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using CraftSharp.Protocol.Handlers.StructuredComponents.Core;
-using CraftSharp.Protocol.Message;
 
 namespace CraftSharp.Protocol.Handlers.StructuredComponents.Components
 {
@@ -13,16 +12,16 @@ namespace CraftSharp.Protocol.Handlers.StructuredComponents.Components
         {
 
         }
-        
+
         public override void Parse(IMinecraftDataTypes dataTypes, Queue<byte> data)
         {
-            CustomName = ChatParser.ParseText(DataTypes.ReadNextString(data));
+            CustomName = dataTypes.ReadNextChatAsJson(data).ToJson();
         }
 
         public override Queue<byte> Serialize(IMinecraftDataTypes dataTypes)
         {
             var data = new List<byte>();
-            data.AddRange(DataTypes.GetString(CustomName));
+            data.AddRange(DataTypes.GetString(CustomName)); // TODO: Get chat as NBT
             return new Queue<byte>(data);
         }
     }
