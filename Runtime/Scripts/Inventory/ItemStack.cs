@@ -57,7 +57,9 @@ namespace CraftSharp
             }
         }
 
-        public bool IsDepletable => MaxDamage > 0;
+        public bool IsDamageable => MaxDamage > 0;
+        
+        public bool IsStackable => MaxStackSize > 1;
 
         #nullable enable
         /// <summary>
@@ -118,14 +120,22 @@ namespace CraftSharp
 
         /// <summary>
         /// Check if item is enchanted from components.
+        /// <br/>
+        /// Note that even if enchantments/stored enchantments component exist, they might be empty,
+        /// which means the item is NOT enchanted. So here we need to check the actual count.
         /// </summary>
-        public bool IsEnchanted => Components.ContainsKey(StructuredComponentIds.ENCHANTMENTS_ID);
+        public bool IsEnchanted => (TryGetComponent<EnchantmentsComponent>(
+            StructuredComponentIds.ENCHANTMENTS_ID, out var enchantmentsComp) && enchantmentsComp.NumberOfEnchantments > 0) ||
+                (TryGetComponent<StoredEnchantmentsComponent>(
+                    StructuredComponentIds.STORED_ENCHANTMENTS_ID, out var storedEnchantmentsComp) && storedEnchantmentsComp.NumberOfEnchantments > 0);
 
         /// <summary>
         /// Retrieve item enchantments from components. Returns empty list if no enchantment is defined.
         /// </summary>
         public List<Enchantment> Enchantments => TryGetComponent<EnchantmentsComponent>(
-            StructuredComponentIds.ENCHANTMENTS_ID, out var enchantmentsComp) ? enchantmentsComp.Enchantments : new();
+            StructuredComponentIds.ENCHANTMENTS_ID, out var enchantmentsComp) ? enchantmentsComp.Enchantments :
+                TryGetComponent<StoredEnchantmentsComponent>(
+                    StructuredComponentIds.STORED_ENCHANTMENTS_ID, out var storedEnchantmentsComp) ? storedEnchantmentsComp.Enchantments : new();
         
         /// <summary>
         /// Create an item stack with ItemType, Count and Metadata
