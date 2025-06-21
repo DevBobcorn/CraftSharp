@@ -5,7 +5,7 @@
         public readonly ResourceLocation TypeId;
         public readonly ParticleExtraDataType ExtraDataType;
 
-        public BaseParticleType(ResourceLocation id, ParticleExtraDataType optionType)
+        protected BaseParticleType(ResourceLocation id, ParticleExtraDataType optionType)
         {
             TypeId = id;
             ExtraDataType = optionType;

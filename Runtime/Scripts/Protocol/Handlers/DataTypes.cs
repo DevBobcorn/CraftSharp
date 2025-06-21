@@ -256,14 +256,11 @@ namespace CraftSharp.Protocol.Handlers
         /// Read a string from a cache of bytes and a given length and remove it from the cache
         /// </summary>
         /// <param name="cache">Cache of bytes to read from</param>
+        /// <param name="length">Count of bytes to read</param>
         /// <returns>The string</returns>
         public static string ReadNextPString(Queue<byte> cache, int length)
         {
-            if (length > 0)
-            {
-                return Encoding.UTF8.GetString(ReadData(length, cache));
-            }
-            else return "";
+            return length > 0 ? Encoding.UTF8.GetString(ReadData(length, cache)) : string.Empty;
         }
 
         /// <summary>

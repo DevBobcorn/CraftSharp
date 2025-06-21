@@ -4,9 +4,9 @@ namespace CraftSharp
 {
     public static class ParticleExtraDataNetworkTypeExtension
     {
-        public static Type GetDataType(this ParticleExtraDataType networkType)
+        public static Type GetDataType(this ParticleExtraDataType enumType)
         {
-            return networkType switch
+            return enumType switch
             {
                 ParticleExtraDataType.None                => typeof (EmptyParticleExtraData),
                 ParticleExtraDataType.Block               => typeof (BlockParticleExtraData),

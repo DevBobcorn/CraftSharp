@@ -3,7 +3,7 @@ using System.IO;
 using System.Text;
 using UnityEngine;
 
-namespace CraftSharp
+namespace CraftSharp.Inventory
 {
     public class EnchantmentTypePalette : IdentifierPalette<EnchantmentType>
     {

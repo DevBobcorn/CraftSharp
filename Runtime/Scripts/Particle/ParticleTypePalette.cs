@@ -13,11 +13,6 @@ namespace CraftSharp
         protected override string Name => "ParticleType Palette";
         protected override BaseParticleType UnknownObject => ParticleType<EmptyParticleExtraData>.DUMMY_PARTICLE_TYPE;
 
-        protected override void ClearEntries()
-        {
-            base.ClearEntries();
-        }
-
         /// <summary>
         /// Load particle data from external files.
         /// </summary>
@@ -42,13 +37,11 @@ namespace CraftSharp
             {
                 var particleTypes = Json.ParseJson(File.ReadAllText(particleTypePath, Encoding.UTF8));
 
-                foreach (var particleType in particleTypes.Properties)
+                foreach (var (particleKey, particleDef) in particleTypes.Properties)
                 {
-                    var particleDef = particleType.Value;
-
                     if (int.TryParse(particleDef.Properties["protocol_id"].StringValue, out int numId))
                     {
-                        var particleTypeId = ResourceLocation.FromString(particleType.Key);
+                        var particleTypeId = ResourceLocation.FromString(particleKey);
 
                         ParticleExtraDataType optionType = ParticleExtraDataType.None;
 
@@ -80,7 +73,7 @@ namespace CraftSharp
                     }
                     else
                     {
-                        Debug.LogWarning($"Invalid numeral particle type key [{particleType.Key}]");
+                        Debug.LogWarning($"Invalid numeral particle type key [{particleKey}]");
                     }
                 }
             }

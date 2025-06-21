@@ -1,4 +1,4 @@
-﻿namespace CraftSharp
+﻿namespace CraftSharp.Inventory
 {
     /// <summary>
     /// Represents a Minecraft Enchantment Type

@@ -1,7 +1,4 @@
 namespace CraftSharp
 {
-    public record EmptyParticleExtraData : ParticleExtraData
-    {
-        
-    }
+    public record EmptyParticleExtraData : ParticleExtraData;
 }
