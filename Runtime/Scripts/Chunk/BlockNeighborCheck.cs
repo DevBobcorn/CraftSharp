@@ -2,7 +2,7 @@ namespace CraftSharp
 {
     public delegate bool BlockNeighborCheck(BlockState self, BlockState neighbor);
 
-    public class BlockNeighborChecks
+    public static class BlockNeighborChecks
     {
         public static readonly BlockNeighborCheck WATER_SURFACE = (_, neighbor)
             => !(neighbor.InWater || neighbor.MeshFaceOcclusionSolid);

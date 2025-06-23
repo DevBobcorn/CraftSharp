@@ -367,6 +367,7 @@ namespace CraftSharp
                         {
                             "foliage"  => (world, loc, _) => world.GetFoliageColor(loc),
                             "grass"    => (world, loc, _) => world.GetGrassColor(loc),
+                            "water"    => (world, loc, _) => world.GetWaterColor(loc),
                             "redstone" => (_, _, state) => state.Properties
                                 .TryGetValue("power", out var property) ?
                                     new(int.Parse(property) / 16F, 0F, 0F) : float3.zero,
