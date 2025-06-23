@@ -1,35 +1,20 @@
-﻿using System;
-
-namespace CraftSharp
+﻿namespace CraftSharp
 {
     /// <summary>
     /// Represents a Minecraft Block State
     /// </summary>
-    public struct Block
+    public readonly struct Block
     {
         /// <summary>
         /// Storage for block ID, as ushort for compatibility, performance and lower memory footprint
         /// For Minecraft 1.13 and greater, all 16 bits are used to store block state ID (0-65535)
         /// </summary>
-        private ushort stateId;
+        private readonly ushort stateId;
 
         /// <summary>
         /// Id of the block state
         /// </summary>
-        public int StateId
-        {
-            get
-            {
-                return stateId;
-            }
-            
-            set
-            {
-                if (value > ushort.MaxValue || value < 0)
-                    throw new ArgumentOutOfRangeException("value", "Invalid block ID. Accepted range: 0-65535");
-                stateId = (ushort)value;
-            }
-        }
+        public int StateId => stateId;
 
         /// <summary>
         /// Get a block of the specified block state
@@ -40,19 +25,9 @@ namespace CraftSharp
             this.stateId = stateId;
         }
 
-        public BlockState State
-        {
-            get {
-                return BlockStatePalette.INSTANCE.GetByNumId(StateId);
-            }
-        }
+        public BlockState State => BlockStatePalette.INSTANCE.GetByNumId(StateId);
 
-        public ResourceLocation BlockId
-        {
-            get {
-                return BlockStatePalette.INSTANCE.GetGroupIdByNumId(StateId);
-            }
-        }
+        public ResourceLocation BlockId => BlockStatePalette.INSTANCE.GetGroupIdByNumId(StateId);
 
         /// <summary>
         /// String representation of the block
@@ -61,6 +36,5 @@ namespace CraftSharp
         {
             return $"[{StateId}] {State}";
         }
-
     }
 }
