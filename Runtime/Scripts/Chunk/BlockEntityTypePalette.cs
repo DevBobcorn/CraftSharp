@@ -59,6 +59,7 @@ namespace CraftSharp
                     {
                         var blockEntityTypeId = ResourceLocation.FromString(key);
                         var associatedBlockIds = new HashSet<ResourceLocation>();
+                        var newBlockEntityType = new BlockEntityType(blockEntityTypeId, associatedBlockIds);
 
                         foreach (var block in blockEntityDef.Properties["blocks"].DataArray)
                         {
@@ -66,7 +67,7 @@ namespace CraftSharp
 
                             if (BlockStatePalette.INSTANCE.Check(blockId))
                             {
-                                blockEntityMapping.Add(blockId, GetById(blockEntityTypeId));
+                                blockEntityMapping.Add(blockId, newBlockEntityType);
                                 associatedBlockIds.Add(blockId);
                             }
                             else
@@ -75,7 +76,7 @@ namespace CraftSharp
                             }
                         }
 
-                        AddEntry(blockEntityTypeId, numId, new BlockEntityType(blockEntityTypeId, associatedBlockIds));
+                        AddEntry(blockEntityTypeId, numId, newBlockEntityType);
                     }
                     else
                     {
