@@ -23,7 +23,7 @@ namespace CraftSharp
         /// <summary>
         /// Add a new block entity render to the world
         /// </summary>
-        public void AddBlockEntityRender(BlockLoc blockLoc, BlockEntityType blockEntityType, Dictionary<string, object>? nbt = null);
+        public void AddOrUpdateBlockEntityRender(BlockLoc blockLoc, BlockState blockState, BlockEntityType blockEntityType, Dictionary<string, object>? nbt = null);
 
         /// <summary>
         /// Remove a block entity render from the world

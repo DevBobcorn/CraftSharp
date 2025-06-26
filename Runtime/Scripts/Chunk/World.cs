@@ -481,7 +481,7 @@ namespace CraftSharp
         /// <param name="chunk">Chunk data</param>
         public void StoreChunk(int chunkX, int chunkYIndex, int chunkZ, int chunkColumnSize, Chunk? chunk)
         {
-            ChunkColumn chunkColumn = columns.GetOrAdd(new(chunkX, chunkZ), (_) => new(chunkColumnSize));
+            ChunkColumn chunkColumn = columns.GetOrAdd(new(chunkX, chunkZ), _ => new(chunkColumnSize));
             chunkColumn[chunkYIndex] = chunk;
         }
 
@@ -493,7 +493,7 @@ namespace CraftSharp
         /// <param name="chunkColumnSize">ChunkColumn size</param>
         public void CreateEmptyChunkColumn(int chunkX, int chunkZ, int chunkColumnSize)
         {
-            columns.GetOrAdd(new(chunkX, chunkZ), (_) => new(chunkColumnSize));
+            columns.GetOrAdd(new(chunkX, chunkZ), _ => new(chunkColumnSize));
         }
 
         /// <summary>
