@@ -15,13 +15,13 @@ namespace CraftSharp
             AddMultipliedTotal
         }
 
-        public Guid UUID; // Used in 1.20.5-1.21.3, replaced with ResourceLocation in 1.21.4
-        public ResourceLocation ModifierId; // Used 1.20.5-1.21.3, removed in 1.21.4
+        public Guid UUID; // Used in 1.20.5-1.20.6, replaced with ResourceLocation in 1.21
+        public ResourceLocation ModifierId; // Used 1.20.5-1.20.6, removed in 1.21
         public readonly ResourceLocation Attribute;
         public readonly Operations Operation;
         public readonly double Value;
 
-        // Used 1.20.5-1.21.3
+        // Used 1.20.5-1.20.6
         public MobAttributeModifier(Guid uuid, ResourceLocation attribute, Operations operation, double value)
         {
             UUID = uuid;
@@ -30,7 +30,7 @@ namespace CraftSharp
             Value = value;
         }
         
-        // Used 1.21.4+
+        // Used 1.21+
         public MobAttributeModifier(ResourceLocation modifierId, ResourceLocation attribute, Operations operation, double value)
         {
             ModifierId = modifierId;
@@ -45,13 +45,13 @@ namespace CraftSharp
             var op = GetOperation(data.Properties["operation"].StringValue);
             var value = double.Parse(data.Properties["value"].StringValue, CultureInfo.InvariantCulture.NumberFormat);
 
-            if (useResourceLocationForMobAttributeModifierId) // 1.21.4+
+            if (useResourceLocationForMobAttributeModifierId) // 1.21+
             {
-                var modifierId = ResourceLocation.FromString(data.Properties["modifier_id"].StringValue);
+                var modifierId = ResourceLocation.FromString(data.Properties["id"].StringValue);
                 
                 return new MobAttributeModifier(modifierId, attr, op, value);
             }
-            else // 1.20.5-1.21.3
+            else // 1.20.5-1.20.6
             {
                 var uuid = Guid.Parse(data.Properties["uuid"].StringValue);
                 
@@ -61,7 +61,7 @@ namespace CraftSharp
 
         public static MobAttributeModifier FromComponent(AttributeModifierSubComponent component)
         {
-            if (component.UUID == Guid.Empty) // UUID is not used. 1.21.4+
+            if (component.UUID == Guid.Empty) // UUID is not used. 1.21+
             {
                 return new MobAttributeModifier(component.ModifierId, component.MobAttributeId, component.Operation, component.Value);
             }

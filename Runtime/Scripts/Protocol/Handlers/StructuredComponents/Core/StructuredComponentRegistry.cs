@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace CraftSharp.Protocol.Handlers.StructuredComponents.Core
 {
@@ -46,8 +47,16 @@ namespace CraftSharp.Protocol.Handlers.StructuredComponents.Core
                 var component =
                     Activator.CreateInstance(type, itemPalette, SubComponentRegistry) as StructuredComponent 
                     ?? throw new InvalidOperationException($"Could not instantiate a parser for a structured component type {id}");
-                
-                component.ParseFromJson(dataTypes, data);
+
+                try
+                {
+                    component.ParseFromJson(dataTypes, data);
+                }
+                catch (Exception)
+                {
+                    Debug.LogWarning($"Failed to parse data for default component {id}");
+                }
+
                 return component;
             }
             throw new Exception($"No parser found for component with Id {id}");
