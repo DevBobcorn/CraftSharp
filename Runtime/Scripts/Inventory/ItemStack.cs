@@ -136,6 +136,27 @@ namespace CraftSharp
             StructuredComponentIds.ENCHANTMENTS_ID, out var enchantmentsComp) ? enchantmentsComp.Enchantments :
                 TryGetComponent<StoredEnchantmentsComponent>(
                     StructuredComponentIds.STORED_ENCHANTMENTS_ID, out var storedEnchantmentsComp) ? storedEnchantmentsComp.Enchantments : new();
+
+        /// <summary>
+        /// Reads an item from nbt as a slot in a container.
+        /// Returns the item stack and the slot it is in.
+        /// </summary>
+        public static (int, ItemStack?) FromSlotNBT(Dictionary<string, object> nbt)
+        {
+            int count = nbt.TryGetValue("Count", out var countVal) ? int.Parse(countVal!.ToString()) : 1;
+            string idStr = nbt.TryGetValue("id", out var idVal) ? idVal!.ToString() : string.Empty;
+            if (count <= 0 && string.IsNullOrEmpty(idStr))
+            {
+                return (-1, null);
+            }
+
+            var id = ResourceLocation.FromString(idVal!.ToString());
+            var type = ItemPalette.INSTANCE.GetById(id);
+            int slot = nbt.TryGetValue("Slot", out var slotVal) ? int.Parse(slotVal!.ToString()) : -1;
+            var tag = nbt.GetValueOrDefault("tag") as Dictionary<string, object>;
+
+            return (slot, new ItemStack(type, count, tag));
+        }
         
         /// <summary>
         /// Create an item stack with ItemType, Count and Metadata
@@ -266,6 +287,99 @@ namespace CraftSharp
                         Rarity = newRarity
                     };
                 }
+
+                if (NBT.TryGetValue("BlockEntityTag", out var blockEntityTagObj) &&
+                    blockEntityTagObj is Dictionary<string, object?> blockEntityTag)
+                {
+                    if (blockEntityTag.TryGetValue("patterns", out var patterns) && patterns is object[] patternList)
+                    {
+                        var bannerPatternsComp = new BannerPatternsComponent(itemPalette, subComponentRegistry);
+                        
+                        // New format. e.g. "{patterns:{pattern:"right_stripe",color:"white"} }"
+                        foreach (Dictionary<string, object> patternData in patternList)
+                        {
+                            var color = CommonColorsHelper.GetCommonColor((string) patternData["color"]);
+                            ResourceLocation patternId;
+                            BannerLayer bannerLayer;
+
+                            var pattern = patternData["pattern"];
+                            if (pattern is string patternStr) // Given as an id
+                            {
+                                patternId = ResourceLocation.FromString(patternStr);
+                                bannerLayer = new()
+                                {
+                                    PatternType = BannerPatternType.GetIndexFromId(patternId),
+                                    DyeColor = color
+                                };
+                            }
+                            else if (pattern is Dictionary<string, object> patternDef) // Given as an inline definition
+                            {
+                                patternId = ResourceLocation.FromString((string) patternDef["asset_id"]);
+                                var translationKey = (string) patternDef.GetValueOrDefault("translation_key", string.Empty);
+                                var newEntry = new BannerPatternType(patternId, translationKey);
+                                BannerPatternPalette.INSTANCE.AddOrUpdateEntry(patternId, newEntry);
+                                
+                                bannerLayer = new()
+                                {
+                                    PatternType = 0,
+                                    AssetId = ResourceLocation.FromString((string) patternDef["asset_id"]),
+                                    TranslationKey = translationKey,
+                                    DyeColor = color
+                                };
+                            }
+                            else
+                            {
+                                bannerLayer = new();
+                            }
+                            
+                            bannerPatternsComp.Layers.Add(bannerLayer);
+                        }
+
+                        bannerPatternsComp.NumberOfLayers = bannerPatternsComp.Layers.Count;
+                        Components[StructuredComponentIds.BANNER_PATTERNS_ID] = bannerPatternsComp;
+                    }
+                    else if (blockEntityTag.TryGetValue("Patterns", out patterns) && patterns is object[] oldPatternList)
+                    {
+                        var bannerPatternsComp = new BannerPatternsComponent(itemPalette, subComponentRegistry);
+                        
+                        // Old format. e.g. "{Patterns:{Pattern:"rs",Color:0} }"
+                        foreach (Dictionary<string, object> patternData in oldPatternList)
+                        {
+                            // Encoded as enum int (probably as a string)
+                            var color = (CommonColors) int.Parse(patternData["Color"].ToString());
+
+                            var patternCode = (string) patternData["Pattern"];
+                            var patternId = BannerPatternType.GetIdFromCode(patternCode);
+                            
+                            var bannerLayer = new BannerLayer
+                            {
+                                PatternType = BannerPatternType.GetIndexFromId(patternId),
+                                DyeColor = color
+                            };
+                            
+                            bannerPatternsComp.Layers.Add(bannerLayer);
+                        }
+                        
+                        bannerPatternsComp.NumberOfLayers = bannerPatternsComp.Layers.Count;
+                        Components[StructuredComponentIds.BANNER_PATTERNS_ID] = bannerPatternsComp;
+                    }
+                    
+                    if (blockEntityTag.TryGetValue("Items", out var items) && items is object[] itemList)
+                    {
+                        var containerComp = new ContainerComponent(itemPalette, subComponentRegistry);
+                        
+                        foreach (var containedItemStack in itemList
+                                 .Select(x => FromSlotNBT((Dictionary<string, object>) x).Item2)
+                                 .Where(x => x is not null))
+                        {
+                            containerComp.Items.Add(containedItemStack);
+                        }
+                        
+                        containerComp.NumberOfItems = containerComp.Items.Count;
+                        Components[StructuredComponentIds.CONTAINER_ID] = containerComp;
+                    }
+                }
+                
             }
         }
 
