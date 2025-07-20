@@ -44,9 +44,9 @@ namespace CraftSharp
         }
         
         /// <summary>
-        /// Add an entry to the palette
+        /// Add an entry to the palette or update it
         /// </summary>
-        protected virtual void AddEntry(ResourceLocation id, T obj)
+        public virtual void AddOrUpdateEntry(ResourceLocation id, T obj)
         {
             if (obj is null)
             {
@@ -54,10 +54,7 @@ namespace CraftSharp
                 return;
             }
 
-            if (!idToObject.TryAdd(id, obj))
-            {
-                Debug.LogWarning($"Identifier already registered in {Name}: {id}");
-            }
+            idToObject[id] = obj;
         }
     }
 }
