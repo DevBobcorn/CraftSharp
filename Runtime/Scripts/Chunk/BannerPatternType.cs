@@ -97,6 +97,17 @@ namespace CraftSharp
         public const string TRIANGLE_TOP_CODE                = "tt";
         public const string TRIANGLES_BOTTOM_CODE            = "bts";
         public const string TRIANGLES_TOP_CODE               = "tts";
+        
+        public static readonly ResourceLocation FIELD_MASONED_BANNER_PATTERN_ID    = new("field_masoned_banner_pattern");
+        public static readonly ResourceLocation BORDURE_INDENTED_BANNER_PATTERN_ID = new("bordure_indented_banner_pattern");
+        public static readonly ResourceLocation FLOWER_BANNER_PATTERN_ID           = new("flower_banner_pattern");
+        public static readonly ResourceLocation CREEPER_BANNER_PATTERN_ID          = new("creeper_banner_pattern");
+        public static readonly ResourceLocation SKULL_BANNER_PATTERN_ID            = new("skull_banner_pattern");
+        public static readonly ResourceLocation MOJANG_BANNER_PATTERN_ID           = new("mojang_banner_pattern");
+        public static readonly ResourceLocation GLOBE_BANNER_PATTERN_ID            = new("globe_banner_pattern");
+        public static readonly ResourceLocation PIGLIN_BANNER_PATTERN_ID           = new("piglin_banner_pattern");
+        public static readonly ResourceLocation FLOW_BANNER_PATTERN_ID             = new("flow_banner_pattern");
+        public static readonly ResourceLocation GUSTER_BANNER_PATTERN_ID           = new("guster_banner_pattern");
 
         public static readonly BannerPatternType DUMMY_BANNER_PATTERN_TYPE = new(
             ResourceLocation.INVALID, string.Empty);
@@ -108,6 +119,31 @@ namespace CraftSharp
         {
             AssetId = assetId;
             TranslationKey = translationKey;
+        }
+        
+        private static readonly Dictionary<ResourceLocation, ResourceLocation> itemId2id = new()
+        {
+            [FIELD_MASONED_BANNER_PATTERN_ID]    = BRICKS_ID,
+            [BORDURE_INDENTED_BANNER_PATTERN_ID] = CURLY_BORDER_ID,
+            [FLOWER_BANNER_PATTERN_ID]           = FLOWER_ID,
+            [CREEPER_BANNER_PATTERN_ID]          = CREEPER_ID,
+            [SKULL_BANNER_PATTERN_ID]            = SKULL_ID,
+            [MOJANG_BANNER_PATTERN_ID]           = MOJANG_ID,
+            [GLOBE_BANNER_PATTERN_ID]            = GLOBE_ID,
+            [PIGLIN_BANNER_PATTERN_ID]           = PIGLIN_ID,
+            [FLOW_BANNER_PATTERN_ID]             = FLOW_ID,
+            [GUSTER_BANNER_PATTERN_ID]           = GUSTER_ID,
+        };
+
+        public static ResourceLocation GetIdFromItemId(ResourceLocation itemId)
+        {
+            return itemId2id.GetValueOrDefault(itemId, ResourceLocation.INVALID);
+        }
+
+        public static ResourceLocation[] GetDefaultPatternList()
+        {
+            // Get all pattern ids from SQUARE_BOTTOM_LEFT_ID to GRADIENT_UP_ID
+            return Enumerable.Range(1, 33).Select(GetIdFromIndex).ToArray();
         }
 
         public static ResourceLocation GetIdFromCode(string code)
