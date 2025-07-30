@@ -11,6 +11,7 @@ namespace CraftSharp
         public static readonly ResourceLocation ENDER_CHEST_ID      = new("ender_chest");
         public static readonly ResourceLocation TRAPPED_CHEST_ID    = new("trapped_chest");
         public static readonly ResourceLocation SIGN_ID             = new("sign");
+        public static readonly ResourceLocation HANGING_SIGN_ID     = new("hanging_sign");
         public static readonly ResourceLocation MOB_SPAWNER_ID      = new("mob_spawner");
         public static readonly ResourceLocation PISTON_ID           = new("piston");
         public static readonly ResourceLocation ENCHANTING_TABLE_ID = new("enchanting_table");

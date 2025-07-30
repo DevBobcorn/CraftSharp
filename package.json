@@ -1,6 +1,6 @@
 {
   "name": "com.devbobcorn.craftsharp",
-  "version": "4.20.8",
+  "version": "4.20.9",
   "displayName": "CraftSharp",
   "description": "A Unity package for reading and storing basic data of Minecraft.",
   "unity": "2022.3",
