@@ -20,23 +20,29 @@ namespace CraftSharp
         /// <summary>
         /// Float x3
         /// </summary>
-        Rotation,
+        Rotations,
         Position,
         OptionalPosition,
         /// <summary>
         /// VarInt
         /// </summary>
         Direction,
+        /// <summary>
+        /// Optional UUID, a.k.a. Optional Living Entity Reference
+        /// </summary>
         OptionalUUID,
         /// <summary>
         /// VarInt
         /// </summary>
-        BlockId,
+        BlockState,
         /// <summary>
         /// VarInt (0 for absent)
         /// </summary>
-        OptionalBlockId,
-        Nbt,
+        OptionalBlockState,
+        /// <summary>
+        /// NBT Tag, a.k.a. compound tag
+        /// </summary>
+        Nbt, // Removed in 1.21.9
         Particle,
         Particles, // Added in 1.20.5
         /// <summary>
@@ -97,12 +103,24 @@ namespace CraftSharp
         /// </summary>
         ArmadilloState, // Added in 1.20.5
         /// <summary>
+        /// VarInt
+        /// </summary>
+        CopperGolemState, // Added in 1.21.9
+        /// <summary>
+        /// VarInt
+        /// </summary>
+        WeatheringCopperState, // Added in 1.21.9
+        /// <summary>
         /// Float x3
         /// </summary>
         Vector3,
         /// <summary>
         /// Float x4
         /// </summary>
-        Quaternion
+        Quaternion,
+        /// <summary>
+        /// Complex. See https://minecraft.wiki/w/Java_Edition_protocol/Entity_metadata#Resolvable_Profile
+        /// </summary>
+        ResolvableProfile // Added in 1.21.9
     }
 }
