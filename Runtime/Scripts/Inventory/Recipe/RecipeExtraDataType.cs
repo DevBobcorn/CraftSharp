@@ -8,9 +8,10 @@ namespace CraftSharp.Inventory.Recipe
         CraftingShaped,
         CraftingShapeless,
         CraftingSpecial,
-        Cooking,          // Includes Smelting/Blasting/Smoking/Campfire Cooking
+        CraftingTransmute, // Introduced in 1.21.2
+        Cooking,           // Includes Smelting/Blasting/Smoking/Campfire Cooking
         Stonecutting,
-        Smithing,         // Legacy Smithing(without a template item)
+        Smithing,          // Legacy Smithing(without a template item)
         SmithingTransform,
         SmithingTrim
     }

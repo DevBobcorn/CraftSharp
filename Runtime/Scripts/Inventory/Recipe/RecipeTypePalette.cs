@@ -79,6 +79,7 @@ namespace CraftSharp.Inventory.Recipe
                             "crafting_shaped" => RecipeExtraDataType.CraftingShaped,
                             "crafting_shapeless" => RecipeExtraDataType.CraftingShapeless,
                             "crafting_special" => RecipeExtraDataType.CraftingSpecial,
+                            "crafting_transmute" => RecipeExtraDataType.CraftingTransmute,
                             "cooking" => RecipeExtraDataType.Cooking,
                             "stonecutting" => RecipeExtraDataType.Stonecutting,
                             "smithing" => RecipeExtraDataType.Smithing,

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using CraftSharp.Protocol.Handlers.StructuredComponents.Components;
 using UnityEngine;
 
 namespace CraftSharp.Protocol.Handlers.StructuredComponents.Core
@@ -59,7 +60,10 @@ namespace CraftSharp.Protocol.Handlers.StructuredComponents.Core
 
                 return component;
             }
-            throw new Exception($"No parser found for component with Id {id}");
+
+            // throw new Exception($"No parser found for component with Id {id}");
+            Debug.LogWarning($"No parser found for component with Id {id}");
+            return new EmptyComponent(itemPalette, SubComponentRegistry);
         }
     }
 }

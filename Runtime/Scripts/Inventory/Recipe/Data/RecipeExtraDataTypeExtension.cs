@@ -12,6 +12,7 @@ namespace CraftSharp.Inventory.Recipe
                 RecipeExtraDataType.CraftingShapeless     => typeof (CraftingShapelessExtraData),
                 RecipeExtraDataType.CraftingShaped        => typeof (CraftingShapedExtraData),
                 RecipeExtraDataType.CraftingSpecial       => typeof (CraftingSpecialExtraData),
+                RecipeExtraDataType.CraftingTransmute     => typeof (CraftingTransmuteExtraData),
                 RecipeExtraDataType.Cooking               => typeof (CookingExtraData),
                 RecipeExtraDataType.Stonecutting          => typeof (StonecuttingExtraData),
                 RecipeExtraDataType.Smithing              => typeof (SmithingExtraData),
