@@ -79,7 +79,7 @@ namespace CraftSharp
             return new BlockShapeAABB(MinX + x, MinY + y, MinZ + z, MaxX + x, MaxY + y, MaxZ + z);
         }
 
-        private BlockShapeAABB(float minX, float minY, float minZ, float maxX, float maxY, float maxZ)
+        public BlockShapeAABB(float minX, float minY, float minZ, float maxX, float maxY, float maxZ)
         {
             MinX = minX;
             MinY = minY;

@@ -226,6 +226,39 @@ namespace CraftSharp
             RenderTypeTable.Clear();
             OffsetTypeTable.Clear();
         }
+        
+        /// <summary>
+        /// Adds a block with a single block state directly into the registry.
+        /// <br/>
+        /// This should be used for debugging purposes only, where actual block data is not present.
+        /// </summary>
+        public void InjectBlockState(int numId, ResourceLocation identifier, bool fullCube, bool noSolidMesh, bool noCollision)
+        {
+            UnfreezeEntries();
+            
+            var fullFaceMask = fullCube ? 0b111111 : 0;
+            var newBlockState = new BlockState(identifier, 1, 1, noSolidMesh, fullFaceMask, noCollision,
+                noCollision, 15, 0, null, new Dictionary<string, string>());
+
+            if (noCollision)
+            {
+                newBlockState.Shape = BlockShape.EMPTY;
+            }
+            else
+            {
+                newBlockState.Shape = new BlockShape(new HashSet<BlockShapeAABB>
+                {
+                    new(0, 0, 0, 1, 1, 1)
+                });
+            }
+
+            AddEntry(identifier, numId, new Dictionary<int, BlockState>
+            {
+                [numId] = newBlockState
+            });
+
+            FreezeEntries();
+        }
 
         /// <summary>
         /// Load block data from external files.

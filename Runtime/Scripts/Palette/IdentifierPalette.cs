@@ -56,7 +56,7 @@ namespace CraftSharp
         }
 
         /// <summary>
-        /// Try get object by id, or default object if not found
+        /// Try to get object by id, or default object if not found
         /// </summary>
         public bool TryGetById(ResourceLocation id, out T obj)
         {
