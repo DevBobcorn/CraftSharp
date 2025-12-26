@@ -84,7 +84,7 @@ namespace CraftSharp
 
             var resAsset = Resources.Load(resName) as TextAsset;
 
-            if (resAsset != null && resAsset.bytes != null) // Data bytes loaded, unzip it
+            if (resAsset && resAsset.bytes != null) // Data bytes loaded, unzip it
             {
                 try
                 {
@@ -92,7 +92,7 @@ namespace CraftSharp
                     using (var zipFile = new ZipArchive(zipStream, ZipArchiveMode.Read))
                     {
                         updateStatus("resource.info.extract_builtin_resource");
-                        // Extract resouce files
+                        // Extract resource files
                         // TODO: Support Unicode characters in entry names. Currently it can only properly handle ASCII.
                         zipFile.ExtractToDirectory(targetFolder, overwriteFiles);
 
