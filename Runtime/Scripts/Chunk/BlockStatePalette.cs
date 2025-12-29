@@ -246,7 +246,7 @@ namespace CraftSharp
             }
             else
             {
-                newBlockState.Shape = new BlockShape(new HashSet<BlockShapeAABB>
+                newBlockState.Shape = new BlockShape(new HashSet<ShapeAABB>
                 {
                     new(0, 0, 0, 1, 1, 1)
                 });
@@ -348,12 +348,12 @@ namespace CraftSharp
                         if (state.Properties.TryGetValue("aabbs", out var aabbList))
                         {
                             var aabbs = aabbList.DataArray
-                                .Select(x => BlockShapeAABB.FromString(x.StringValue)).ToHashSet();
+                                .Select(x => ShapeAABB.FromString(x.StringValue)).ToHashSet();
 
                             if (state.Properties.TryGetValue("collision_aabbs", out var colAabbList))
                             {
                                 var colAabbs = colAabbList.DataArray
-                                    .Select(x => BlockShapeAABB.FromString(x.StringValue)).ToHashSet();
+                                    .Select(x => ShapeAABB.FromString(x.StringValue)).ToHashSet();
                                 shape = new BlockShape(aabbs, colAabbs);
                             }
                             else
@@ -475,6 +475,7 @@ namespace CraftSharp
                             "cutout"        => RenderType.CUTOUT,
                             "cutout_mipped" => RenderType.CUTOUT_MIPPED,
                             "translucent"   => RenderType.TRANSLUCENT,
+                            "unlit"         => RenderType.UNLIT,
 
                             "water"         => RenderType.WATER,
                             "foliage"       => RenderType.FOLIAGE,
