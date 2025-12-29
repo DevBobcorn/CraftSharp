@@ -806,16 +806,18 @@ namespace CraftSharp
 
         public float3 GetFoliageColor(BlockLoc blockLoc)
         {
-            int cnt = 0;
-            float3 colorSum = float3.zero;
-            for (int x = -COLOR_SAMPLE_RADIUS;x <= COLOR_SAMPLE_RADIUS;x++)
-                for (int y = -COLOR_SAMPLE_RADIUS;y <= COLOR_SAMPLE_RADIUS;y++)
-                    for (int z = -COLOR_SAMPLE_RADIUS;z <= COLOR_SAMPLE_RADIUS;z++)
+            var cnt = 0;
+            var colorSum = float3.zero;
+            
+            for (var x = -COLOR_SAMPLE_RADIUS;x <= COLOR_SAMPLE_RADIUS;x++)
+                for (var y = -COLOR_SAMPLE_RADIUS;y <= COLOR_SAMPLE_RADIUS;y++)
+                    for (var z = -COLOR_SAMPLE_RADIUS;z <= COLOR_SAMPLE_RADIUS;z++)
                     {
                         if (x * x + y * y + z * z > COLOR_SAMPLE_RADIUS_SQR)
                             continue;
                         
                         var b = GetBiome(blockLoc + new BlockLoc(x, y, z));
+                        
                         if (b != DUMMY_BIOME)
                         {
                             cnt++;
@@ -828,16 +830,25 @@ namespace CraftSharp
 
         public float3 GetGrassColor(BlockLoc blockLoc)
         {
-            int cnt = 0;
-            float3 colorSum = float3.zero;
-            for (int x = -COLOR_SAMPLE_RADIUS;x <= COLOR_SAMPLE_RADIUS;x++)
-                for (int y = -COLOR_SAMPLE_RADIUS;y <= COLOR_SAMPLE_RADIUS;y++)
-                    for (int z = -COLOR_SAMPLE_RADIUS;z <= COLOR_SAMPLE_RADIUS;z++)
+            var cnt = 0;
+            var colorSum = float3.zero;
+            
+            for (var x = -COLOR_SAMPLE_RADIUS;x <= COLOR_SAMPLE_RADIUS;x++)
+                for (var y = -COLOR_SAMPLE_RADIUS;y <= COLOR_SAMPLE_RADIUS;y++)
+                    for (var z = -COLOR_SAMPLE_RADIUS;z <= COLOR_SAMPLE_RADIUS;z++)
                     {
                         if (x * x + y * y + z * z > COLOR_SAMPLE_RADIUS_SQR)
                             continue;
+
+                        var l = blockLoc + new BlockLoc(x, y, z);
+                        var b = GetBiome(l);
                         
-                        var b = GetBiome(blockLoc + new BlockLoc(x, y, z));
+                        if (b.ColorOverride != BiomeColorOverride.None)
+                        {
+                            cnt++;
+                            colorSum += Biome.GetOverrideGrassColor(b.ColorOverride, l.X, l.Z);
+                        }
+                        
                         if (b != DUMMY_BIOME)
                         {
                             cnt++;
@@ -850,16 +861,18 @@ namespace CraftSharp
 
         public float3 GetWaterColor(BlockLoc blockLoc)
         {
-            int cnt = 0;
-            float3 colorSum = float3.zero;
-            for (int x = -COLOR_SAMPLE_RADIUS;x <= COLOR_SAMPLE_RADIUS;x++)
-                for (int y = -COLOR_SAMPLE_RADIUS;y <= COLOR_SAMPLE_RADIUS;y++)
-                    for (int z = -COLOR_SAMPLE_RADIUS;z <= COLOR_SAMPLE_RADIUS;z++)
+            var cnt = 0;
+            var colorSum = float3.zero;
+            
+            for (var x = -COLOR_SAMPLE_RADIUS;x <= COLOR_SAMPLE_RADIUS;x++)
+                for (var y = -COLOR_SAMPLE_RADIUS;y <= COLOR_SAMPLE_RADIUS;y++)
+                    for (var z = -COLOR_SAMPLE_RADIUS;z <= COLOR_SAMPLE_RADIUS;z++)
                     {
                         if (x * x + y * y + z * z > COLOR_SAMPLE_RADIUS_SQR)
                             continue;
                         
                         var b = GetBiome(blockLoc + new BlockLoc(x, y, z));
+                        
                         if (b != DUMMY_BIOME)
                         {
                             cnt++;

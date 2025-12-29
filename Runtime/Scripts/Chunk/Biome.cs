@@ -17,6 +17,17 @@ namespace CraftSharp
     }
 
     /// <summary>
+    /// Overrides for biome colors
+    /// <br/>
+    /// See https://minecraft.wiki/w/Biome#Special_plant_tints
+    /// </summary>
+    public enum BiomeColorOverride
+    {
+        None = 0,
+        Swamp
+    }
+
+    /// <summary>
     /// Represents a Minecraft Biome
     /// </summary>
     public record Biome
@@ -31,14 +42,18 @@ namespace CraftSharp
         public readonly float3 SkyColor, FoliageColor, GrassColor;
         public readonly float3 FogColor, WaterColor, WaterFogColor;
         private readonly string colorsText;
+        
+        public BiomeColorOverride ColorOverride = BiomeColorOverride.None;
+
+        private static readonly PerlinSimplexNoise BIOME_INFO_NOISE = new(new LegacyRandomSource(2345L), new List<int> { 0 });
 
         private static float3 GetFloat3Color(int color)
         {
-            float r = ((color & 0xFF0000) >> 16) / 255F;
-            float g = ((color &   0xFF00) >>  8) / 255F;
-            float b = ((color &     0xFF))       / 255F;
+            var r = ((color & 0xFF0000) >> 16) / 255F;
+            var g = ((color &   0xFF00) >>  8) / 255F;
+            var b = ((color &     0xFF))       / 255F;
 
-            return new(r, g, b);
+            return new float3(r, g, b);
         }
 
         public ResourceLocation BiomeId { get; }
@@ -48,10 +63,32 @@ namespace CraftSharp
             var colorCode = $"{color:x}".PadLeft(6, '0');
             return $"<color=#{colorCode}>{colorCode}</color>";
         }
+
+        private void UpdateColorOverride()
+        {
+            if (BiomeId.Path.Contains("swamp"))
+            {
+                ColorOverride = BiomeColorOverride.Swamp;
+            }
+        }
+
+        public static float3 GetOverrideGrassColor(BiomeColorOverride o, int x, int z)
+        {
+            return o switch
+            {
+                BiomeColorOverride.Swamp => BIOME_INFO_NOISE.GetValue(x * 0.0225, z * 0.0225, false) < -0.1F
+                    // ? GetFloat3Color(5011004) : GetFloat3Color(6975545),
+                    ? float3.zero : new float3(1F, 1F, 1F),
+                
+                _ => new float3(1F, 1F, 1F)
+            };
+        }
         
         public Biome(ResourceLocation biomeId, int sky, int foliage, int grass, int water, int fog, int waterFog)
         {
             BiomeId = biomeId;
+            
+            UpdateColorOverride();
 
             // Set biome colors
             SkyColor = GetFloat3Color(sky);
@@ -77,6 +114,8 @@ namespace CraftSharp
                 throw new ArgumentNullException(nameof (nbt));
             
             BiomeId = biomeId;
+
+            UpdateColorOverride();
             
             if (nbt.TryGetValue("downfall", out var val))
                 Downfall = (float) val;
