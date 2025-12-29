@@ -7,6 +7,7 @@ namespace CraftSharp
         CUTOUT_MIPPED,
         TRANSLUCENT,
         // More render types defined for finegrained rendering
+        UNLIT,
         WATER,
         FOLIAGE,
         PLANTS,
