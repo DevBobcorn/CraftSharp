@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -24,7 +25,8 @@ namespace CraftSharp
         {
             UnfreezeEntries();
 
-            AddEntry(identifier, numId, new(identifier, 1F, 1F, true, new(), false));
+            AddEntry(identifier, numId, new EntityType(identifier, 1F, 1F, true,
+                new Dictionary<int, EntityMetaEntry>(), false, int.MaxValue));
 
             FreezeEntries();
         }
@@ -66,6 +68,9 @@ namespace CraftSharp
                                 CultureInfo.InvariantCulture.NumberFormat);
                         
                         var sf = bool.Parse(entityDef.Properties["size_fixed"].StringValue);
+                        
+                        var ui = int.Parse(entityDef.Properties["update_interval"].StringValue,
+                            CultureInfo.InvariantCulture.NumberFormat);
 
                         // Read entity meta entries
                         var metaEntries = entityDef.Properties["metadata"].Properties.
@@ -76,7 +81,7 @@ namespace CraftSharp
 
                         bool c = metaEntries.Values.Any(x => x.Name is "data_item" or "data_item_stack");
 
-                        AddEntry(entityTypeId, numId, new EntityType(entityTypeId, w, h, sf, metaEntries, c));
+                        AddEntry(entityTypeId, numId, new EntityType(entityTypeId, w, h, sf, metaEntries, c, ui));
                     }
                     else
                     {
