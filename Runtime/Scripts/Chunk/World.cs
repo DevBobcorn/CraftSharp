@@ -686,19 +686,20 @@ namespace CraftSharp
             var stids = result.BlockStateIds = new int[Chunk.PADDED, Chunk.PADDED, Chunk.PADDED];
             var light = result.Light = new byte[Chunk.PADDED, Chunk.PADDED, Chunk.PADDED];
             var color = result.Color = new float3[Chunk.SIZE, Chunk.SIZE, Chunk.SIZE];
+            var water = result.Water = new float3[Chunk.SIZE, Chunk.SIZE, Chunk.SIZE];
             
-            int minCX = chunkX - 1;  // Min chunk X
-            int minCZ = chunkZ - 1;  // Min chunk Z
-            int maxCX = chunkX + 1;  // Max chunk X
-            int maxCZ = chunkZ + 1;  // Max chunk Z
+            var minCX = chunkX - 1;  // Min chunk X
+            var minCZ = chunkZ - 1;  // Min chunk Z
+            var maxCX = chunkX + 1;  // Max chunk X
+            var maxCZ = chunkZ + 1;  // Max chunk Z
 
             // Max coordinate on each axis (inclusive)
             int minX = (chunkX << 4) - 1,              minZ = (chunkZ << 4) - 1,              minY = (chunkYIndex << 4) + GetDimensionType().minY - 1;
             // Max coordinate on each axis (exclusive)
             int maxX = (chunkX << 4) + Chunk.SIZE + 1, maxZ = (chunkZ << 4) + Chunk.SIZE + 1, maxY = (chunkYIndex << 4) + GetDimensionType().minY + Chunk.SIZE + 1;
 
-            for (int cx = minCX; cx <= maxCX; cx++)
-                for (int cz = minCZ; cz <= maxCZ; cz++)
+            for (var cx = minCX; cx <= maxCX; cx++)
+                for (var cz = minCZ; cz <= maxCZ; cz++)
                 {
                     // Get the current chunk column
                     var chunkColumn = this[cx, cz];
@@ -706,16 +707,16 @@ namespace CraftSharp
                     if (chunkColumn is not null) // Chunk column is not empty
                     {
                         // Go through all valid xz locations within this chunk column
-                        for (int blocX = math.max(minX, cx << 4); blocX < math.min(maxX, (cx + 1) << 4); blocX++)
+                        for (var blocX = math.max(minX, cx << 4); blocX < math.min(maxX, (cx + 1) << 4); blocX++)
                         {
-                            int resX = blocX - minX;
-                            for (int blocZ = math.max(minZ, cz << 4); blocZ < math.min(maxZ, (cz + 1) << 4); blocZ++)
+                            var resX = blocX - minX;
+                            for (var blocZ = math.max(minZ, cz << 4); blocZ < math.min(maxZ, (cz + 1) << 4); blocZ++)
                             {
-                                int resZ = blocZ - minZ;
+                                var resZ = blocZ - minZ;
                                 // Then go though all blocks in this line
-                                for (int blocY = minY; blocY < maxY; blocY++)
+                                for (var blocY = minY; blocY < maxY; blocY++)
                                 {
-                                    int resY = blocY - minY;
+                                    var resY = blocY - minY;
                                     var blocLoc = new BlockLoc(blocX, blocY, blocZ);
 
                                     var bloc = chunkColumn.GetBlock(blocLoc);
@@ -727,6 +728,12 @@ namespace CraftSharp
                                     {
                                         // No padding for block color
                                         color[resX - 1, resY - 1, resZ - 1] = BlockStatePalette.INSTANCE.GetBlockColor(bloc.StateId, this, blocLoc);
+
+                                        // TODO: Only get for water with surface
+                                        if (bloc.State.InWater)
+                                        {
+                                            water[resX - 1, resY - 1, resZ - 1] = GetWaterColor(blocLoc);
+                                        }
                                     }
                                 }
                             }
@@ -847,6 +854,8 @@ namespace CraftSharp
                         {
                             cnt++;
                             colorSum += Biome.GetOverrideGrassColor(b.ColorOverride, l.X, l.Z);
+
+                            continue;
                         }
                         
                         if (b != DUMMY_BIOME)

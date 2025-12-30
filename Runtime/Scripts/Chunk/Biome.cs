@@ -77,8 +77,7 @@ namespace CraftSharp
             return o switch
             {
                 BiomeColorOverride.Swamp => BIOME_INFO_NOISE.GetValue(x * 0.0225, z * 0.0225, false) < -0.1F
-                    // ? GetFloat3Color(5011004) : GetFloat3Color(6975545),
-                    ? float3.zero : new float3(1F, 1F, 1F),
+                    ? GetFloat3Color(5011004) : GetFloat3Color(6975545),
                 
                 _ => new float3(1F, 1F, 1F)
             };

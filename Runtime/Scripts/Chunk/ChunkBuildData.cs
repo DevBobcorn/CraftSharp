@@ -8,13 +8,15 @@ namespace CraftSharp
         public int[,,] BlockStateIds; // 18 * 18 * 18
         public byte[,,] Light; // 18 * 18 * 18
         public float3[,,] Color; // 16 * 16 * 16
+        public float3[,,] Water; // 16 * 16 * 16
 
-        public ChunkBuildData(BlockState[,,] blockStates, int[,,] blockStateIds, byte[,,] light, float3[,,] color)
+        public ChunkBuildData(BlockState[,,] blockStates, int[,,] blockStateIds, byte[,,] light, float3[,,] color, float3[,,] water)
         {
             BlockStates = blockStates;
             BlockStateIds = blockStateIds;
             Light = light;
             Color = color;
+            Water = water;
         }
     }
 }
