@@ -685,8 +685,8 @@ namespace CraftSharp
             var blocs = result.BlockStates = new BlockState[Chunk.PADDED, Chunk.PADDED, Chunk.PADDED];
             var stids = result.BlockStateIds = new int[Chunk.PADDED, Chunk.PADDED, Chunk.PADDED];
             var light = result.Light = new byte[Chunk.PADDED, Chunk.PADDED, Chunk.PADDED];
-            var color = result.Color = new float3[Chunk.SIZE, Chunk.SIZE, Chunk.SIZE];
-            var water = result.Water = new float3[Chunk.SIZE, Chunk.SIZE, Chunk.SIZE];
+            var color = result.Color = new int[Chunk.SIZE, Chunk.SIZE, Chunk.SIZE];
+            var water = result.Water = new int[Chunk.SIZE, Chunk.SIZE, Chunk.SIZE];
             
             var minCX = chunkX - 1;  // Min chunk X
             var minCZ = chunkZ - 1;  // Min chunk Z
@@ -811,10 +811,27 @@ namespace CraftSharp
             return DUMMY_BIOME; // Not available
         }
 
-        public float3 GetFoliageColor(BlockLoc blockLoc)
+        private static void AccumulateColor(int color, ref int sumR, ref int sumG, ref int sumB)
+        {
+            sumR += (color >> 16) & 0xFF;
+            sumG += (color >> 8) & 0xFF;
+            sumB += color & 0xFF;
+        }
+
+        private static int AverageColor(int sumR, int sumG, int sumB, int count, int fallback)
+        {
+            if (count == 0)
+                return fallback;
+
+            return ((sumR / count) << 16) | ((sumG / count) << 8) | (sumB / count);
+        }
+
+        public int GetFoliageColor(BlockLoc blockLoc)
         {
             var cnt = 0;
-            var colorSum = float3.zero;
+            var sumR = 0;
+            var sumG = 0;
+            var sumB = 0;
             
             for (var x = -COLOR_SAMPLE_RADIUS;x <= COLOR_SAMPLE_RADIUS;x++)
                 for (var y = -COLOR_SAMPLE_RADIUS;y <= COLOR_SAMPLE_RADIUS;y++)
@@ -828,17 +845,19 @@ namespace CraftSharp
                         if (b != DUMMY_BIOME)
                         {
                             cnt++;
-                            colorSum += b.FoliageColor;
+                            AccumulateColor(b.FoliageColorInt, ref sumR, ref sumG, ref sumB);
                         }
                     }
 
-            return cnt == 0 ? DUMMY_BIOME.FoliageColor : colorSum / cnt;
+            return AverageColor(sumR, sumG, sumB, cnt, DUMMY_BIOME.FoliageColorInt);
         }
 
-        public float3 GetGrassColor(BlockLoc blockLoc)
+        public int GetGrassColor(BlockLoc blockLoc)
         {
             var cnt = 0;
-            var colorSum = float3.zero;
+            var sumR = 0;
+            var sumG = 0;
+            var sumB = 0;
             
             for (var x = -COLOR_SAMPLE_RADIUS;x <= COLOR_SAMPLE_RADIUS;x++)
                 for (var y = -COLOR_SAMPLE_RADIUS;y <= COLOR_SAMPLE_RADIUS;y++)
@@ -853,7 +872,7 @@ namespace CraftSharp
                         if (b.ColorOverride != BiomeColorOverride.None)
                         {
                             cnt++;
-                            colorSum += Biome.GetOverrideGrassColor(b.ColorOverride, l.X, l.Z);
+                            AccumulateColor(Biome.GetOverrideGrassColor(b.ColorOverride, l.X, l.Z), ref sumR, ref sumG, ref sumB);
 
                             continue;
                         }
@@ -861,17 +880,19 @@ namespace CraftSharp
                         if (b != DUMMY_BIOME)
                         {
                             cnt++;
-                            colorSum += b.GrassColor;
+                            AccumulateColor(b.GrassColorInt, ref sumR, ref sumG, ref sumB);
                         }
                     }
             
-            return cnt == 0 ? DUMMY_BIOME.GrassColor : colorSum / cnt;
+            return AverageColor(sumR, sumG, sumB, cnt, DUMMY_BIOME.GrassColorInt);
         }
 
-        public float3 GetWaterColor(BlockLoc blockLoc)
+        public int GetWaterColor(BlockLoc blockLoc)
         {
             var cnt = 0;
-            var colorSum = float3.zero;
+            var sumR = 0;
+            var sumG = 0;
+            var sumB = 0;
             
             for (var x = -COLOR_SAMPLE_RADIUS;x <= COLOR_SAMPLE_RADIUS;x++)
                 for (var y = -COLOR_SAMPLE_RADIUS;y <= COLOR_SAMPLE_RADIUS;y++)
@@ -885,11 +906,11 @@ namespace CraftSharp
                         if (b != DUMMY_BIOME)
                         {
                             cnt++;
-                            colorSum += b.WaterColor;
+                            AccumulateColor(b.WaterColorInt, ref sumR, ref sumG, ref sumB);
                         }
                     }
             
-            return cnt == 0 ? DUMMY_BIOME.WaterColor : colorSum / cnt;
+            return AverageColor(sumR, sumG, sumB, cnt, DUMMY_BIOME.WaterColorInt);
         }
 
         #endregion

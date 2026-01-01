@@ -155,11 +155,11 @@ namespace CraftSharp
 
         public readonly Dictionary<ResourceLocation, OffsetType> OffsetTypeTable = new();
 
-        private readonly Dictionary<int, Func<World, BlockLoc, BlockState, float3>> blockColorRules = new();
+        private readonly Dictionary<int, Func<World, BlockLoc, BlockState, int>> blockColorRules = new();
 
-        private static readonly float3 ORIGINAL_BLOCK_COLOR = new(1F);
+        private const int ORIGINAL_BLOCK_COLOR = 0x00FFFFFF;
 
-        public float3 GetBlockColor(int stateId, World world, BlockLoc loc)
+        public int GetBlockColor(int stateId, World world, BlockLoc loc)
         {
             if (blockColorRules.TryGetValue(stateId, out var rule))
                 return rule.Invoke(world, loc, GetByNumId(stateId));
@@ -396,16 +396,17 @@ namespace CraftSharp
                 {
                     foreach (var (ruleName, ruleValue) in dynamicRulesProperty.Properties)
                     {
-                        Func<World, BlockLoc, BlockState, float3> ruleFunc = ruleName switch
+                        Func<World, BlockLoc, BlockState, int> ruleFunc = ruleName switch
                         {
                             "foliage"  => (world, loc, _) => world.GetFoliageColor(loc),
                             "grass"    => (world, loc, _) => world.GetGrassColor(loc),
                             "water"    => (world, loc, _) => world.GetWaterColor(loc),
                             "redstone" => (_, _, state) => state.Properties
-                                .TryGetValue("power", out var property) ?
-                                    new(int.Parse(property) / 16F, 0F, 0F) : float3.zero,
+                                .TryGetValue("power", out var property)
+                                    ? (math.clamp(int.Parse(property), 0, 15) * 17) << 16
+                                    : 0,
 
-                            _          => (_, _, _) => float3.zero
+                            _          => (_, _, _) => 0
                         };
 
                         foreach (var blockId in ruleValue.DataArray
@@ -430,8 +431,11 @@ namespace CraftSharp
                     foreach (var (key, ruleValue) in fixedRulesProperty.Properties)
                     {
                         var blockId = ResourceLocation.FromString(key);
-                        var fixedColor = VectorUtil.Json2Float3(ruleValue) / 255F;
-                        float3 ruleFunc(World world, BlockLoc loc, BlockState state) => fixedColor;
+                        var colorVec = VectorUtil.Json2Float3(ruleValue);
+                        var fixedColor = ((int)math.clamp(math.round(colorVec.x), 0, 255) << 16) |
+                                         ((int)math.clamp(math.round(colorVec.y), 0, 255) << 8)  |
+                                          (int)math.clamp(math.round(colorVec.z), 0, 255);
+                        int ruleFunc(World world, BlockLoc loc, BlockState state) => fixedColor;
 
                         if (TryGetAllNumIds(blockId, out int[] stateIds))
                         {
