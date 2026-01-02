@@ -14,7 +14,7 @@ namespace CraftSharp.Protocol
         
         public ItemStack? ReadNextItemSlot(Queue<byte> cache, ItemPalette itemPalette);
 
-        public EntityData ReadNextEntity(Queue<byte> cache, EntityTypePalette entityPalette, bool living);
+        public EntitySpawnData ReadNextEntity(Queue<byte> cache, EntityTypePalette entityPalette, bool living);
 
         public Dictionary<int, object?> ReadNextMetadata(Queue<byte> cache, ItemPalette itemPalette, EntityMetadataPalette metadataPalette);
 
