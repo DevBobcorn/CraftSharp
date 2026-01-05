@@ -127,13 +127,14 @@ namespace CraftSharp
         public static readonly ResourceLocation ZOMBIE_VILLAGER_ID = new("zombie_villager");
         public static readonly ResourceLocation ZOMBIFIED_PIGLIN_ID = new("zombified_piglin");
 
-        public static readonly EntityType DUMMY_ENTITY_TYPE = new(ResourceLocation.INVALID, 1F, 1F,
-            true, new Dictionary<int, EntityMetaEntry>(), false, int.MaxValue);
+        public static readonly EntityType DUMMY_ENTITY_TYPE = new(ResourceLocation.INVALID, 1F, 1F, true,
+            EntityCategory.Misc, new Dictionary<int, EntityMetaEntry>(), false, int.MaxValue);
 
         public readonly ResourceLocation TypeId;
         public readonly float Width;
         public readonly float Height;
         public readonly bool SizeFixed;
+        public readonly EntityCategory Category;
         public readonly bool ContainsItem;
         public readonly int UpdateInterval;
 
@@ -141,13 +142,14 @@ namespace CraftSharp
         public readonly Dictionary<string, int> MetaSlotByName;
         public readonly Dictionary<string, EntityMetaEntry> MetaEntriesByName;
 
-        public EntityType(ResourceLocation id, float width, float height, bool sizeFixed,
+        public EntityType(ResourceLocation id, float width, float height, bool sizeFixed, EntityCategory category,
                 Dictionary<int, EntityMetaEntry> metaEntries, bool containsItem, int updateInterval)
         {
             TypeId = id;
             Width = width;
             Height = height;
             SizeFixed = sizeFixed;
+            Category = category;
             MetaEntries = metaEntries;
             MetaSlotByName = metaEntries.ToDictionary(x => x.Value.Name, x => x.Key);
             MetaEntriesByName = metaEntries.ToDictionary(x => x.Value.Name, x => x.Value);

@@ -26,7 +26,7 @@ namespace CraftSharp
             UnfreezeEntries();
 
             AddEntry(identifier, numId, new EntityType(identifier, 1F, 1F, true,
-                new Dictionary<int, EntityMetaEntry>(), false, int.MaxValue));
+                EntityCategory.Misc, new Dictionary<int, EntityMetaEntry>(), false, int.MaxValue));
 
             FreezeEntries();
         }
@@ -73,15 +73,18 @@ namespace CraftSharp
                             CultureInfo.InvariantCulture.NumberFormat);
 
                         // Read entity meta entries
-                        var metaEntries = entityDef.Properties["metadata"].Properties.
+                        var me = entityDef.Properties["metadata"].Properties.
                                 ToDictionary(x => int.Parse(x.Key),
                                         x => new EntityMetaEntry(x.Value.Properties["name"].StringValue,
                                             EntityMetadataTypeUtil.FromSerializedTypeName(
                                                 x.Value.Properties["data_type"].StringValue)));
 
-                        bool c = metaEntries.Values.Any(x => x.Name is "data_item" or "data_item_stack");
+                        var c = EntityCategoryTypeUtil.FromSerializedName(entityDef.Properties["category"]
+                            .StringValue);
 
-                        AddEntry(entityTypeId, numId, new EntityType(entityTypeId, w, h, sf, metaEntries, c, ui));
+                        var ci = me.Values.Any(x => x.Name is "data_item" or "data_item_stack");
+
+                        AddEntry(entityTypeId, numId, new EntityType(entityTypeId, w, h, sf, c, me, ci, ui));
                     }
                     else
                     {
