@@ -21,6 +21,7 @@ namespace CraftSharp
                 "underground_water_creature" => EntityCategory.UndergroundWaterCreature,
                 "water_creature"             => EntityCategory.WaterCreature,
                 "water_ambient"              => EntityCategory.WaterAmbient,
+                "misc"                       => EntityCategory.Misc,
 
                 _                            => Unexpected(typeName)
             };
