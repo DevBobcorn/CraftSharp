@@ -2,7 +2,7 @@
 
 namespace CraftSharp
 {
-    public class LegacyRandomSource : IBitRandomSource
+    public class LegacyRandomSource : BitRandomSource
     {
         private const int MODULUS_BITS = 48;
         private const long MODULUS_MASK = 281474976710655L;
@@ -27,12 +27,12 @@ namespace CraftSharp
             }
         }
 
-        public virtual void SetSeed(long l)
+        public override void SetSeed(long l)
         {
             InitializeSeed(l);
         }
 
-        public int Next(int i)
+        protected override int Next(int i)
         {
             lock (seedLock)
             {
@@ -43,7 +43,7 @@ namespace CraftSharp
             }
         }
 
-        public double NextGaussian()
+        public override double NextGaussian()
         {
             return gaussianSource.NextGaussian();
         }

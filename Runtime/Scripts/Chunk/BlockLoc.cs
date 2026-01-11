@@ -37,6 +37,17 @@ namespace CraftSharp
             Z = z;
         }
 
+        public static long GetSeed(int x, int y, int z) {
+            long l = (long) (x * 3129871) ^ (long) z * 116129781L ^ (long) y;
+            l = l * l * 42317861L + l * 11L;
+            return l >> 16;
+        }
+
+        public long GetSeed()
+        {
+            return GetSeed(X, Y, Z);
+        }
+
         /// <summary>
         /// Get a squared distance to the specified location
         /// </summary>
@@ -218,6 +229,11 @@ namespace CraftSharp
         public readonly BlockLoc West()
         {
             return new BlockLoc(X - 1, Y, Z);
+        }
+        
+        public readonly BlockLoc WithOffset(int offsetX, int offsetY, int offsetZ)
+        {
+            return new BlockLoc(X + offsetX, Y + offsetY, Z + offsetZ);
         }
     }
 }

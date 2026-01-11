@@ -682,6 +682,8 @@ namespace CraftSharp
         public ChunkBuildData GetChunkBuildData(int chunkX, int chunkZ, int chunkYIndex)
         {
             var result = new ChunkBuildData();
+
+            result.OriginBlockLoc = new BlockLoc(chunkX << 4, (chunkYIndex << 4) + GetDimensionType().minY, chunkZ << 4);
             var blocs = result.BlockStates = new BlockState[Chunk.PADDED, Chunk.PADDED, Chunk.PADDED];
             var stids = result.BlockStateIds = new int[Chunk.PADDED, Chunk.PADDED, Chunk.PADDED];
             var light = result.Light = new byte[Chunk.PADDED, Chunk.PADDED, Chunk.PADDED];

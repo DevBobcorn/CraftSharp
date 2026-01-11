@@ -3,19 +3,23 @@ using System;
 
 namespace CraftSharp
 {
-    public interface IBitRandomSource : IRandomSource
+    public abstract class BitRandomSource : IRandomSource
     {
         public const float FLOAT_MULTIPLIER = 5.9604645E-8F;
         public const double DOUBLE_MULTIPLIER = 1.110223E-16F;
+        
+        public abstract void SetSeed(long l);
+        
+        public abstract double NextGaussian();
 
-        int Next(int i);
+        protected abstract int Next(int i);
 
-        int IRandomSource.NextInt()
+        public int NextInt()
         {
             return Next(32);
         }
 
-        int IRandomSource.NextInt(int i)
+        public int NextInt(int i)
         {
             if (i <= 0)
             {
@@ -39,7 +43,7 @@ namespace CraftSharp
             }
         }
 
-        long IRandomSource.NextLong()
+        public long NextLong()
         {
             var i = Next(32);
             var j = Next(32);
@@ -47,17 +51,17 @@ namespace CraftSharp
             return l + j;
         }
 
-        bool IRandomSource.NextBoolean()
+        public bool NextBoolean()
         {
             return Next(1) != 0;
         }
 
-        float IRandomSource.NextFloat()
+        public float NextFloat()
         {
             return Next(24) * FLOAT_MULTIPLIER;
         }
 
-        double IRandomSource.NextDouble()
+        public double NextDouble()
         {
             var i = Next(26);
             var j = Next(27);
