@@ -793,7 +793,7 @@ namespace CraftSharp
             };
         }
 
-        private const int COLOR_SAMPLE_RADIUS = 2;
+        private const int COLOR_SAMPLE_RADIUS = 3;
         private const int COLOR_SAMPLE_RADIUS_SQR = COLOR_SAMPLE_RADIUS * COLOR_SAMPLE_RADIUS;
 
         /// <summary>

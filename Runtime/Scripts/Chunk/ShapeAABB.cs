@@ -46,6 +46,8 @@ namespace CraftSharp
                 return EMPTY;
             }
         }
+        
+        
 
         public ShapeAABB WithOffset(float x, float y, float z)
         {
