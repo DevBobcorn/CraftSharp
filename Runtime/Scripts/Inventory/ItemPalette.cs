@@ -18,7 +18,7 @@ namespace CraftSharp
         protected override string Name => "Item Palette";
         protected override Item UnknownObject => Item.UNKNOWN;
 
-        private readonly Dictionary<ResourceLocation, Func<ItemStack, float3[]>> itemColorRules = new();
+        private readonly Dictionary<ResourceLocation, Func<ItemStack, int[]>> itemColorRules = new();
         private readonly Dictionary<ResourceLocation, ResourceLocation> blockIdToBlockItemId = new();
 
         public StructuredComponentRegistry ComponentRegistry;
@@ -28,7 +28,7 @@ namespace CraftSharp
             return itemColorRules.ContainsKey(identifier);
         }
 
-        public Func<ItemStack, float3[]> GetTintRule(ResourceLocation identifier)
+        public Func<ItemStack, int[]> GetTintRule(ResourceLocation identifier)
         {
             return itemColorRules.GetValueOrDefault(identifier);
         }
@@ -50,12 +50,12 @@ namespace CraftSharp
             blockIdToBlockItemId.Clear();
         }
 
-        private static float3 GetEffectsColor(ResourceLocation[] effectIds)
+        private static int GetEffectsColor(ResourceLocation[] effectIds)
         {
             int effectCount = effectIds.Length;
             if (effectCount == 0)
             {
-                return ColorConvert.GetFloat3(0x385DC6); // Water bottle, blue
+                return 0x385DC6; // Water bottle, blue
             }
             int rSum = 0, gSum = 0, bSum = 0;
             var palette = MobEffectPalette.INSTANCE;
@@ -66,8 +66,6 @@ namespace CraftSharp
                 rSum += (effect.Color & 0xFF0000) >> 16;
                 gSum += (effect.Color & 0xFF00) >> 8;
                 bSum +=  effect.Color & 0xFF;
-
-                effectCount++;
             }
             
             int finalColor =
@@ -75,10 +73,10 @@ namespace CraftSharp
                 (Mathf.RoundToInt(gSum / (float) effectCount) << 8) |
                  Mathf.RoundToInt(bSum / (float) effectCount);
             
-            return ColorConvert.GetFloat3(finalColor);
+            return finalColor;
         }
         
-        private static float3[] GetPotionColor(ItemStack itemStack)
+        private static int[] GetPotionColor(ItemStack itemStack)
         {
             if (itemStack.TryGetComponent<PotionContentsComponent>(
                 StructuredComponentIds.POTION_CONTENTS_ID, out var potionContentsComp))
@@ -86,7 +84,7 @@ namespace CraftSharp
                 // Potion color override
                 if (potionContentsComp.HasCustomColor)
                 {
-                    return new[] { ColorConvert.GetFloat3(potionContentsComp.CustomColor) };
+                    return new[] { potionContentsComp.CustomColor };
                 }
                 
                 // Default effects for potion (Custom effects doesn't affect potion color)
@@ -99,7 +97,7 @@ namespace CraftSharp
                 }
             }
 
-            return new[] { ColorConvert.GetFloat3(0xFF00FF) }; // Uncraftable potion, magenta
+            return new[] { 0xFF00FF }; // Uncraftable potion, magenta
         }
 
         /// <summary>
@@ -184,11 +182,11 @@ namespace CraftSharp
                 {
                     foreach (var (ruleName, ruleValue) in dynamicRulesProperty.Properties)
                     {
-                        Func<ItemStack, float3[]> ruleFunc = ruleName switch
+                        Func<ItemStack, int[]> ruleFunc = ruleName switch
                         {
                             "potion"  => GetPotionColor,
 
-                            _         => _ => new[] { float3.zero }
+                            _          => _ => new[] { 0 }
                         };
 
                         foreach (var itemId in ruleValue.DataArray
@@ -208,16 +206,18 @@ namespace CraftSharp
                     {
                         var itemId = ResourceLocation.FromString(fixedRule.Key);
 
-                        var fixedColor = VectorUtil.Json2Float3(fixedRule.Value) / 255F;
+                        var fixedColorVec = VectorUtil.Json2Float3(fixedRule.Value);
+                        int r = Mathf.Clamp(Mathf.RoundToInt(fixedColorVec.x), 0, 255);
+                        int g = Mathf.Clamp(Mathf.RoundToInt(fixedColorVec.y), 0, 255);
+                        int b = Mathf.Clamp(Mathf.RoundToInt(fixedColorVec.z), 0, 255);
+                        int packed = (r << 16) | (g << 8) | b;
+
+                        Func<ItemStack, int[]> ruleFunc = _ => new[] { packed };
 
                         if (!itemColorRules.TryAdd(itemId, ruleFunc))
                         {
                             Debug.LogWarning($"Failed to apply fixed color rules to {itemId}!");
                         }
-
-                        continue;
-
-                        float3[] ruleFunc(ItemStack itemStack) => new[] { fixedColor };
                     }
                 }
 
@@ -228,19 +228,23 @@ namespace CraftSharp
                         var itemId = ResourceLocation.FromString(fixedRule.Key);
 
                         var colorList = fixedRule.Value.DataArray.ToArray();
-                        var fixedColors = new float3[colorList.Length];
+                        var fixedColors = new int[colorList.Length];
 
-                        for (int c = 0;c < colorList.Length;c++)
-                            fixedColors[c] = VectorUtil.Json2Float3(colorList[c]) / 255F;
+                        for (int c = 0; c < colorList.Length; c++)
+                        {
+                            var colVec = VectorUtil.Json2Float3(colorList[c]);
+                            int r = Mathf.Clamp(Mathf.RoundToInt(colVec.x), 0, 255);
+                            int g = Mathf.Clamp(Mathf.RoundToInt(colVec.y), 0, 255);
+                            int b = Mathf.Clamp(Mathf.RoundToInt(colVec.z), 0, 255);
+                            fixedColors[c] = (r << 16) | (g << 8) | b;
+                        }
+
+                        Func<ItemStack, int[]> ruleFunc = _ => fixedColors;
 
                         if (!itemColorRules.TryAdd(itemId, ruleFunc))
                         {
                             Debug.LogWarning($"Failed to apply fixed multi-color rules to {itemId}!");
                         }
-
-                        continue;
-
-                        float3[] ruleFunc(ItemStack itemStack) => fixedColors;
                     }
                 }
             }
