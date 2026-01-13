@@ -49,6 +49,7 @@ namespace CraftSharp
         public bool InLiquid => FluidStateId is not null;
         public bool InWater => FluidStateId == WATER_ID || FluidStateId == FLOWING_WATER_ID;
         public bool InLava  => FluidStateId == LAVA_ID  || FluidStateId == FLOWING_LAVA_ID;
+        public byte LiquidLevel => InLiquid ? byte.Parse(Properties.GetValueOrDefault("level", "0")) : (byte) 0;
 
         public float Friction;
         public float JumpFactor;
