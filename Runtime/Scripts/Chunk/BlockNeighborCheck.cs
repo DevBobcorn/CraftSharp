@@ -7,7 +7,7 @@ namespace CraftSharp
         public static readonly BlockNeighborCheck WATER_SURFACE = (_, neighbor)
             => !(neighbor.InWater || neighbor.MeshFaceOcclusionSolid);
         public static readonly BlockNeighborCheck LAVA_SURFACE  = (_, neighbor)
-            => !(neighbor.InLava  || neighbor.MeshFaceOcclusionSolid);
+            => !(neighbor.IsLava  || neighbor.MeshFaceOcclusionSolid);
 
         public static readonly BlockNeighborCheck NON_FULL_SOLID = (_, neighbor)
             => !neighbor.MeshFaceOcclusionSolid;

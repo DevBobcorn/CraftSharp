@@ -46,10 +46,15 @@ namespace CraftSharp
         public bool AmbientOcclusionSolid => FullShape && !NoCollision;
 
         public readonly ResourceLocation? FluidStateId;
-        public bool InLiquid => FluidStateId is not null;
-        public bool InWater => FluidStateId == WATER_ID || FluidStateId == FLOWING_WATER_ID;
-        public bool InLava  => FluidStateId == LAVA_ID  || FluidStateId == FLOWING_LAVA_ID;
-        public byte LiquidLevel => InLiquid ? byte.Parse(Properties.GetValueOrDefault("level", "0")) : (byte) 0;
+        public bool InLiquid => IsLiquid || IsWaterLogged;
+        public bool IsLiquid => FluidStateId is not null;
+        public bool InWater => IsWater || IsWaterLogged;
+        public bool IsWater => FluidStateId == WATER_ID || FluidStateId == FLOWING_WATER_ID;
+        public bool IsWaterLogged => bool.Parse(Properties.GetValueOrDefault("waterlogged", "false"));
+        public bool IsLava  => FluidStateId == LAVA_ID  || FluidStateId == FLOWING_LAVA_ID;
+        
+        // For waterlogged blocks, they don't have liquid level property, and are always considered level 0 (liquid source)
+        public byte LiquidLevel => IsLiquid ? byte.Parse(Properties.GetValueOrDefault("level", "0")) : (byte) 0;
 
         public float Friction;
         public float JumpFactor;

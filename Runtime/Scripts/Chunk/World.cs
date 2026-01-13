@@ -732,7 +732,7 @@ namespace CraftSharp
                                         color[resX - 1, resY - 1, resZ - 1] = BlockStatePalette.INSTANCE.GetBlockColor(bloc.StateId, this, blocLoc);
 
                                         // TODO: Only get for water with surface
-                                        if (bloc.State.InWater)
+                                        if (bloc.State.IsWater || bloc.State.IsWaterLogged)
                                         {
                                             water[resX - 1, resY - 1, resZ - 1] = GetWaterColor(blocLoc);
                                         }
